@@ -29,16 +29,17 @@ services:
   app:
     build: .
     tty: true
+    stdin_open: true
     volumes:
-      - .:/app
-    working_dir: /app
+      - "./:/var/www"
+    working_dir: /var/www
     environment:
       DB: postgresql
       DB_HOST: db
       DB_PORT: 5432
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
-      BUNDLE_GEMFILE: /app/Gemfile
+      BUNDLE_GEMFILE: /var/www/Gemfile
       SELENIUM_REMOTE_URL: http://chrome_server:4444/wd/hub
     command: script/docker-dev-start-web.sh
     networks:
