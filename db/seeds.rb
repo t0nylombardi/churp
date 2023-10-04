@@ -6,13 +6,19 @@
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
 
+# admin
+user = User.create!(
+  email: 'admin@admin.com',
+  password: 'Passw0rd1!',
+  password_confirmation: 'Passw0rd1!',
+  role: 'admin'
+)
+
 0.upto(10) do |_i|
   user = User.create!(
     email: Faker::Internet.email,
     password: 'Passw0rd1!',
-    password_confirmation: 'Passw0rd1!',
-    first_name: Faker::Name.first_name,
-    last_name: Faker::Name.last_name
+    password_confirmation: 'Passw0rd1!'
   )
 
   user.tweets.create!(

@@ -1,12 +1,13 @@
 class TweetsController < ApplicationController
   before_action :authenticate_user!
-  
+
   def index
     @tweets = Tweet.all.order('created_at DESC')
+    authorize @tweets
     @tweet = current_user.tweets.new
   end
 
-   # GET /tweets/1
+  # GET /tweets/1
   # GET /tweets/1.json
   def show
   end
@@ -24,6 +25,7 @@ class TweetsController < ApplicationController
   # POST /tweets.json
   def create
     @tweet = current_user.tweets.build(tweet_params)
+    authorize @tweet
 
     respond_to do |format|
       if @tweet.save

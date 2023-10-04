@@ -7,7 +7,10 @@
     "@rails/actiontext": "^7.0.8",
     "autoprefixer": "^10.4.16",
     "esbuild": "^0.19.4",
+    "mrujs": "^1.0.0",
     "postcss": "^8.4.30",
+    "stimulus": "npm:@hotwired/stimulus",
+    "stimulus_reflex": "3.4.1",
     "tailwindcss": "^3.3.3",
     "trix": "^2.0.6"
   },
@@ -19,6 +22,7 @@
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/typography": "^0.5.10"
+    "@tailwindcss/typography": "^0.5.10",
+    "chokidar": "^3.5.3"
   }
 }

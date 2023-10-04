@@ -25,6 +25,11 @@ gem 'sidekiq', '~> 6.5', '>= 6.5.4'
 gem 'stripe'
 gem 'bulma-rails', '~> 0.6.1'
 gem 'simple_form', '~> 5.2'
+gem 'pundit', '~> 2.3', '>= 2.3.1'
+gem 'omniauth'
+gem 'omniauth-github'
+gem 'omniauth-rails_csrf_protection'
+gem 'stimulus_reflex', '~> 3.4', '>= 3.4.1'
 
 gem 'tzinfo-data', platforms: %i[ mingw mswin x64_mingw jruby ]
 gem 'bootsnap', require: false
@@ -39,6 +44,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'faker'
+  gem 'dotenv-rails', '~> 2.8', '>= 2.8.1'
 end
 
 group :development do

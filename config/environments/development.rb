@@ -1,5 +1,7 @@
 require "active_support/core_ext/integer/time"
 
+Dotenv::Railtie.load
+
 Rails.application.configure do
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   # Settings specified here will take precedence over those in config/application.rb.
@@ -24,7 +26,9 @@ Rails.application.configure do
     config.action_controller.perform_caching = true
     config.action_controller.enable_fragment_cache_logging = true
 
-    config.cache_store = :memory_store
+    config.cache_store = :redis_cache_store, { url: ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } }
+    config.session_store :cache_store, key: "_sessions_development", compress: true, pool_size: 5, expire_after: 1.year
+
     config.public_file_server.headers = {
       "Cache-Control" => "public, max-age=#{2.days.to_i}"
     }

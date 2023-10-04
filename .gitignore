@@ -38,3 +38,4 @@
 .db-seeded
 .db-created
 .DS_Store
+.env
