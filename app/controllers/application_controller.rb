@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
-  include Pundit
+  include Pundit::Authorization
+
   protect_from_forgery with: :exception
+  skip_before_action :verify_authenticity_token, if: -> { controller_name == 'sessions' && action_name == 'create' }
 
   before_action :set_csrf_cookie
   before_action :authenticate_user!

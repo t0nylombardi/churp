@@ -1,17 +1,16 @@
 module ControllerMacros
-  def login_user
-    # Before each test, create and login the user
+  def login_admin
     before(:each) do
-      @request.env['devise.mapping'] = Devise.mappings[:user]
-      sign_in FactoryBot.create(:user)
+      @request.env["devise.mapping"] = Devise.mappings[:admin]
+      sign_in FactoryBot.create(:admin) # Using factory bot as an example
     end
   end
 
-  def login_admin
-    # Before each test, create and login the user
+  def login_user
     before(:each) do
-      @request.env['devise.mapping'] = Devise.mappings[:user]
-      sign_in FactoryBot.create(:user, :admin)
+      @request.env["devise.mapping"] = Devise.mappings[:user]
+      user = FactoryBot.create(:user)
+      sign_in user
     end
   end
 end

@@ -1,9 +1,10 @@
 class TweetsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :set_tweet, only: %i[show edit update destroy]
+  before_action :authenticate_user!, except: %i[show]
 
   def index
     @tweets = Tweet.all.order('created_at DESC')
-    authorize @tweets
+    # authorize @tweets
     @tweet = current_user.tweets.new
   end
 
@@ -24,7 +25,7 @@ class TweetsController < ApplicationController
   # POST /tweets
   # POST /tweets.json
   def create
-    @tweet = current_user.tweets.build(tweet_params)
+    @tweet = Tweet.new(tweet_params.merge(user: current_user))
     authorize @tweet
 
     respond_to do |format|
@@ -71,6 +72,6 @@ class TweetsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def tweet_params
-    params.require(:tweet).permit(:body, :user_id)
+    params.require(:tweet).permit(:body)
   end
 end

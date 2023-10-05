@@ -41,10 +41,12 @@ group :development, :test do
   gem 'debug', platforms: %i[ mri mingw x64_mingw ]
   gem 'pry'
   gem 'pry-stack_explorer'
-  gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'dotenv-rails', '~> 2.8', '>= 2.8.1'
+  %w[rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
+    gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
+  end
 end
 
 group :development do
@@ -55,5 +57,6 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem 'capybara'
   gem 'selenium-webdriver'
+  gem 'database_cleaner'
 end
 

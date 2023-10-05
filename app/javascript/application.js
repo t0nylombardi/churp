@@ -1,5 +1,6 @@
 import "@hotwired/turbo-rails"
 import "./controllers"
+import "./channels"
 import consumer from './channels/consumer'
 import CableReady from "cable_ready"
 import mrujs from "mrujs";
@@ -10,3 +11,5 @@ mrujs.start({
     new CableCar(CableReady)
   ]
 })
+
+$(document).on('turbolinks:load', function(){ $.rails.refreshCSRFTokens(); });

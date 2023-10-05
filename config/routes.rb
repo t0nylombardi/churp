@@ -1,14 +1,16 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  
-  authenticate :user, lambda { |u| u.admin? } do
+
+  authenticate :user, ->(u) { u.admin? } do
     mount Sidekiq::Web => '/sidekiq'
   end
 
-  resources :tweets, excep: [:edit, :update]
+  resources :tweets, excep: %i[edit update]
   resources :profiles
 
   devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
+  resources :users
+
   root to: 'tweets#index'
 end

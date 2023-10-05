@@ -1,5 +1,6 @@
 <% flash.each do |type, message| %>
   <div class="<%= flash_classes(type) %>">
     <%= message %>
+    <%= alert %>
   </div>
 <% end %>

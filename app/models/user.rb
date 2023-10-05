@@ -10,8 +10,50 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable,
          :omniauthable, omniauth_providers: %i[github]
 
-  has_one :profile
+  has_one :profile, dependent: :destroy
   has_many :tweets
+
+  validate :password_complexity
+  validates :email,
+            presence: true,
+            uniqueness: { case_sensitive: false }
+  validates :username,
+            presence: true,
+            length: { minimum: 2 },
+            uniqueness: { case_sensitive: false }
+
+
+  # DEVISE-specific things
+  # Devise override for logging in with username or email
+  # attr_writer :login
+
+  # def login
+  #   @login || username || email
+  # end
+
+  def password_complexity
+    # Regexp extracted from https://stackoverflow.com/questions/19605150/regex-for-password-must-contain-at-least-eight-characters-at-least-one-number-a
+    return if password.blank? || password =~ /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
+
+    errors.add :password, 'Complexity requirement not met. Length should be 8-70 characters and include: 1 uppercase, 1 lowercase, 1 digit and 1 special character'
+  end
+
+  # Use :login for searching username and email
+  # def self.find_for_database_authentication(warden_conditions)
+  #   conditions = warden_conditions.dup
+  #   login = conditions.delete(:login)
+  #   where(conditions).where([
+  #     "lower(username) = :value OR lower(email) = :value",
+  #     { value: login.strip.downcase },
+  #   ]).first
+  # end
+
+  def for_display
+    {
+      email:,
+      id:
+    }
+  end
 
   def self.from_omniauth(auth)
     where(provider: auth.provider, uid: auth.uid).first_or_create do |user|

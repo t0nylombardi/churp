@@ -3,27 +3,39 @@
 #
 # Examples:
 #
-#   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
-#   Character.create(name: "Luke", movie: movies.first)
+#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
+#   Character.create(name: 'Luke', movie: movies.first)
+Faker::Config.locale = 'en'
 
-# admin
-user = User.create!(
-  email: 'admin@admin.com',
-  password: 'Passw0rd1!',
-  password_confirmation: 'Passw0rd1!',
-  role: 'admin'
-)
+Tweet.destroy_all
+User.destroy_all
+Profile.destroy_all
 
+# Create users
 0.upto(10) do |_i|
-  user = User.create!(
+  role = %i[admin basic].sample
+  user = User.create(
     email: Faker::Internet.email,
     password: 'Passw0rd1!',
-    password_confirmation: 'Passw0rd1!'
+    password_confirmation: 'Passw0rd1!',
+    username: "@#{Faker::Internet.username(specifier: 8)}",
+    role:
   )
+  user.save!
+  user.create_profile(
+    first_name: Faker::Name.first_name,
+    last_name: Faker::Name.last_name,
+    description: Faker::Lorem.sentence(word_count: 20),
+    website: "https://#{Faker::Internet.domain_name}",
+    birth_date: Faker::Date.birthday(min_age: 18, max_age: 65)
+  )
+  puts "Created user: #{user.email}"
+end
 
-  user.tweets.create!(
-    body: Faker::Lorem.sentence(word_count: 3,
-                                supplemental: false,
-                                random_words_to_add: 4)
+100.times do
+  tweet = Tweet.create(
+    body: Faker::Lorem.sentence(word_count: 3),
+    user_id: User.all.sample.id
   )
+  puts "Created tweet: #{tweet.id}"
 end

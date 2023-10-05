@@ -8,11 +8,11 @@ class TweetPolicy < ApplicationPolicy
   end
 
   def create?
-    current_user.admin?
+    # current_user.admin?
   end
 
   def index?
-    current_user.admin?
+    # current_user.admin?
   end
 
   def show?
