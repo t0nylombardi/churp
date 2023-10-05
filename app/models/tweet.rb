@@ -1,6 +1,8 @@
 class Tweet < ApplicationRecord
   belongs_to :user
 
+  validates :body, presence: true
+
   after_create :broadcast_tweet
 
   private

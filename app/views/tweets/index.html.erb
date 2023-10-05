@@ -1,6 +1,6 @@
 <!-- Left -->
 <div class="w-68 xs:w-88 xl:w-275 h-screen">
-  <div class="flex flex-col h-screen xl:pr-3 fixed overflow-y-auto w-68 xs:w-88 xl:w-275">
+  <div class="flex flex-col h-screen xl:pr-3 fixed w-68 xs:w-88 xl:w-275 scrollbar-hide">
     
     <!-- Logo -->
     <a class="flex my-2 justify-center xl:justify-start" href="#">
@@ -21,24 +21,28 @@
 <!-- /Left -->
 
 <!-- Middle -->
-<div class="w-full sm:w-600 h-screen">
+<div class="w-full sm:w-600 h-screen scrollbar-hide">
   
   <%= render 'shared/header'%>
 
-  <%= render 'form'%>
+  <%= render 'form', tweet: @tweet %>
 
   <!-- Timeline -->
 
   <!-- New Tweets -->
-  <div class="border-b border-gray-200 dark:border-dim-200 bg-gray-50 dark:bg-dim-300 py-2 border-l border-r">
-    <div class="flex flex-shrink-0 items-center justify-center py-4 bg-white dark:bg-dim-900 border-b border-t border-gray-200 dark:border-dim-200 hover:bg-gray-50 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out text-blue-400 text-sm">
-      Show 9 Tweets
+  <div data-controller="tweets">
+    <div class="border-b border-gray-200 dark:border-dim-200 bg-gray-50 dark:bg-dim-300 py-2 border-l border-r">
+      <div class="flex flex-shrink-0 items-center justify-center py-4 bg-white dark:bg-dim-900 border-b border-t border-gray-200 dark:border-dim-200 hover:bg-gray-50 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out text-blue-400 text-sm">
+        <button class="hidden" 
+          data-tweets-target="notification" 
+          data-action="click->tweets#loadNewTweets"></button>
+      </div>
     </div>
+    <!-- /New Tweets -->
+    <% @tweets.each do |tweet| %>
+      <%= render 'tweet', tweet: tweet %>
+    <% end %>
   </div>
-  <!-- /New Tweets -->
-  <% @tweets.each do |tweet| %>
-    <%= render 'tweet', tweet: tweet %>
-  <% end %>
 
   <!-- Timeline Notification -->
   <div lass="border-b border-gray-200 dark:border-dim-200 bg-gray-50 dark:bg-dim-300 py-2 border-l border-r">

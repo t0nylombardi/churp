@@ -1,13 +1,15 @@
-mport { Controller } from "@hotwired/stimulus";
+import { Controller } from "@hotwired/stimulus";
 
 // Connects to data-controller="tweets"
 export default class extends Controller {
   static targets = ["container", "notification"];
   connect() {
     this.newTweets = [];
-
+    console.log("Connecting to data-controller=")
+    
     window.addEventListener("newTweet", (e) => {
-      console.log(e.detail);
+      // console.log("New Tweet")
+      // console.log(e.detail);
       this.newTweets.push(e.detail);
       this.showNotification();
     });
@@ -16,12 +18,14 @@ export default class extends Controller {
     window.removeEventListener("newTweet", this.showNotification);
   }
   showNotification() {
+    console.log("show: ", this.newTweets.length)
     this.notificationTarget.style.display = "block";
     this.notificationTarget.innerText = `Load ${this.newTweets.length} new Tweets`;
   }
 
   loadNewTweets() {
     this.newTweets.forEach((tweet) => {
+      console.log("loading new tweet: " + tweet)
       // Convert the HTML string into a node
       const parser = new DOMParser();
       const html = parser.parseFromString(tweet, "text/html");
