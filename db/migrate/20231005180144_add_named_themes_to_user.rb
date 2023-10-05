@@ -1,4 +1,4 @@
-class AddNamesThemesToUser < ActiveRecord::Migration[7.0]
+class AddNamedThemesToUser < ActiveRecord::Migration[7.0]
   def change
     add_column :users, :username, :string, index: true, unique: true
     add_column :users, :display_name, :string, index: true

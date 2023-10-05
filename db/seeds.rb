@@ -22,6 +22,7 @@ Profile.destroy_all
     role:
   )
   user.save!
+
   user.create_profile(
     first_name: Faker::Name.first_name,
     last_name: Faker::Name.last_name,

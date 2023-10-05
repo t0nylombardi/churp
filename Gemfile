@@ -38,13 +38,6 @@ group :development, :test do
   gem 'pry-stack_explorer'
   gem 'factory_bot_rails'
   gem 'faker'
-<<<<<<< HEAD
-  gem 'dotenv-rails', '~> 2.8', '>= 2.8.1'
-  %w[rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
-    gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
-  end
-=======
->>>>>>> parent of 002b2ff (add pundit and hotwire/stimulus)
 end
 
 group :development do

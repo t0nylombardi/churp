@@ -11,7 +11,7 @@ npm rebuild esbuild && yarn
 
 bundle
 
-if [[ -f .db-created ]]; then
+if ! [[ -f .db-created ]]; then
   bin/rails db:reset
   touch .db-created
 else

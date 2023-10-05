@@ -37,7 +37,7 @@
   </div>
   <!-- /New Tweets -->
   <% @tweets.each do |tweet| %>
-    <%= render 'tweet' %>
+    <%= render 'tweet', tweet: tweet %>
   <% end %>
 
   <!-- Timeline Notification -->

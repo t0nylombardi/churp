@@ -1,17 +1,8 @@
 class TweetsController < ApplicationController
-<<<<<<< HEAD
-  before_action :set_tweet, only: %i[show edit update destroy]
-  before_action :authenticate_user!, except: %i[show]
-
-  def index
-    @tweets = Tweet.all.order('created_at DESC')
-    # authorize @tweets
-=======
   before_action :authenticate_user!
   
   def index
     @tweets = Tweet.all.order('created_at DESC')
->>>>>>> parent of 002b2ff (add pundit and hotwire/stimulus)
     @tweet = current_user.tweets.new
   end
 
@@ -32,12 +23,7 @@ class TweetsController < ApplicationController
   # POST /tweets
   # POST /tweets.json
   def create
-<<<<<<< HEAD
-    @tweet = Tweet.new(tweet_params.merge(user: current_user))
-    authorize @tweet
-=======
     @tweet = current_user.tweets.build(tweet_params)
->>>>>>> parent of 002b2ff (add pundit and hotwire/stimulus)
 
     respond_to do |format|
       if @tweet.save
