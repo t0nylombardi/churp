@@ -9,8 +9,6 @@ Rails.application.routes.draw do
   resources :tweets, excep: %i[edit update]
   resources :profiles
 
-  devise_for :users, controllers: { omniauth_callbacks: 'users/omniauth_callbacks' }
-  resources :users
-
+  devise_for :users
   root to: 'tweets#index'
 end
