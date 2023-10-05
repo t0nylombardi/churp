@@ -1,24 +1,11 @@
-# README
+# Chrup / Twitter clone
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+### runngin the app
 
-Things you may want to cover:
+this was built using docker. 
 
-* Ruby version
+`cd churp`
 
-* System dependencies
+`cp .env.sample .env`
 
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+run `docker-compose up --build`
