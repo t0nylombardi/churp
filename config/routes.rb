@@ -6,7 +6,9 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => '/sidekiq'
   end
 
+  get '/tweet/:id/like', to: 'likes#create', as: 'create_like'
   resources :tweets, excep: %i[edit update]
+
   resources :profiles
 
   devise_for :users
