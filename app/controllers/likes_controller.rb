@@ -2,7 +2,6 @@ class LikesController < ApplicationController
   before_action :find_tweet
 
   def create
-    puts "\n\n Creating like \n\n"
     if already_liked?
       flash[:notice] = "You can't like more than once"
     else
@@ -26,7 +25,9 @@ class LikesController < ApplicationController
   end
 
   def already_liked?
-    Like.where(user_id: current_user.id,
-               tweet_id: params[:id]).exists?
+    # set true to test for now
+    true
+    # Like.where(user_id: current_user.id,
+    #            tweet_id: params[:id]).exists?
   end
 end

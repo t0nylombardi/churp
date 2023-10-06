@@ -1,6 +1,7 @@
 class TweetsController < ApplicationController
   before_action :authenticate_user!
   before_action :authenticate_user!, except: %i[ show ]
+  before_action :set_tweet, only: %i[ show edit update destroy like unlike ]
   
   def index
     @tweets = Tweet.all.order('created_at DESC')
@@ -61,11 +62,25 @@ class TweetsController < ApplicationController
     end
   end
 
+  def like
+    current_user.likes.create(likeable: @tweet)
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+        'like',
+        partial: 'tweets/likes',
+        locals: { tweet: @tweet }
+        )
+      end
+      format.html { edirect_to tweets_path }
+    end
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
   def set_tweet
-    @tweet = tweet.find(params[:id])
+    @tweet = Tweet.find(params[:id])
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.

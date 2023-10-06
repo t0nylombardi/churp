@@ -8,5 +8,5 @@ class User < ApplicationRecord
 
   has_many :tweets
   has_many :likes, dependent: :destroy
-  has_one :profile
+  has_one :profile, dependent: :destroy
 end
