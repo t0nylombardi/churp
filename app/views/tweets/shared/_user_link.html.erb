@@ -1,0 +1,19 @@
+<div class="user-link flex flex-shrink-0 p-4 pb-0">
+
+  <div class="flex items-top">
+    <div class="user-pic">
+      <%= image_tag("https://placebeard.it/100x100", class: 'inline-block h-9 w-9 rounded-full') %>
+    </div>
+
+    <div class="ml-3">
+      <p class="flex items-center text-base leading-6 font-medium text-gray-800 dark:text-white">
+        <%= tweet.user.profile.name %>
+
+        <span class="ml-1 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
+          <%= "@JoeBiden . #{tweet.created_at.strftime("%b  %-d")}" %>
+        </span>
+      </p>
+    </div>
+
+  </div>
+</div>

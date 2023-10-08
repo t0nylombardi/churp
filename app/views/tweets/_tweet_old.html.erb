@@ -1,8 +1,5 @@
-  <div 
-    data-controller="show_tweet"
-    data-action="click->show_tweet#show"
-    data-show_tweet-url-value="<%= show_tweet_path(current_user, tweet) %>"
-    class="z-0 tweet-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
+<%= link_to show_tweet_path(current_user, tweet) do %>
+  <div class="tweet-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
     <!-- link -->
     <%= render 'tweets/shared/user_link', tweet: tweet %>
 
@@ -16,7 +13,7 @@
         <img class="rounded-2xl" src=<%= url_for(tweet.churp_pic) %>/>
       <% end %>
 
-        <div class="z-20 flex items-center justify-center">
+        <div class="flex items-center justify-center">
 
           <%# Comments %>
           <%= render 'tweets/shared/comments' %>
@@ -34,3 +31,5 @@
     </div>
 
   </div>
+
+<% end %>

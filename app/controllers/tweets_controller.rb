@@ -11,6 +11,7 @@ class TweetsController < ApplicationController
   # GET /tweets/1
   # GET /tweets/1.json
   def show
+    @user = User.friendly.find(params[:slug])
   end
 
   # GET /tweets/new
@@ -67,9 +68,9 @@ class TweetsController < ApplicationController
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: turbo_stream.replace(
-        'like',
-        partial: 'tweets/likes',
-        locals: { tweet: @tweet }
+          'like',
+          partial: 'tweets/shared/likes',
+          locals: { tweet: @tweet }
         )
       end
       format.html { edirect_to tweets_path }
@@ -80,7 +81,7 @@ class TweetsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_tweet
-    @tweet = Tweet.find(params[:id])
+    @tweet = Tweet.find(params[:id] || params[:tweet_id])
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.

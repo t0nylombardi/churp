@@ -4,9 +4,7 @@ import { Controller } from "@hotwired/stimulus";
 export default class extends Controller {
   static targets = ["container", "notification"];
   connect() {
-    this.newTweets = [];
-    console.log("Connecting to data-controller=")
-    
+    this.newTweets = [];    
     window.addEventListener("newTweet", (e) => {
       // console.log("New Tweet")
       // console.log(e.detail);
@@ -25,7 +23,6 @@ export default class extends Controller {
 
   loadNewTweets() {
     this.newTweets.forEach((tweet) => {
-      console.log("loading new tweet: " + tweet)
       // Convert the HTML string into a node
       const parser = new DOMParser();
       const html = parser.parseFromString(tweet, "text/html");

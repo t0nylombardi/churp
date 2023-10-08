@@ -1,6 +1,8 @@
-<div class="flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
+<div class="z-10 flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
   <%= turbo_frame_tag "like"  do %>
-    <%= link_to like_tweet_path(tweet), data: {turbo_method: :post} do %>
+    <%= link_to like_tweet_path(tweet), 
+        data: {turbo_method: :post}, 
+        class: 'z-10' do %>
       <div class="flex flex-row items-center">
         <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 mr-2">
           <g>
@@ -10,5 +12,5 @@
         <%= pluralize(tweet.likes.count, 'like') %>
       </div>
     <% end %>
-<% end %>
+  <% end %>
 </div>
