@@ -10,7 +10,7 @@
   <%= render 'post_comment', comment: @comment, tweet: @tweet %>
 
   <!-- comments -->
-  <% @tweet.comments.each do |comment| %>
+  <% @comments.each do |comment| %>
     <%= render 'comment', comment: comment, tweet: @tweet %>
   <% end %>
   <!-- /comments -->

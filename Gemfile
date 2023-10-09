@@ -25,7 +25,7 @@ gem 'sidekiq', '~> 6.5', '>= 6.5.4'
 gem 'stripe'
 gem 'bulma-rails', '~> 0.6.1'
 gem 'simple_form', '~> 5.2'
-gem 'erb_lint'
+gem 'pagy'
 
 gem 'tzinfo-data', platforms: %i[ mingw mswin x64_mingw jruby ]
 gem 'bootsnap', require: false

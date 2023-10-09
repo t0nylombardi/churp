@@ -1,0 +1,9 @@
+<%= turbo_stream.append "tweets" do %>
+  <%= render partial: "tweets", collection: @tweets %>
+<% end %>
+
+<% if @pagy.next.present? %>
+  <%= turbo_stream.replace "pagination" do %>
+    <%= turbo_frame_tag "pagination", src: posts_path(page: @pagy.next, format: :turbo_stream), loading: :lazy %>
+  <% end %>
+<% end %>

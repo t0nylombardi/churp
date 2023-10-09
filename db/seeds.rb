@@ -38,7 +38,7 @@ end
     body: Faker::Lorem.sentence(word_count: 3),
     user_id: User.all.sample.id
   )
-  25.times do
+  10.times do
     tweet.comments.create(
       content: Faker::Lorem.sentence(word_count: 20),
       user_id: User.all.sample.id

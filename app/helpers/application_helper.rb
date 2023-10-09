@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include Pagy::Frontend
+
   def flash_classes(flash_type)
     flash_base = "px-2 py-4 mx-auto font-sans font-medium text-center text-white"
     {

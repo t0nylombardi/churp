@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 
-// Connects to data-controller="tweets"
+// Connects to data-controller="new_tweets"
 export default class extends Controller {
   static targets = ["container", "notification"];
   connect() {

@@ -4,8 +4,13 @@ class TweetsController < ApplicationController
   before_action :set_tweet, only: %i[ show edit update destroy like ]
   
   def index
-    @tweets = Tweet.all.order('created_at DESC')
+    @pagy, @tweets = pagy_countless(Tweet.order(created_at: :desc), items: 15)
     @tweet = current_user.tweets.new
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
   # GET /tweets/1
@@ -13,6 +18,7 @@ class TweetsController < ApplicationController
   def show
     @user = User.friendly.find(params[:slug])
     @comment = current_user.comments.new
+    @comments = @tweet.comments.recent_comments
   end
 
   # GET /tweets/new

@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   end
   
   resources :tweets, excep: %i[edit update] do
+    collection do
+      post :index
+    end
     resources :comments
     post 'like', to: 'tweets#like' # /tweets/:id/like
   end

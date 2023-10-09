@@ -10,5 +10,5 @@ application.register("hello", HelloController)
 import ShowTweetController from "./show_tweet_controller"
 application.register("show_tweet", ShowTweetController)
 
-import TweetsController from "./tweets_controller"
-application.register("tweets", TweetsController)
+import NewTweetsController from "./new_tweets_controller"
+application.register("new_tweets", NewTweetsController)
