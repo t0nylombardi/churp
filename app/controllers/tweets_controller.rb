@@ -1,7 +1,7 @@
 class TweetsController < ApplicationController
   before_action :authenticate_user!
   before_action :authenticate_user!, except: %i[ show ]
-  before_action :set_tweet, only: %i[ show edit update destroy like unlike ]
+  before_action :set_tweet, only: %i[ show edit update destroy like ]
   
   def index
     @tweets = Tweet.all.order('created_at DESC')
@@ -12,6 +12,7 @@ class TweetsController < ApplicationController
   # GET /tweets/1.json
   def show
     @user = User.friendly.find(params[:slug])
+    @comment = current_user.comments.new
   end
 
   # GET /tweets/new

@@ -1,6 +1,6 @@
 <div class="z-10 flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
   <%= turbo_frame_tag "like"  do %>
-    <%= link_to like_tweet_path(tweet), 
+    <%= link_to tweet_like_path(tweet), 
         data: {turbo_method: :post}, 
         class: 'z-10' do %>
       <div class="flex flex-row items-center">

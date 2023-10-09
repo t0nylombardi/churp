@@ -2,11 +2,18 @@
 
 <!-- Middle -->
 <div class="w-full sm:w-600 h-screen scrollbar-hide">
-  
+
   <%= render 'shared/header', view: :show %>
 
-  
   <%= render 'show_tweet', tweet: @tweet %>
+
+  <%= render 'post_comment', comment: @comment, tweet: @tweet %>
+
+  <!-- comments -->
+  <% @tweet.comments.each do |comment| %>
+    <%= render 'comment', comment: comment, tweet: @tweet %>
+  <% end %>
+  <!-- /comments -->
 
 </div>
 <!-- /Middle -->

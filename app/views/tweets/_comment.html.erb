@@ -1,11 +1,11 @@
-  <div class="z-0 tweet-block border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
+<div class="z-0 tweet-block border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
     <!-- link -->
     <%= render 'tweets/shared/user_link', tweet: tweet %>
 
     <div class="pl-16">
 
       <p class="my-16 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
-        <%= tweet.body %>
+        <%= comment.content %>
       </p>
 
       <% if tweet.churp_pic.attached? %>
@@ -13,7 +13,5 @@
       <% end %>
 
       <%= render 'tweets/shared/share_icons', tweet: tweet %>
-
-    </div>
 
   </div>
