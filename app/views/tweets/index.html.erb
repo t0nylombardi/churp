@@ -19,11 +19,9 @@
       </div>
 
     </div>
-    
-    <div id="tweets">
-      <%= render @tweets %>
-      <%= render 'next_page' %>
-    </div>
+
+    <%= render @tweets %>
+    <%= render 'shared/next_page'%>
 
 
     <!-- Timeline Notification -->
@@ -32,6 +30,7 @@
 
   <!-- /Timeline -->
 </div>
+
 <!-- /Middle -->
 
 <%= render 'shared/right_side' %>

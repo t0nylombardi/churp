@@ -4,13 +4,10 @@ class TweetsController < ApplicationController
   before_action :set_tweet, only: %i[ show edit update destroy like ]
   
   def index
-    @pagy, @tweets = pagy_countless(Tweet.order(created_at: :desc), items: 15)
+    @pagy, @tweets = pagy(Tweet.order(created_at: :desc), items: 15)
     @tweet = current_user.tweets.new
 
-    respond_to do |format|
-      format.html
-      format.turbo_stream
-    end
+    render 'scrollable_list' if params[:page]
   end
 
   # GET /tweets/1
