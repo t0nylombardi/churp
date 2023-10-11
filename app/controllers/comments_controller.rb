@@ -21,7 +21,6 @@ class CommentsController < ApplicationController
 
   # POST /comments or /comments.json
   def create
-    logger.debug "\n\n\n #{comment_params} \n\n\n"
     @comment = current_user.comments.new(comment_params)
 
     respond_to do |format|

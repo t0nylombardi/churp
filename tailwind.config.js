@@ -18,8 +18,21 @@ module.exports = {
       xl: "1280px",
     },
     extend: {
+      keyframes: {
+        'fade-in-up': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(10px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          },
+        },
+      },
       animation: {
-        "spin-fast": "spin 0.7s linear infinite",
+        'spin-fast': 'spin 0.7s linear infinite',
+        'fade-in-up': 'fade-in-up 0.3s ease-in-out'
       },
       colors: {
         dim: {

@@ -20,6 +20,10 @@ class ApplicationController < ActionController::Base
     renderer.render(*args)
   end
 
+  def not_found_method
+    render file: Rails.public_path.join('404.html'), status: :not_found, layout: false
+  end
+
   protected
 
   def configure_permitted_parameters

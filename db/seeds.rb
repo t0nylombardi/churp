@@ -7,8 +7,8 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 Faker::Config.locale = 'en'
 
-Tweet.destroy_all
 User.destroy_all
+Tweet.destroy_all
 Profile.destroy_all
 
 # Create users
@@ -23,13 +23,13 @@ Profile.destroy_all
   )
   user.save!
 
-  user.create_profile(
+  user.build_profile(
     first_name: Faker::Name.first_name,
     last_name: Faker::Name.last_name,
     description: Faker::Lorem.sentence(word_count: 20),
     website: "https://#{Faker::Internet.domain_name}",
     birth_date: Faker::Date.birthday(min_age: 18, max_age: 65)
-  )
+  ).save!
   puts "Created user: #{user.email}"
 end
 

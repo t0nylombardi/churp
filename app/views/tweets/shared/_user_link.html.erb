@@ -7,10 +7,10 @@
 
     <div class="ml-3">
       <p class="flex items-center text-base leading-6 font-medium text-gray-800 dark:text-white">
-        <%= tweet.user.profile.name %>
+        <%= tweet.user.profile&.name %>
 
         <span class="ml-1 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
-          <%= "@JoeBiden . #{tweet.created_at.strftime("%b  %-d")}" %>
+          <%= "#{tweet.user.username} . #{tweet.created_at.strftime("%b  %-d")}" %>
         </span>
       </p>
     </div>
