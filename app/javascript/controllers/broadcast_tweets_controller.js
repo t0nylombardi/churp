@@ -4,9 +4,9 @@ import { Controller } from "@hotwired/stimulus";
 export default class extends Controller {
   static targets = ["container", "notification"];
   connect() {
+    console.log("New Tweet")
     this.newTweets = [];    
     window.addEventListener("newTweet", (e) => {
-      // console.log("New Tweet")
       // console.log(e.detail);
       this.newTweets.push(e.detail);
       this.showNotification();

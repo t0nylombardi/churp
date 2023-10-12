@@ -5,23 +5,23 @@
   
   <%= render 'shared/header', view: :index, name: 'Home' %>
 
-  <%= render 'new_tweet', tweet: @tweet %>
+  <%= render 'new_tweet', tweet: @tweet, formats: [:html] %>
 
   <!-- Timeline -->
 
-    <div data-controller="new_tweets">
+    <div data-controller="broad_tweets">
       <div class="border-b border-gray-200 dark:border-dim-200 bg-gray-50 dark:bg-dim-300 py-2 border-l border-r">
         <div class="flex flex-shrink-0 items-center justify-center py-4 bg-white dark:bg-dim-900 border-b border-t border-gray-200 dark:border-dim-200 hover:bg-gray-50 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out text-blue-400 text-sm">
           <button class="hidden" 
             data-tweets-target="notification" 
-            data-action="click->new_tweets#loadNewTweets"></button>
+            data-action="click->broadcast_tweets#loadNewTweets"></button>
         </div>
       </div>
 
     </div>
 
     <%= render @tweets %>
-    <%= render 'shared/next_page'%>
+    <%= render 'tweets/shared/next_page'%>
 
 
     <!-- Timeline Notification -->

@@ -7,11 +7,14 @@ import { application } from "./application"
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 
-import NewTweetsController from "./new_tweets_controller"
-application.register("new-tweets", NewTweetsController)
+import BroadcastTweetsController from "./broadcast_tweets_controller"
+application.register("broadcast_tweets", BroadcastTweetsController)
 
 import ProfileModalController from "./profile_modal_controller"
 application.register("profile-modal", ProfileModalController)
 
+import ResetFormController from "./reset_form_controller"
+application.register("reset-form", ResetFormController)
+
 import ShowTweetController from "./show_tweet_controller"
-application.register("show-tweet", ShowTweetController)
+application.register("show_tweet", ShowTweetController)

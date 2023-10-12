@@ -1,9 +1,10 @@
 <!-- Header -->
+<%#= render "shared/flash_notice" %>
 <div class="flex justify-between items-center border-b px-4 py-3 sticky top-0 bg-white dark:bg-dim-900 border-l border-r border-gray-200 dark:border-gray-700">
   <!-- Title -->
     <div class="">
     <% if view == :show %>
-      <a href="">
+      <%= link_to :back do %>
         <div class="flex justify-start">
           <div class="mx-2 text-2xl font-medium rounded-full text-blue-400 hover:bg-gray-800 hover:text-blue-300 float-right">
               <svg class="m-2 h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -16,7 +17,7 @@
             <h2 class=" text-xl font-bold text-white"><%= name %></h2>
           </div>
         </div>
-      </a>
+      <% end %>
       <hr class="border-gray-800">
     <% else %>
       <h2 class="text-gray-800 dark:text-gray-100 font-bold font-sm">

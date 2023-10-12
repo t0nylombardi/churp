@@ -1,11 +1,12 @@
-<%= link_to destroy_user_session_path, method: :delete,
-  class: "w-14 xl:w-full mx-auto mt-auto flex flex-row justify-between mb-5 rounded-full hover:bg-blue-50 dark:hover:bg-dim-800 p-2 cursor-pointer transition duration-350 ease-in-out" do %>
+<%= link_to destroy_user_session_path, 
+    data: { "turbo-method": :delete },
+    class: "w-14 xl:w-full mx-auto mt-auto flex flex-row justify-between mb-5 rounded-full hover:bg-blue-50 dark:hover:bg-dim-800 p-2 cursor-pointer transition duration-350 ease-in-out" do %>
   <div class="">
     <div class="flex flex-row">
       <img class="w-10 h-10 rounded-full" src="https://pbs.twimg.com/profile_images/1308769664240160770/AfgzWVE7_normal.jpg" alt="Joe Biden"/>
       <div class="hidden xl:block flex flex-col ml-2">
-        <h1 class="text-gray-800 dark:text-white font-bold text-sm"> Joe Biden </h1>
-        <p class="text-gray-400 text-sm">@JoeBiden</p>
+        <h1 class="text-gray-800 dark:text-white font-bold text-sm"> <%= current_user.profile.name%> </h1>
+        <p class="text-gray-400 text-sm"><%= current_user.username %></p>
       </div>
     </div>
 

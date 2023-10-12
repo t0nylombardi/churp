@@ -1,4 +1,4 @@
 <%= turbo_frame_tag "tweets-page-#{@pagy.page}" do %>
   <%= render partial: "tweet", collection: @tweets %>
-  <%= render partial: "shared/next_page" %>
+  <%= render partial: "tweets/shared/next_page" %>
 <% end %>
