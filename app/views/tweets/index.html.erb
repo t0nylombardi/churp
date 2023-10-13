@@ -5,7 +5,7 @@
   
   <%= render 'shared/header', view: :index, name: 'Home' %>
 
-  <%= render 'new_tweet', tweet: @tweet, formats: [:html] %>
+  <%= render 'new_tweet', tweet: @tweet %>
 
   <!-- Timeline -->
 
@@ -20,7 +20,11 @@
 
     </div>
 
-    <%= render @tweets %>
+    <%= turbo_frame_tag "tweets" do %>
+      <% @tweets.each do |tweet| %>
+        <%= render partial: "tweets/#{tweet.tweet_type}", locals: { tweet: tweet } %>
+      <% end %>
+    <% end %>
     <%= render 'tweets/shared/next_page'%>
 
 
