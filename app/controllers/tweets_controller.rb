@@ -80,6 +80,21 @@ class TweetsController < ApplicationController
     end
   end
 
+  def retweet
+    @tweet = Tweet.find(params[:id])
+    @retweet = current_user.tweets.new(tweet_id: @tweet.id)
+
+    respond_to do |format|
+      if @retweet.save
+        puts "\n\n\n #{@retweet.inspect} \n\n\n"
+        format.turbo_stream
+      else
+        puts "\n\n\n #{@retweet.errors.inspect} \n\n\n"
+        format.html { redirect_back fallback_location: @tweet, alert: "Could not retweet" }
+      end
+    end
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -89,6 +104,6 @@ class TweetsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def tweet_params
-    params.require(:tweet).permit(:body, :churp_pic)
+    params.require(:tweet).permit(:body, :tweet_id, :churp_pic)
   end
 end

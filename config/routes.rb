@@ -9,10 +9,10 @@ Rails.application.routes.draw do
 
   get ':slug/status/:tweet_id', to: 'tweets#show', as: 'show_tweet'
   resources :tweets, excep: %i[edit update] do
-    # collection do
-    #   post :index
-    # end
-    resources :comments
+    resources :comments, only: [:create, :destroy]
+    member do
+      post :retweet
+    end
     post 'like', to: 'tweets#like' # /tweets/:id/like
   end
   # get '/tweet/:id/like', to: 'likes#create', as: 'create_like'
