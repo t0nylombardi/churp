@@ -6,7 +6,7 @@ FactoryBot.define do
     username { "@#{Faker::Internet.username(specifier: 8)}" }
 
     after(:create) do |user|
-      user.profile ||= create(:profile, user: user)
+      user.profile ||= create(:profile, user:)
     end
   end
 

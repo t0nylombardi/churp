@@ -1,19 +1,20 @@
 module ProfilesHelper
+  DEFAULT_BG = 'https://images.unsplash.com/photo-1696506473875-a9398458ab54'
 
   def profile_background_image(profile_bg)
-    return 'background-image: url(https://images.unsplash.com/photo-1696506473875-a9398458ab54);' unless profile_bg.attached?
+    return "background-image: url(#{DEFAULT_BG});" unless profile_bg&.attached?
 
     "background-image: url(#{profile_bg};"
   end
 
   def form_profile_bg(profile_bg)
-    return 'https://images.unsplash.com/photo-1696506473875-a9398458ab54' unless profile_bg.attached?
+    return DEFAULT_BG unless profile_bg&.attached?
 
     rails_storage_proxy_url(profile_bg)
   end
 
   def profile_image(profile_pic)
-    return 'stanley-roper-profile.png' unless profile_pic.attached?
+    return 'stanley-roper-profile.png' unless profile_pic&.attached?
 
     profile_pic
   end
