@@ -31,6 +31,18 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    errors:
+      format: "%{message} for %{attribute}"
+      tweet:
+        attributes:
+          body:
+            blank: 'too short'
+            too_short: "Body is too short (minimum is 2 characters)"
+            too_long: "Body is too long (maximum is 331 characters)"
+      messages:
+        content_type_invalid: "The image has an invalid content type"
+        file_size_out_of_range: "size %{file_size} is not between required range"
   pundit:
     default: 'You cannot perform this action.'
     post_policy:

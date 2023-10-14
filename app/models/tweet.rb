@@ -6,7 +6,8 @@ class Tweet < ApplicationRecord
 
   has_one_attached :churp_pic
 
-  validates :body, length: { maximum: 300 }, allow_blank: false, unless: :tweet_id
+  validates :churp_pic, acceptable_image: true
+  validates :body, length: { maximum: 331 }, allow_blank: false, unless: :tweet_id
 
   after_create :broadcast_tweet
 
@@ -32,4 +33,5 @@ class Tweet < ApplicationRecord
       locals: { tweet: self }
     )
   end
+
 end
