@@ -1,10 +1,10 @@
-<!-- Post Tweet -->
-<%= simple_form_for(@tweet) do |f| %>
-<% if tweet.errors.any? %>
+<!-- Post churp -->
+<%= simple_form_for(@churp) do |f| %>
+<% if churp.errors.any? %>
     <div style="color: red">
-      <h2><%= pluralize(tweet.errors.count, "error") %> prohibited this tweet from being saved:</h2>
+      <h2><%= pluralize(churp.errors.count, "error") %> prohibited this churp from being saved:</h2>
       <ul>
-        <% tweet.errors.each do |error| %>
+        <% churp.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>
@@ -73,9 +73,9 @@
         </g>
       </svg>
     </a>
-    <%= f.button :submit, value: "tweet", class: "bg-blue-400 hover:bg-blue-500 text-white rounded-full py-1 px-4 ml-auto mr-1" %>
+    <%= f.button :submit, value: "churp", class: "bg-blue-400 hover:bg-blue-500 text-white rounded-full py-1 px-4 ml-auto mr-1" %>
     
   </div>
 </div>
 <% end %>
-<!-- /Post Tweet -->
+<!-- /Post churp -->

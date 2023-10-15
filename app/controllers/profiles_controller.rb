@@ -3,11 +3,11 @@ class ProfilesController < ApplicationController
   before_action :set_profile, only: %i[show update destroy]
 
   def index
-    @user_tweets = current_user.tweets
+    @user_churps = current_user.churps
   end
   
   def show
-    @user_tweets = current_user.tweets
+    @user_churps = current_user.churps
   end
 
   # profile /profiles or /profiles.json

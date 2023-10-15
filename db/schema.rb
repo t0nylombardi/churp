@@ -52,13 +52,23 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_202238) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "comments", force: :cascade do |t|
-    t.text "content", null: false
-    t.bigint "tweet_id", null: false
+  create_table "churps", force: :cascade do |t|
+    t.text "body"
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["tweet_id"], name: "index_comments_on_tweet_id"
+    t.integer "churp_id"
+    t.integer "rechurp_count", default: 0
+    t.index ["user_id"], name: "index_churps_on_user_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.text "content", null: false
+    t.bigint "churp_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["churp_id"], name: "index_comments_on_churp_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
@@ -93,16 +103,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_202238) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id"
-  end
-
-  create_table "tweets", force: :cascade do |t|
-    t.text "body"
-    t.bigint "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "tweet_id"
-    t.integer "retweet_count", default: 0
-    t.index ["user_id"], name: "index_tweets_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -140,9 +140,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_202238) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "comments", "tweets"
+  add_foreign_key "churps", "users"
+  add_foreign_key "comments", "churps"
   add_foreign_key "comments", "users"
   add_foreign_key "likes", "users"
   add_foreign_key "profiles", "users"
-  add_foreign_key "tweets", "users"
 end

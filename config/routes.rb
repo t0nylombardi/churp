@@ -7,17 +7,17 @@ Rails.application.routes.draw do
   #   mount Sidekiq::Web => '/sidekiq'
   # end
 
-  get ':slug/status/:tweet_id', to: 'tweets#show', as: 'show_tweet'
-  resources :tweets, excep: %i[edit update] do
+  get ':slug/status/:churp_id', to: 'churps#show', as: 'show_churp'
+  resources :churps, excep: %i[edit update] do
     resources :comments, only: [:create, :destroy]
     member do
-      post :retweet
+      post :rechurp
     end
-    post 'like', to: 'tweets#like' # /tweets/:id/like
+    post 'like', to: 'churps#like' # /churps/:id/like
   end
 
   resources :profiles
 
-  root to: 'tweets#index'
+  root to: 'churps#index'
   # match '*unmatched', to: 'application#not_found_method', via: :all
 end

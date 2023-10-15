@@ -8,7 +8,7 @@
 Faker::Config.locale = 'en'
 
 User.destroy_all
-Tweet.destroy_all
+Churp.destroy_all
 Profile.destroy_all
 
 # Create users
@@ -34,15 +34,15 @@ Profile.destroy_all
 end
 
 100.times do
-  tweet = Tweet.create(
+  churp = Churp.create(
     body: Faker::Lorem.sentence(word_count: 3),
     user_id: User.all.sample.id
   )
   10.times do
-    tweet.comments.create(
+    churp.comments.create(
       content: Faker::Lorem.sentence(word_count: 20),
       user_id: User.all.sample.id
     )
   end
-  puts "Created tweet: #{tweet.id}"
+  puts "Created churp: #{churp.id}"
 end

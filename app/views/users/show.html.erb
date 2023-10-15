@@ -3,22 +3,22 @@
   
   <%= render 'shared/header'%>
 
-  <%#= render 'form', tweet: @tweet %>
+  <%#= render 'form', churp: @churp %>
 
   <!-- Timeline -->
 
-  <!-- New Tweets -->
-  <div data-controller="tweets">
+  <!-- New churps -->
+  <div data-controller="churps">
     <div class="border-b border-gray-200 dark:border-dim-200 bg-gray-50 dark:bg-dim-300 py-2 border-l border-r">
       <div class="flex flex-shrink-0 items-center justify-center py-4 bg-white dark:bg-dim-900 border-b border-t border-gray-200 dark:border-dim-200 hover:bg-gray-50 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out text-blue-400 text-sm">
         <button class="hidden" 
-          data-tweets-target="notification" 
-          data-action="click->tweets#loadNewTweets"></button>
+          data-churps-target="notification" 
+          data-action="click->churps#loadNewchurps"></button>
       </div>
     </div>
-    <!-- /New Tweets -->
-    <% @tweets.each do |tweet| %>
-      <%= render 'tweet', tweet: tweet %>
+    <!-- /New churps -->
+    <% @churps.each do |churp| %>
+      <%= render 'churp', churp: churp %>
     <% end %>
   </div>
 
@@ -84,7 +84,7 @@
         <h2 class="font-bold text-md text-gray-800 dark:text-white">
           #FreePS5Monday
         </h2>
-        <p class="text-xs text-gray-400">29.7K Tweets</p>
+        <p class="text-xs text-gray-400">29.7K churps</p>
       </div>
       <!-- /Trending Topic -->
 
@@ -93,7 +93,7 @@
         <h2 class="font-bold text-md text-gray-800 dark:text-white">
           #BTSonGMA
         </h2>
-        <p class="text-xs text-gray-400">351K Tweets</p>
+        <p class="text-xs text-gray-400">351K churps</p>
       </div>
       <!-- /Trending Topic -->
 
@@ -102,7 +102,7 @@
         <h2 class="font-bold text-md text-gray-800 dark:text-white">
           #AstraZeneca
         </h2>
-        <p class="text-xs text-gray-400">52.7K Tweets</p>
+        <p class="text-xs text-gray-400">52.7K churps</p>
       </div>
       <!-- /Trending Topic -->
 

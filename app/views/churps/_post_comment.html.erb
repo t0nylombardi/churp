@@ -1,5 +1,5 @@
 <!-- Post comment -->
-<%= simple_form_for(:comment, url: tweet_comments_path(tweet), method: :post) do |f| %>
+<%= simple_form_for(:comment, url: churp_comments_path(churp), method: :post) do |f| %>
 <div class="border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
   <div class="flex flex-shrink-0 p-4 pb-0">
     <div class="w-12 flex items-top">
@@ -63,7 +63,7 @@
         </g>
       </svg>
     </a>
-    <%= f.button :submit, value: "tweet", class: "bg-blue-400 hover:bg-blue-500 text-white rounded-full py-1 px-4 ml-auto mr-1" %>
+    <%= f.button :submit, value: "churp", class: "bg-blue-400 hover:bg-blue-500 text-white rounded-full py-1 px-4 ml-auto mr-1" %>
     
   </div>
 </div>
