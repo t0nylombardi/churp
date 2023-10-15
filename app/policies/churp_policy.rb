@@ -1,10 +1,10 @@
-class TweetPolicy < ApplicationPolicy
-  attr_reader :current_user, :tweet
+class ChurpPolicy < ApplicationPolicy
+  attr_reader :current_user, :churp
 
-  def initialize(current_user, tweet)
+  def initialize(current_user, churp)
     super
     @current_user = current_user
-    @tweet = tweet
+    @churp = churp
   end
 
   def create?
@@ -16,7 +16,7 @@ class TweetPolicy < ApplicationPolicy
   end
 
   def show?
-    current_user.admin? || current_user.tweets.exists?(id: tweet.id)
+    current_user.admin? || current_user.churps.exists?(id: churp.id)
   end
 
   def update?

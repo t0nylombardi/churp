@@ -26,7 +26,7 @@ class CommentsController < ApplicationController
     respond_to do |format|
       if @comment.save
 
-        format.html { redirect_to tweet_path(params[:tweet_id]), notice: "Comment was successfully created." }
+        format.html { redirect_to churp_path(params[:churp_id]), notice: "Comment was successfully created." }
         format.json { render :show, status: :created, location: @comment }
       else
         puts "\n\n\n error: #{@comment.errors}"
@@ -70,6 +70,6 @@ class CommentsController < ApplicationController
     params
       .require(:comment)
       .permit(:content, :parent_id)
-      .merge(tweet_id: params[:tweet_id])
+      .merge(churp_id: params[:churp_id])
   end
 end

@@ -1,6 +1,6 @@
 import consumer from "./consumer"
 
-consumer.subscriptions.create("TweetsChannel", {
+consumer.subscriptions.create("ChurpsChannel", {
   connected() {
     // Called when the subscription is ready for use on the server
   },
@@ -11,7 +11,7 @@ consumer.subscriptions.create("TweetsChannel", {
 
   received(data) {
     // Called when there's incoming data on the websocket for this channel
-    const event = new CustomEvent("newTweet", { detail: data });
+    const event = new CustomEvent("newChurp", { detail: data });
     window.dispatchEvent(event);
   }
 });

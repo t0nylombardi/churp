@@ -1,6 +1,6 @@
-class TweetsChannel < ApplicationCable::Channel
+class ChurpsChannel < ApplicationCable::Channel
   def subscribed
-    stream_from 'tweets_channel'
+    stream_from 'churps_channel'
   end
 
   def unsubscribed
@@ -8,6 +8,6 @@ class TweetsChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    ActionCable.server.broadcast('tweets_channel', data)
+    ActionCable.server.broadcast('churps_channel', data)
   end
 end

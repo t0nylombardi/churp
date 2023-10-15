@@ -1,7 +1,7 @@
 require 'rails_helper'
 require_relative '../support/devise'
 
-RSpec.describe TweetsController, type: :controller do
+RSpec.describe ChurpsController, type: :controller do
   describe 'GET /' do
     let(:user) { create(:user) }
 
@@ -13,7 +13,7 @@ RSpec.describe TweetsController, type: :controller do
 
     describe 'GET #index' do
       it 'returns a success response' do
-        Tweet.create! valid_attributes
+        Churp.create! valid_attributes
         get :index, params: {}, session: valid_session
 
         expect(response).to be_successful

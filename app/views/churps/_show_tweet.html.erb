@@ -1,11 +1,11 @@
-<div id="<%= dom_id comment %>"class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
+  <div class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
     <!-- link -->
     <%= render 'churps/shared/user_link', churp: churp %>
 
     <div class="pl-16">
 
       <p class="my-16 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
-        <%= comment.content %>
+        <%= churp.body %>
       </p>
 
       <% if churp.churp_pic.attached? %>
@@ -13,5 +13,7 @@
       <% end %>
 
       <%= render 'churps/shared/share_icons', churp: churp %>
+
     </div>
-</div>
+
+  </div>

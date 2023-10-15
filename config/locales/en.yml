@@ -34,7 +34,7 @@ en:
   activerecord:
     errors:
       format: "%{message} for %{attribute}"
-      tweet:
+      churp:
         attributes:
           body:
             blank: 'too short'
