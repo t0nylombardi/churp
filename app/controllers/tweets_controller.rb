@@ -1,7 +1,8 @@
+# frozen_string_literal: true
 class TweetsController < ApplicationController
-  before_action :authenticate_user!, except: %i[ show ]
-  before_action :set_tweet, only: %i[ show edit update destroy like ]
-  
+  before_action :authenticate_user!, except: %i[show]
+  before_action :set_tweet, only: %i[show edit update destroy like retweet]
+
   def index
     @pagy, @tweets = pagy(Tweet.order(created_at: :desc), items: 15)
     @tweet = current_user.tweets.new
@@ -81,16 +82,14 @@ class TweetsController < ApplicationController
   end
 
   def retweet
-    @tweet = Tweet.find(params[:id])
     @retweet = current_user.tweets.new(tweet_id: @tweet.id)
+    @retweet.increment!(:retweet_count, 1)
 
     respond_to do |format|
       if @retweet.save
-        puts "\n\n\n #{@retweet.inspect} \n\n\n"
-        format.turbo_stream
+        format.html { redirect_to tweets_url }
       else
-        puts "\n\n\n #{@retweet.errors.inspect} \n\n\n"
-        format.html { redirect_back fallback_location: @tweet, alert: "Could not retweet" }
+        format.html { redirect_back fallback_location: @tweet, alert: 'Could not retweet' }
       end
     end
   end
