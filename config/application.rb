@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "boot"
+require_relative 'boot'
 
-require "rails/all"
+require 'rails/all'
+require_relative '../lib/middleware/view_pixel'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -21,5 +22,16 @@ module ChurpSocial
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    Bundler.require(*Rails.groups)
+
+    # Load dotenv only in development or test environment
+    if ['development', 'test'].include? ENV['RAILS_ENV']
+      Dotenv::Railtie.load
+    end
+
+    HOSTNAME = ENV['HOSTNAME']
+    config.middleware.use Middleware::ViewPixel
+    config.autoload_paths << "#{Rails.root}/lib"
   end
 end

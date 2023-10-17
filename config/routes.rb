@@ -19,5 +19,6 @@ Rails.application.routes.draw do
   resources :profiles
 
   root to: 'churps#index'
+  get '/rack-test', to: 'tests#index'
   # match '*unmatched', to: 'application#not_found_method', via: :all
 end

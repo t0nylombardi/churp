@@ -4,11 +4,11 @@
 
 import { application } from "./application"
 
+import BroadcastChurpsController from "./broadcast_churps_controller"
+application.register("broadcast-churps", BroadcastChurpsController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
-
-import BroadcastChurpsController from "./broadcast_churps_controller"
-application.register("broadcast_churps", BroadcastChurpsController)
 
 import ProfileModalController from "./profile_modal_controller"
 application.register("profile-modal", ProfileModalController)
@@ -17,4 +17,7 @@ import ResetFormController from "./reset_form_controller"
 application.register("reset-form", ResetFormController)
 
 import ShowChurpController from "./show_churp_controller"
-application.register("show_churp", ShowChurpController)
+application.register("show-churp", ShowChurpController)
+
+import ViewChurpsController from "./view_churps_controller"
+application.register("view-churps", ViewChurpsController)
