@@ -1,6 +1,7 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  mount Flipper::UI.app(Flipper) => '/flipper'
   devise_for :users
 
   # authenticate :user, ->(u) { u.admin? } do

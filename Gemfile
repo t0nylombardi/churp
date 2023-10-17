@@ -29,6 +29,11 @@ gem 'pagy'
 gem 'active_storage_validations'
 gem 'httparty', '~> 0.21.0'
 
+# feature flags
+gem 'flipper'
+gem 'flipper-active_record'
+gem 'flipper-ui'
+
 gem 'tzinfo-data', platforms: %i[ mingw mswin x64_mingw jruby ]
 gem 'bootsnap', require: false
 
