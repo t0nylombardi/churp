@@ -1,4 +1,4 @@
-  <%= turbo_frame_tag dom_id(churp) do %>
+  <%#= turbo_frame_tag dom_id(churp) do %>
   <div 
     data-controller="show_churp"
     data-action="click->show_churp#show"
@@ -27,12 +27,14 @@
 
           <%= render 'churps/shared/likes', churp: churp %>
 
+          <%# Number of views %>
+          <%= render 'churps/shared/analytics', churp: churp %>
+
           <%# Share %>
           <%= render 'churps/shared/share' %>
 
         </div>
 
     </div>
-
   </div>
-<% end %>
+<%# end %>

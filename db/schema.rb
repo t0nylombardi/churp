@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_14_202238) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_15_204744) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -138,6 +138,19 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_202238) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  create_table "views", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "churp_id", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.string "city"
+    t.string "state"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["churp_id"], name: "index_views_on_churp_id"
+    t.index ["user_id"], name: "index_views_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "churps", "users"
@@ -145,4 +158,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_14_202238) do
   add_foreign_key "comments", "users"
   add_foreign_key "likes", "users"
   add_foreign_key "profiles", "users"
+  add_foreign_key "views", "churps"
+  add_foreign_key "views", "users"
 end

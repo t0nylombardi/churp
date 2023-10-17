@@ -8,14 +8,14 @@ development:
   database: churp_development
   username: postgres
   password: postgres
-  host: db
+  host: localhost
 
 test:
   <<: *default
   database: churp_test
   username: postgres
   password: postgres
-  host: db
+  host: localhost
 
 production:
   <<: *default

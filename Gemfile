@@ -27,6 +27,7 @@ gem 'bulma-rails', '~> 0.6.1'
 gem 'simple_form', '~> 5.2'
 gem 'pagy'
 gem 'active_storage_validations'
+gem 'httparty', '~> 0.21.0'
 
 gem 'tzinfo-data', platforms: %i[ mingw mswin x64_mingw jruby ]
 gem 'bootsnap', require: false
@@ -38,8 +39,10 @@ group :development, :test do
   gem 'debug', platforms: %i[ mri mingw x64_mingw ]
   gem 'pry'
   gem 'pry-stack_explorer'
+  gem 'pry-nav'
   gem 'factory_bot_rails'
   gem 'faker'
+  gem 'dotenv-rails'
   %w[rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
     gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
   end
