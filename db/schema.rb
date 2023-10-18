@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_17_215454) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_17_222151) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -50,6 +50,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_17_215454) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "churp_hash_tags", force: :cascade do |t|
+    t.bigint "churp_id"
+    t.bigint "hash_tag_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["churp_id"], name: "index_churp_hash_tags_on_churp_id"
+    t.index ["hash_tag_id"], name: "index_churp_hash_tags_on_hash_tag_id"
   end
 
   create_table "churps", force: :cascade do |t|
@@ -97,6 +106,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_17_215454) do
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
+  end
+
+  create_table "hash_tags", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "likes", force: :cascade do |t|
