@@ -1,13 +1,8 @@
-<%= render 'shared/left_side', churp: @churp %>
-
-<!-- Middle -->
 <div class="w-full sm:w-600 h-screen scrollbar-hide">
   
   <%= render 'shared/header', view: :index, name: 'Home' %>
 
   <%= render 'new_churp', churp: @churp %>
-
-  <!-- Timeline -->
 
     <div data-controller="broadcast_churps">
       <div class="border-b border-gray-200 dark:border-dim-200 bg-gray-50 dark:bg-dim-300 py-2 border-l border-r">
@@ -17,7 +12,6 @@
             data-action="click->broadcast_churps#loadNewchurps"></button>
         </div>
       </div>
-
     </div>
 
     <%= turbo_frame_tag "churps" do %>
@@ -27,14 +21,6 @@
     <% end %>
     <%= render 'churps/shared/next_page'%>
 
-
-    <!-- Timeline Notification -->
     <%= render 'timeline_notication' %>
-    <!-- /Timeline Notification -->
 
-  <!-- /Timeline -->
 </div>
-
-<!-- /Middle -->
-
-<%= render 'shared/right_side' %>

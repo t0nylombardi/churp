@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   layout :layout_by_resource
 
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_hash_tags
 
   def layout_by_resource
     if devise_controller?
@@ -11,6 +12,10 @@ class ApplicationController < ActionController::Base
     else
       "application"
     end
+  end
+
+  def set_hash_tags
+    @popular_hashtags = HashTag.top_three
   end
 
   def self.render_with_signed_in_user(user, *args)
