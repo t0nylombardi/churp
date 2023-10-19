@@ -10,7 +10,7 @@ namespace :seed do
 
     Rake::Task['seed:destroy_all_records'].execute
     Rake::Task['seed:create_users'].execute(num_of_users: 10)
-    Rake::Task['seed:create_churps'].execute(num_of_churps: 200)
+    Rake::Task['seed:create_churps'].execute(num_of_churps: 50)
 
     message '--------------------------------------------------------------'
     message 'SUCCESS - populated DB'

@@ -34,10 +34,12 @@ gem 'flipper'
 gem 'flipper-active_record'
 gem 'flipper-ui'
 
-gem 'tzinfo-data', platforms: %i[ mingw mswin x64_mingw jruby ]
+gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 gem 'bootsnap', require: false
 
 gem 'image_processing', '~> 1.2'
+
+gem 'dotenv-rails', groups: %i[development test production]
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -47,7 +49,7 @@ group :development, :test do
   gem 'pry-nav'
   gem 'factory_bot_rails'
   gem 'faker'
-  gem 'dotenv-rails'
+  gem 'rubocop-rspec', '~> 2.24', '>= 2.24.1'
   %w[rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
     gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
   end
@@ -55,6 +57,8 @@ end
 
 group :development do
   gem 'web-console'
+  gem 'rubocop', '~> 1.57', '>= 1.57.1'
+  gem 'brakeman', '~> 6.0', '>= 6.0.1'
 end
 
 group :test do
