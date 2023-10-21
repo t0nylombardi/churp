@@ -12,7 +12,7 @@ npm rebuild esbuild && yarn
 bundle
 
 if [[ -f .db-created ]]; then
-  bin/rails db:migrate
+  bin/rails db:create db:migrate
   touch .db-created
 else
   bin/rails db:setup

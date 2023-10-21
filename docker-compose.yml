@@ -33,7 +33,8 @@ services:
     networks:
       - selenium
   app:
-    build: .
+    build:
+      context: .
     tty: true
     stdin_open: true
     volumes:

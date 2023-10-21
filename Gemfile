@@ -7,7 +7,7 @@ end
 
 ruby '3.2.1'
 
-gem 'rails', '~> 7.0.8'
+gem 'rails', '~> 7.1.1'
 gem 'sprockets-rails'
 gem 'pg', '~> 1.1'
 gem 'puma', '~> 5.0'
@@ -25,9 +25,11 @@ gem 'sidekiq', '~> 6.5', '>= 6.5.4'
 gem 'stripe'
 gem 'bulma-rails', '~> 0.6.1'
 gem 'simple_form', '~> 5.2'
+gem 'pundit', '~> 2.3', '>= 2.3.1'
 gem 'pagy'
 gem 'active_storage_validations'
 gem 'httparty', '~> 0.21.0'
+gem 'foreman', '~> 0.87.2'
 
 # feature flags
 gem 'flipper'
@@ -68,3 +70,9 @@ group :test do
   gem 'database_cleaner'
 end
 
+
+gem "dockerfile-rails", ">= 1.5", :group => :development
+
+gem "sentry-ruby", "~> 5.12"
+
+gem "sentry-rails", "~> 5.12"

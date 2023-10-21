@@ -1,9 +1,6 @@
-# frozen_string_literal: true
+require_relative "boot"
 
-require_relative 'boot'
-
-require 'rails/all'
-require_relative '../lib/middleware/view_pixel'
+require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -11,9 +8,8 @@ Bundler.require(*Rails.groups)
 
 module ChurpSocial
   class Application < Rails::Application
-    # config.active_job.queue_adapter = :sidekiq
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
+    config.load_defaults 7.1
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -23,15 +19,13 @@ module ChurpSocial
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
-    Bundler.require(*Rails.groups)
+    # Please, add to the `ignore` list any other `lib` subdirectories that do
+    # not contain `.rb` files, or that should not be reloaded or eager loaded.
+    # Common ones are `templates`, `generators`, or `middleware`, for example.
+    config.autoload_lib(ignore: %w[assets tasks middleware])
 
-    # Load dotenv only in development or test environment
-    if ['development', 'test'].include? ENV['RAILS_ENV']
-      Dotenv::Railtie.load
-    end
-
-    HOSTNAME = ENV['HOSTNAME']
-    config.middleware.use Middleware::ViewPixel
-    config.autoload_paths << "#{Rails.root}/lib"
+    # Autoload and also eager load lib.
+    # config.autoload_paths << config.root.join('lib')
+    # config.eager_load_paths << config.root.join('lib')
   end
 end
