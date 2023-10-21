@@ -28,20 +28,20 @@ jobs:
 
       - name: Run rubocop
         run: |
-          bin/rubocop --parallel
+          bundle exec rubocop --parallel
 
       - name: Run security checks
         run: |
-          bin/bundler-audit --update
-          bin/brakeman -q -w2
+          bundle exec bundler-audit --update
+          bundle exec brakeman -q -w2
 
       - name: Run reek
         run: |
-          bin/reek app config lib
+          bundle exec reek app config lib
 
       - name: Run reek
         run: |
-          bin/rails_best_practices .
+          bundle exec rails_best_practices .
 
   tests:
     name: Tests
