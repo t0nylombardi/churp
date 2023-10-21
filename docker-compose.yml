@@ -35,6 +35,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile.development
     tty: true
     stdin_open: true
     volumes:

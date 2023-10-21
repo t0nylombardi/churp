@@ -1,0 +1,25 @@
+inherit_from: .rubocop_todo.yml
+
+require:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  DisabledByDefault: false
+  NewCops: enable
+  TargetRubyVersion: 3.2.1
+  Exclude:
+    - Gemfile
+    - db/schema.rb
+    - node_modules/**/*
+    - vendor/**/*
+
+Metrics/MethodLength:
+ Max: 50
+ CountAsOne: ['array', 'hash', 'heredoc']
+
+Layout/FirstArgumentIndentation:
+  Exclude:
+    - spec/controllers/api/payments_controller_spec.rb

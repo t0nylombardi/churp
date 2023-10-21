@@ -45,13 +45,19 @@ gem 'dotenv-rails', groups: %i[development test production]
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem 'debug', platforms: %i[ mri mingw x64_mingw ]
+  gem 'debug', platforms: %i[mri mingw x64_mingw]
   gem 'pry'
   gem 'pry-stack_explorer'
-  gem 'pry-nav'
   gem 'factory_bot_rails'
+  gem 'pry-nav'
   gem 'faker'
-  gem 'rubocop-rspec', '~> 2.24', '>= 2.24.1'
+  gem 'reek', '~> 6.1', '>= 6.1.4'
+  gem 'rails_best_practices', '~> 1.23', '>= 1.23.2'
+  gem 'rubocop', '~> 1.57', '>= 1.57.1', require: false
+  gem 'rubocop-performance', '~> 1.12.0', require: false
+  gem 'rubocop-rails', '~> 2.12.0', require: false
+  gem 'rubocop-rake', '~> 0.6.0', require: false
+  gem 'rubocop-rspec', '~> 2.6.0', require: false
   %w[rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
     gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
   end
@@ -59,7 +65,6 @@ end
 
 group :development do
   gem 'web-console'
-  gem 'rubocop', '~> 1.57', '>= 1.57.1'
   gem 'brakeman', '~> 6.0', '>= 6.0.1'
 end
 
