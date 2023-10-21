@@ -1,5 +1,13 @@
 name: Tests
-on: [push, pull_request]
+on:
+  push:
+      branches:
+        - '*'
+        - '*/*'
+        - '**'
+    pull_request_target:
+      branches:
+        - master
 jobs:
   linters:
     name: Linters
