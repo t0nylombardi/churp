@@ -1,36 +1,84 @@
-FROM ruby:3.2.1-bullseye
-# Install apt based dependencies required to run Rails as
-# well as RubyGems. As the Ruby image itself is based on a
-# Debian image, we use apt-get to install those.
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    nano \
-    nodejs \
-    yarn
+# syntax = docker/dockerfile:1
 
-RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
-    apt-get install -y nodejs
+# Make sure RUBY_VERSION matches the Ruby version in .ruby-version and Gemfile
+ARG RUBY_VERSION=3.2.1
+FROM ruby:$RUBY_VERSION-bullseye as base
 
-ENV RAILS_ROOT /var/www/
+LABEL fly_launch_runtime="rails"
 
-RUN mkdir -p $RAILS_ROOT
+# Rails app lives here
+WORKDIR /rails
 
-WORKDIR $RAILS_ROOT
+# Set production environment
+ENV RAILS_ENV="production" \
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT="1"
 
-COPY Gemfile $RAILS_ROOT/Gemfile
-COPY Gemfile.lock $RAILS_ROOT/Gemfile.lock
-
-COPY package.json $RAILS_ROOT/package.json
-COPY yarn.lock $RAILS_ROOT/yarn.lock
+# Update gems and bundler
+RUN gem update --system --no-document && \
+    gem install -N bundler
 
 
-RUN gem install bundler -v 2.3.22 && bundle install --jobs 20 --retry 5
-RUN gem install foreman
-RUN yarn
+# Throw-away build stage to reduce size of final image
+FROM base as build
+
+# Install packages needed to build gems and node modules
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential curl git libpq-dev libvips node-gyp pkg-config python-is-python3
+
+# Install JavaScript dependencies
+ARG NODE_VERSION=19.8.1
+ARG YARN_VERSION=1.22.19
+ENV PATH=/usr/local/node/bin:$PATH
+RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
+    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
+    npm install -g yarn@$YARN_VERSION && \
+    rm -rf /tmp/node-build-master
+
+# Install application gems
+COPY --link Gemfile Gemfile.lock ./
+RUN bundle install && \
+    bundle exec bootsnap precompile --gemfile && \
+    rm -rf ~/.bundle/ $BUNDLE_PATH/ruby/*/cache $BUNDLE_PATH/ruby/*/bundler/gems/*/.git
+
+# Install node modules
+COPY --link .yarnrc package.json yarn.lock ./
+COPY --link .yarn/releases/* .yarn/releases/
+RUN yarn install --frozen-lockfile
+
+# Copy application code
+COPY --link . .
+
+# Precompile bootsnap code for faster boot times
+RUN bundle exec bootsnap precompile app/ lib/
+
+# Adjust binfiles to set current working directory
+RUN grep -l '#!/usr/bin/env ruby' /rails/bin/* | xargs sed -i '/^#!/aDir.chdir File.expand_path("..", __dir__)'
+
+# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
+RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
-RUN rm -rf tmp/*
+# Final stage for app image
+FROM base
+
+# Install packages needed for deployment
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y curl imagemagick libvips postgresql-client sudo gcc make libpq-dev && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Copy built artifacts: gems, application
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY --from=build /rails /rails
+
+# Run and own only the runtime files as a non-root user for security
+RUN useradd rails --create-home --shell /bin/bash && \
+    sed -i 's/env_reset/env_keep="*"/' /etc/sudoers && \
+    chown -R rails:rails db log storage tmp
+USER rails:rails
+
+# Entrypoint prepares the database.
+ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+
+# Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-ADD . /var/www/
