@@ -25,6 +25,7 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
+vender/*
 /public/assets
 
 # Ignore master key for decrypting credentials and more.
@@ -38,3 +39,7 @@
 .db-seeded
 .db-created
 .DS_Store
+
+.env
+.env*.local
+Dockerfile.production

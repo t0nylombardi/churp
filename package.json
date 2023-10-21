@@ -24,5 +24,6 @@
     "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.10"
-  }
+  },
+  "packageManager": "yarn@1.22.19"
 }
