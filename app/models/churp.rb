@@ -15,6 +15,8 @@ class Churp < ApplicationRecord
   after_create :broadcast_churp
   after_commit :create_hash_tags, on: :create
 
+  scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: {name: query}) }
+
   def churp_type
     if churp_id? && body?
       'quote-churp'

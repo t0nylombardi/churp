@@ -1,5 +1,25 @@
 module ChurpsHelper
 
+  def avatar_pic(profile)
+    profile_pic = profile&.profile_pic
+    return  profile_pic if profile_pic.attached?
+    return letter_avatar(profile) unless profile_pic.attached?
+
+    'stanley-roper-profile.png'
+  end
+
+  def letter_avatar(profile)
+    path = LetterAvatar.generate(profile.name, 400).sub('public/', '')
+    "#{churp_root_url}/#{path}"
+  end
+
+  def churp_root_url
+    Rails.application
+         .default_url_options
+         .values
+         .first
+  end
+
   def churp_div(view)
     if view == :churp
     <<-HTML
