@@ -25,7 +25,10 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
-vender/*
+## Environment normalization:
+/.bundle
+/vendor/bundle
+
 /public/assets
 /public/*
 
