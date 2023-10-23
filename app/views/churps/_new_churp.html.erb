@@ -1,15 +1,6 @@
 <!-- Post churp -->
 <%= simple_form_for(@churp) do |f| %>
-<% if churp.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(churp.errors.count, "error") %> prohibited this churp from being saved:</h2>
-      <ul>
-        <% churp.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+
 <div class="border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
   <div class="flex flex-shrink-0 p-4 pb-0">
     <div class="w-12 flex items-top">
