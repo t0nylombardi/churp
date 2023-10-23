@@ -20,7 +20,7 @@ Rails.application.routes.draw do
   resources :profiles
 
   root to: 'churps#index'
-  get '/rack-test', to: 'tests#index'
+  get 'search' => 'search#index'
 
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

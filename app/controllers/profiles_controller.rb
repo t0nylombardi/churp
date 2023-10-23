@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_profile, only: %i[show update destroy]
+  before_action :set_profile, only: %i[show update]
 
   def index
     @user_churps = current_user.churps

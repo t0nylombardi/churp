@@ -13,12 +13,6 @@ module ProfilesHelper
     rails_storage_proxy_url(profile_bg)
   end
 
-  def profile_image(profile_pic)
-    return 'stanley-roper-profile.png' unless profile_pic&.attached?
-
-    profile_pic
-  end
-
   def edit_profile_class
     'flex justify-center max-h-max whitespace-nowrap focus:outline-none focus:ring\
     max-w-max border bg-transparent border-blue-500 text-blue-500 hover:border-blue-800\

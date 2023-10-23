@@ -27,5 +27,9 @@ module ChurpSocial
     # Autoload and also eager load lib.
     # config.autoload_paths << config.root.join('lib')
     # config.eager_load_paths << config.root.join('lib')
+
+    # Enable rails to serve my assets
+    config.serve_static_assets = true
+    config.public_file_server.enabled = true
   end
 end

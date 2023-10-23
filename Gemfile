@@ -30,6 +30,8 @@ gem 'pagy'
 gem 'active_storage_validations'
 gem 'httparty', '~> 0.21.0'
 gem 'foreman', '~> 0.87.2'
+gem 'letter_avatar'
+gem "mini_magick"
 
 # feature flags
 gem 'flipper'

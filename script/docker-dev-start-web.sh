@@ -6,16 +6,16 @@ if [[ -f ./tmp/pids/server.pid ]]; then
   rm ./tmp/pids/server.pid
 fi
 
-rm -frv node_modules
+# rm -frv node_modules
 npm rebuild esbuild && yarn
 
 bundle
 
 if [[ -f .db-created ]]; then
-  bin/rails db:create db:migrate
-  touch .db-created
+  bin/rails db:migrate
 else
   bin/rails db:setup
+  touch .db-created
 fi
 
 if ! [[ -f .db-seeded ]]; then
