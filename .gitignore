@@ -30,7 +30,7 @@
 /vendor/bundle
 
 /public/assets
-/public/*
+/public/images/letter_avatars/
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
