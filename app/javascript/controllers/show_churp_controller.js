@@ -3,10 +3,12 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="show_churp
 export default class extends Controller {
-  static values = { url: String }
+  static values = { 
+    url: String 
+  }
   connect() {}
 
-  show() {
+  showChurp() {
     window.location.href = this.urlValue
   }
 }

@@ -4,7 +4,6 @@ import { Controller } from "@hotwired/stimulus";
 export default class extends Controller {
   static targets = ["container", "notification"];
   connect() {
-    console.log("New Churp")
     this.newChurps = [];    
     window.addEventListener("newChurp", (e) => {
       // console.log(e.detail);
@@ -16,12 +15,12 @@ export default class extends Controller {
     window.removeEventListener("newChurp", this.showNotification);
   }
   showNotification() {
-    console.log("show: ", this.newChurps.length)
     this.notificationTarget.style.display = "block";
     this.notificationTarget.innerText = `Load ${this.newChurps.length} new Churps`;
   }
 
   loadNewChurps() {
+
     this.newChurps.forEach((churp) => {
       // Convert the HTML string into a node
       const parser = new DOMParser();
