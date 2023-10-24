@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   # authenticate :user, ->(u) { u.admin? } do
   #   mount Sidekiq::Web => '/sidekiq'
   # end
-
+  
   get ':slug/status/:churp_id', to: 'churps#show', as: 'show_churp'
   resources :churps, excep: %i[edit update] do
     resources :comments, only: [:create, :destroy]
