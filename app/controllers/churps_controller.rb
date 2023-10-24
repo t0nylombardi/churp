@@ -34,7 +34,8 @@ class ChurpsController < ApplicationController
 
     respond_to do |format|
       if @churp.save
-        format.html { redirect_to churps_path, notice: "churp was successfully created." }
+        
+        format.html { redirect_to root_path, notice: "churp was successfully created." }
         format.json { render :show, status: :created, location: @churp }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -77,7 +78,7 @@ class ChurpsController < ApplicationController
           locals: { churp: @churp }
         )
       end
-      format.html { edirect_to churps_path }
+      format.html { redirect_to churps_path }
     end
   end
 
