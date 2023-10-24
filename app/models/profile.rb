@@ -8,6 +8,7 @@ class Profile < ApplicationRecord
 
   belongs_to :user
 
+  validates :name, presence: true, length: { minimum: 3 }
   validates_length_of :description, maximum: 300
   validates_length_of :website, maximum: 255
 

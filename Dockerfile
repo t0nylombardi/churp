@@ -63,6 +63,8 @@ RUN bundle exec bootsnap precompile app/ lib/
 # Adjust binfiles to set current working directory
 RUN grep -l '#!/usr/bin/env ruby' /rails/bin/* | xargs sed -i '/^#!/aDir.chdir File.expand_path("..", __dir__)'
 
+RUN yarn build
+RUN yarn build:css
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
@@ -82,7 +84,7 @@ COPY --from=build /rails /rails
 # Run and own only the runtime files as a non-root user for security
 RUN useradd rails --create-home --shell /bin/bash && \
     sed -i 's/env_reset/env_keep="*"/' /etc/sudoers && \
-    chown -R rails:rails db log storage tmp
+    chown -R rails:rails db log storage tmp public
 USER rails:rails
 
 # Entrypoint prepares the database.

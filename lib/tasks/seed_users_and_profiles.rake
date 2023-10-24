@@ -2,7 +2,7 @@
 
 namespace :seed do
   # Populates users and profiles.
-  #   Api `rails 'db:populate_users:run'`
+  #   Api `rails 'db:create_users'`
   desc 'seed users and create respective profiles'
   task :create_users, [:num_of_users] => :environment do |_t, args|
     0.upto(args[:num_of_users].to_i) do |_i|

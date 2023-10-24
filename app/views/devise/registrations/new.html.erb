@@ -7,25 +7,22 @@
       <%= f.text_field :username, class: input_class %>
     </div>
 
-    <template data-nested-form-target="template">
       <%= f.fields_for :profile, Profile.new, child_index: 'NEW_RECORD' do |profile| %>
         <div class="mb-6">
           <%= profile.label :name, class: label_class %>
           <%= profile.text_field :name, class: input_class %>
         </div>
       <% end %>
-    </template>
+    
 
     <%= f.fields_for :profile do |profile| %>
       <div class="mb-6">
-        <%= profile.label :name, class: label_class %>
+        <div class="field_with_errors">
+        <%= profile.label "Full Name", class: label_class, required: true %>
         <%= profile.text_field :name, class: input_class %>
-      </div>
+        </div>
+      </div> 
     <% end %>
-
-    <!-- Inserted elements will be injected before that target. -->
-    <div data-nested-form-target="target"></div>
-    <button type="button" data-action="nested-form#add">Add name</button>
 
     <div class="mb-6">
       <%= f.label :email, class: label_class %>

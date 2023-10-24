@@ -9,6 +9,7 @@ namespace :seed do
     message "Have no fears. This process is idempotent.\n\n"
 
     Rake::Task['seed:destroy_all_records'].execute
+    Rake::Task['seed:create_admin'].execute
     Rake::Task['seed:create_users'].execute(num_of_users: 10)
     Rake::Task['seed:create_churps'].execute(num_of_churps: 50)
 
