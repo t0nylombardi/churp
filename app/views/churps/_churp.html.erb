@@ -1,7 +1,5 @@
-  <%#= turbo_frame_tag dom_id(churp) do %>
   <div 
-    data-controller="show_churp"
-    data-action="click->show_churp#show"
+    data-controller="show-churp"
     data-show-churp-url-value="<%= show_churp_path(churp.user, churp) %>"
     class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
     <!-- link -->
@@ -9,7 +7,9 @@
 
     <div class="pl-16">
 
-      <p class="my-16 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
+      <p
+      data-action="click->show-churp#showChurp" 
+      class="my-16 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
         <%= churp.body %>
       </p>
 
@@ -37,4 +37,3 @@
 
     </div>
   </div>
-<%# end %>
