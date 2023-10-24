@@ -15,12 +15,12 @@ module ProfilesHelper
 
   def edit_profile_class
     'flex justify-center max-h-max whitespace-nowrap focus:outline-none focus:ring\
-    max-w-max border bg-transparent border-blue-500 text-blue-500 hover:border-blue-800\
+    max-w-max border bg-transparent border-vividSkyBlue text-vividSkyBlue hover:border-cyan-600\
     items-center hover:shadow-lg font-bold py-2 px-4 rounded-full mr-0 ml-auto'
   end
 
   def profile_modal_class
-    'mx-2 text-2xl font-medium rounded-full text-blue-400 hover:bg-gray-800 hover:text-blue-300 float-right'
+    'mx-2 text-2xl font-medium rounded-full text-vividSkyBlue hover:bg-cyan-600 hover:text-blue-300 float-right'
   end
 
   def profile_form_input_class(options = {})

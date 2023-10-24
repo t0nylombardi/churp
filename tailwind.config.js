@@ -1,4 +1,4 @@
-const colors = require('tailwindcss/colors')
+// const colors = require('tailwindcss/colors')
 
 module.exports = {
   content: [
@@ -35,6 +35,14 @@ module.exports = {
         'fade-in-up': 'fade-in-up 0.3s ease-in-out'
       },
       colors: {
+        vividSkyBlue: "#1CCEED",
+        "citrine": "#EDD71C",
+        "cerise-pink": "#ED1C7A",
+        "twilight-lavender": "#98456A",
+        "cadet": {
+          800: "#3F6066",
+          900: "#44676E",
+        },
         dim: {
           50: "#5F99F7",
           100: "#5F99F7",

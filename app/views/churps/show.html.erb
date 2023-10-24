@@ -1,6 +1,3 @@
-<%= render 'shared/left_side', churp: @churp %>
-
-<!-- Middle -->
 <div class="w-full sm:w-600 h-screen scrollbar-hide">
 
   <%= render 'shared/header', view: :show, name: 'Post' %>
@@ -9,13 +6,9 @@
 
   <%= render 'post_comment', comment: @comment, churp: @churp %>
 
-  <!-- comments -->
   <% @comments.each do |comment| %>
     <%= render 'comments/comment', comment: comment, churp: @churp %>
   <% end %>
-  <!-- /comments -->
 
 </div>
-<!-- /Middle -->
 
-<%= render 'shared/right_side' %>
