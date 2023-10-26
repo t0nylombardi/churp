@@ -6,6 +6,8 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require_relative '../lib/churp/version'
+
 module ChurpSocial
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -25,7 +27,7 @@ module ChurpSocial
     config.autoload_lib(ignore: %w[assets tasks middleware])
 
     # Autoload and also eager load lib.
-    # config.autoload_paths << config.root.join('lib')
+    config.autoload_paths << config.root.join('lib')
     # config.eager_load_paths << config.root.join('lib')
 
     # Enable rails to serve my assets

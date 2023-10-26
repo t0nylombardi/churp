@@ -64,6 +64,9 @@ module.exports = {
         350: "350px",
         600: "600px",
       },
+      backgroundImage: {
+        'tos-image': "url('/images/steve-johnson-abstract.jpg')",
+      },
     },
   },
   plugins: [

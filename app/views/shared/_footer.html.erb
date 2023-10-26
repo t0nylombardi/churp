@@ -1,11 +1,12 @@
 <footer>
   <ul class="text-xs text-gray-500 my-4 mx-2">
     <li class="inline-block mx-2">
-      <a class="hover:underline" href="#">Terms of Service</a>
+      <%= link_to 'Terms of Service', terms_of_service_path, class: 'hover:underline' %>
     </li>
     <li class="inline-block mx-2">
-      <a class="hover:underline" href="#">Privacy Policy</a>
+      <%= link_to 'Privacy Policy', privacy_policy_path, class: 'hover:underline' %>
     </li>
+    <!-- TODO: finish pages
     <li class="inline-block mx-2">
       <a class="hover:underline" href="#">Cookie Policy</a>
     </li>
@@ -15,6 +16,10 @@
     <li class="inline-block mx-2">
       <a class="hover:underline" href="#">More</a>
     </li>
-    <li class="inline-block mx-2">© 2020 Twitter, Inc.</li>
+    -->
+    <p>
+      <li class="inline-block mx-2">© <%= Time.zone.now.year %> Churp</li>
+      <li class="inline-block mx-2 text-gray-400"><b><%= version %></li>
+    </p>
   </ul>
 </footer>
