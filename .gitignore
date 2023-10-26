@@ -47,3 +47,5 @@
 .env
 .env*.local
 Dockerfile.production
+
+/config/credentials/production.key
