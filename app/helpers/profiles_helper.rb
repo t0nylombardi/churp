@@ -1,16 +1,36 @@
 module ProfilesHelper
-  DEFAULT_BG = 'https://images.unsplash.com/photo-1696506473875-a9398458ab54'
+  DEFAULT_BG = '/images/rod-long-bg.jpeg'
 
   def profile_background_image(profile_bg)
     return "background-image: url(#{DEFAULT_BG});" unless profile_bg&.attached?
 
-    "background-image: url(#{rails_storage_proxy_url(profile_bg)};"
+    "background-image: url(\'#{profile_bg.url}\');"
   end
 
   def form_profile_bg(profile_bg)
     return DEFAULT_BG unless profile_bg&.attached?
 
     rails_storage_proxy_url(profile_bg)
+  end
+
+  def avatar_pic(profile)
+    profile_pic = profile&.profile_pic
+    return  profile_pic.url if profile_pic.attached?
+    return letter_avatar(profile) unless profile_pic.attached?
+
+    'stanley-roper-profile.png'
+  end
+
+  def letter_avatar(profile)
+    path = LetterAvatar.generate(profile.name, 400).sub('public/', '')
+    "#{churp_root_url}/#{path}"
+  end
+
+  def churp_root_url
+    Rails.application
+         .default_url_options
+         .values
+         .first
   end
 
   def edit_profile_class
