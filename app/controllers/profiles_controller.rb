@@ -2,6 +2,10 @@ class ProfilesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_profile, only: %i[show update]
 
+  before_action do
+    ActiveStorage::Current.url_options = { protocol: request.protocol, host: request.host, port: request.port }
+  end
+
   def index
     @user_churps = current_user.churps
   end
