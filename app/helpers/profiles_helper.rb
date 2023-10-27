@@ -4,7 +4,7 @@ module ProfilesHelper
   def profile_background_image(profile_bg)
     return "background-image: url(#{DEFAULT_BG});" unless profile_bg&.attached?
 
-    "background-image: url(\'#{profile_bg}\');"
+    "background-image: url(\'#{profile_bg.url}\');"
   end
 
   def form_profile_bg(profile_bg)
