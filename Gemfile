@@ -69,6 +69,7 @@ end
 group :development do
   gem 'web-console'
   gem 'brakeman', '~> 6.0', '>= 6.0.1'
+  gem 'annotate'
 end
 
 group :test do

@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: churps
+#
+#  id            :bigint           not null, primary key
+#  body          :text
+#  rechurp_count :integer          default(0)
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  churp_id      :integer
+#  user_id       :bigint           not null
+#
+# Indexes
+#
+#  index_churps_on_user_id  (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
+#
 class Churp < ApplicationRecord
   belongs_to :user
   belongs_to :churp, optional: true, dependent: :destroy

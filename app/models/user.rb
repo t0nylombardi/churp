@@ -1,5 +1,42 @@
 # frozen_string_literal: true
 
+# == Schema Information
+#
+# Table name: users
+#
+#  id                     :bigint           not null, primary key
+#  confirmation_sent_at   :datetime
+#  confirmation_token     :string
+#  confirmed_at           :datetime
+#  current_sign_in_at     :datetime
+#  current_sign_in_ip     :string
+#  display_name           :string
+#  email                  :string           default(""), not null
+#  encrypted_password     :string           default(""), not null
+#  failed_attempts        :integer          default(0), not null
+#  last_sign_in_at        :datetime
+#  last_sign_in_ip        :string
+#  locked_at              :datetime
+#  remember_created_at    :datetime
+#  reset_password_sent_at :datetime
+#  reset_password_token   :string
+#  role                   :integer
+#  sign_in_count          :integer          default(0), not null
+#  slug                   :string
+#  unconfirmed_email      :string
+#  unlock_token           :string
+#  username               :string
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#
+# Indexes
+#
+#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
+#  index_users_on_email                 (email) UNIQUE
+#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
+#  index_users_on_slug                  (slug) UNIQUE
+#  index_users_on_unlock_token          (unlock_token) UNIQUE
+#
 class User < ApplicationRecord
   extend FriendlyId
   friendly_id :username, use: :slugged
@@ -15,11 +52,38 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_one :profile, dependent: :destroy
 
+  has_many :active_relationships, dependent: :destroy,
+                                  class_name: 'Relationship',
+                                  foreign_key: 'follower_id'
+
+  has_many :passive_relationships, dependent: :destroy,
+                                   class_name: 'Relationship',
+                                   foreign_key: 'followed_id'
+
+  has_many :following, through: :active_relationships, source: :followed
+  has_many :followers, through: :passive_relationships, source: :follower
+
   accepts_nested_attributes_for :profile
 
   validates :username, :email, :password, presence: true
+  # TODO: Uniqueness validation should have a unique index on the database column.
   validates :username, :email, uniqueness: true
   validate :password_complexity
+
+  # Follows a user.
+  def follow(other_user)
+    active_relationships.create(followed_id: other_user.id)
+  end
+
+  # Unfollows a user.
+  def unfollow(other_user)
+    active_relationships.find_by(followed_id: other_user.id).destroy
+  end
+
+  # Returns true if the current user is following the other user.
+  def following?(other_user)
+    following.include?(other_user)
+  end
 
   private
 

@@ -1,5 +1,29 @@
 # frozen_string_literal: true
 
+# == Schema Information
+#
+# Table name: profiles
+#
+#  id          :bigint           not null, primary key
+#  birth_date  :datetime
+#  description :text
+#  first_name  :string
+#  last_name   :string
+#  theme       :integer          default(0)
+#  theme_color :integer          default(0)
+#  website     :string
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  user_id     :bigint           not null
+#
+# Indexes
+#
+#  index_profiles_on_user_id  (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
+#
 FactoryBot.define do
   factory :profile do
     first_name { Faker::Name.first_name }

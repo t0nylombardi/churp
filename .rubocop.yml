@@ -1,4 +1,4 @@
-inherit_from: .rubocop_todo.yml
+# inherit_from: .rubocop_todo.yml
 
 require:
   - rubocop-performance
@@ -16,9 +16,27 @@ AllCops:
     - node_modules/**/*
     - vendor/**/*
 
+## Disable most Metrics/*Length cops
+# Reason: those are often triggered and force significant refactors and
+# dosen't really improve the code quality.
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsblocklength
+Metrics/BlockLength:
+  Enabled: false
+  AllowedMethods: ['describe', 'context']
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsclasslength
+Metrics/ClassLength:
+  Enabled: false
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmethodlength
 Metrics/MethodLength:
- Max: 50
- CountAsOne: ['array', 'hash', 'heredoc']
+  Enabled: false
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmodulelength
+Metrics/ModuleLength:
+  Enabled: false
+
 
 Layout/FirstArgumentIndentation:
   Exclude:
