@@ -4,14 +4,14 @@
 
   <%= render 'new_churp', churp: @churp %>
 
-    <%= render 'notify_new_churps'%>
+    <%= render 'notify_new_churps' %>
 
     <%#= turbo_frame_tag "churps" do %>
-      <% @churps.each do |churp| %>
-        <%= render partial: "churps/#{churp.churp_type}", locals: { churp: churp } %>
+      <% @churps.each do |c| %>
+        <%= render partial: "churps/#{c.churp_type}", locals: { churp: c } %>
       <% end %>
     <%# end %>
-    <%= render 'churps/shared/next_page'%>
+    <%= render 'churps/shared/next_page' %>
 
     <%= render 'timeline_notication' %>
 

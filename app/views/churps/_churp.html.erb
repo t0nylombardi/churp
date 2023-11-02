@@ -8,8 +8,8 @@
     <div class="pl-16">
 
       <p
-      data-action="click->show-churp#showChurp" 
-      class="my-4 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
+        data-action="click->show-churp#showChurp" 
+        class="my-4 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
         <%= churp.body %>
       </p>
 
@@ -17,10 +17,10 @@
         <img class="rounded-2xl" src=<%= url_for(churp.churp_pic) %>/>
       <% end %>
 
-        <div class="z-20 flex items-center justify-center">
+        <div class="z-50 flex items-center justify-center">
 
           <%# Comments %>
-          <%= render 'churps/shared/comments' %>
+          <%= render 'churps/shared/comments', churp: churp %>
 
           <%# Rechurp %>
           <%= render 'churps/shared/rechurp_button', churp: churp %>
