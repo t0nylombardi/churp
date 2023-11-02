@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" class="dark antialiased">
+  <%= render "shared/head" %>
+  <body>
+    <%= content_for?(:content) ? yield(:content) : yield %>
+  </body>
+</html>
