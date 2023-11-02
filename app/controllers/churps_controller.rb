@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class ChurpsController < ApplicationController
-  before_action :authenticate_user!, except: %i[show]
-  before_action :set_churp, only: %i[show edit update destroy like rechurp]
+  before_action :authenticate_user!, except: %i(show)
+  before_action :set_churp, only: %i(show edit update destroy like rechurp)
 
   def index
     @pagy, @churps = pagy(Churp.order(created_at: :desc), items: 15)
@@ -34,12 +34,12 @@ class ChurpsController < ApplicationController
 
     respond_to do |format|
       if @churp.save
-        
-        format.html { redirect_to root_path, notice: "churp was successfully created." }
-        format.json { render :show, status: :created, location: @churp }
+
+        format.html { redirect_to root_path, notice: 'churp was successfully created.' }
+        format.json { render :show, status: 201, location: @churp }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @churp.errors, status: :unprocessable_entity }
+        format.html { render :new, status: 422 }
+        format.json { render json: @churp.errors, status: 422 }
       end
     end
   end
@@ -50,10 +50,10 @@ class ChurpsController < ApplicationController
     respond_to do |format|
       if @churp.update(churp_params)
         format.html { redirect_to @churp, notice: 'churp was successfully updated.' }
-        format.json { render :show, status: :ok, location: @churp }
+        format.json { render :show, status: 200, location: @churp }
       else
         format.html { render :edit }
-        format.json { render json: @churp.errors, status: :unprocessable_entity }
+        format.json { render json: @churp.errors, status: 422 }
       end
     end
   end
@@ -64,7 +64,7 @@ class ChurpsController < ApplicationController
     @churp.destroy
     respond_to do |format|
       format.html { redirect_to churps_url, notice: 'churp was successfully destroyed.' }
-      format.json { head :no_content }
+      format.json { head 204 }
     end
   end
 
@@ -73,7 +73,7 @@ class ChurpsController < ApplicationController
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream: turbo_stream.replace(
-          'like',
+          "like_#{@churp.id}",
           partial: 'churps/shared/likes',
           locals: { churp: @churp }
         )
@@ -83,8 +83,9 @@ class ChurpsController < ApplicationController
   end
 
   def rechurp
-    @rechurp = current_user.churps.new(churp_id: @churp.id)
-    @rechurp.increment!(:rechurp_count, 1)
+    @rechurp = current_user.churps.new(body: @churp.body, churp_id: @churp.id)
+    increment_count = @rechurp.rechurp_count + 1
+    @rechurp.update(rechurp_count: increment_count)
 
     respond_to do |format|
       if @rechurp.save

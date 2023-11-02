@@ -39,8 +39,6 @@ class Churp < ApplicationRecord
 
   def churp_type
     if churp_id? && body?
-      'quote-churp'
-    elsif churp_id?
       'rechurp'
     else
       'churp'

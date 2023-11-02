@@ -15,7 +15,7 @@ class LikesController < ApplicationController
 
   def update_like_text
     render turbo_stream:
-      turbo_stream.replace('like',
+      turbo_stream.replace("like_#{@churp.id}",
                            partial: 'churps/likes',
                            locals: { like: @churp.likes.count })
   end
@@ -25,9 +25,8 @@ class LikesController < ApplicationController
   end
 
   def already_liked?
-    # set true to test for now
-    true
-    # Like.where(user_id: current_user.id,
-    #            churp_id: params[:id]).exists?
+    true if Rails.env.development?
+    Like.exists?(user_id: current_user.id,
+                 churp_id: params[:id])
   end
 end

@@ -1,4 +1,4 @@
-<div class="user-link flex flex-shrink-0 p-4 pb-0">
+<div class="user-link flex flex-shrink-0 p-4 pb-0 z-50">
   <div class="flex items-top">
     <div class="user-pic">
       <%= image_tag(avatar_pic(churp.user.profile), 
@@ -7,10 +7,16 @@
 
     <div class="ml-3">
       <p class="flex items-center text-base leading-6 font-medium text-gray-800 dark:text-white">
-        <%= churp.user.profile&.name %>
+        <%= link_to profile_path(churp.user), class: 'hover:underline' do %>
+          <%= churp.user.profile&.name %>
+        <% end %>
 
         <span class="ml-1 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
-          <%= "#{churp.user.username} . #{churp.created_at.strftime("%b  %-d")}" %>
+          <%= link_to profile_path(churp.user), class: 'hover:underline' do %>
+            <%= "#{churp.user.username}" %> 
+          <% end %>
+          . 
+          <%= "#{churp.created_at.strftime("%b  %-d")}" %>
         </span>
       </p>
     </div>
