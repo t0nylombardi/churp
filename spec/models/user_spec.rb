@@ -17,7 +17,7 @@
 #  last_sign_in_at        :datetime
 #  last_sign_in_ip        :string
 #  locked_at              :datetime
-#  remember_buildd_at    :datetime
+#  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
 #  role                   :integer
@@ -26,7 +26,7 @@
 #  unconfirmed_email      :string
 #  unlock_token           :string
 #  username               :string
-#  buildd_at             :datetime         not null
+#  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #
 # Indexes

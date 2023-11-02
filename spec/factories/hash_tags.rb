@@ -9,6 +9,6 @@
 #
 FactoryBot.define do
   factory :hash_tag do
-    name { "MyString" }
+    name { "##{Faker::Lorem.word}" }
   end
 end

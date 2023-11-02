@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ProfilesHelper
   DEFAULT_BG = '/images/rod-long-bg.jpeg'
 
@@ -15,14 +17,15 @@ module ProfilesHelper
 
   def avatar_pic(profile)
     profile_pic = profile&.profile_pic
-    return  profile_pic.url if profile_pic.attached?
-    return letter_avatar(profile) unless profile_pic.attached?
+    return  profile_pic.url if profile_pic&.attached?
+    return letter_avatar(profile) unless profile_pic&.attached?
 
     'stanley-roper-profile.png'
   end
 
   def letter_avatar(profile)
-    path = LetterAvatar.generate(profile.name, 400).sub('public/', '')
+    name = profile.name || 'Sage Doe'
+    path = LetterAvatar.generate(name, 400).sub('public/', '')
     "#{churp_root_url}/#{path}"
   end
 
@@ -39,12 +42,27 @@ module ProfilesHelper
     items-center hover:shadow-lg font-bold py-2 px-4 rounded-full mr-0 ml-auto'
   end
 
+  def profile_button_class(error: nil)
+    "flex justify-center max-h-max whitespace-nowrap focus:outline-none focus:ring\
+    max-w-max border bg-transparent #{error ? error_colors : primary_colors}\
+    items-center hover:shadow-lg font-bold py-2 px-4 rounded-full mr-0 ml-auto"
+  end
+
+  def primary_colors
+    'border-vividSkyBlue text-vividSkyBlue hover:border-vividSkyBlue'
+  end
+
+  def error_colors
+    'border-red-700 text-red-700 hover:border-red-700'
+  end
+
   def profile_modal_class
     'mx-2 text-2xl font-medium rounded-full text-vividSkyBlue hover:bg-cyan-600 hover:text-blue-300 float-right'
   end
 
   def profile_form_input_class(options = {})
-    "block shadow rounded-md border text-gray-800 border-gray-200 outline-none px-3 py-4 mt-2 w-full #{options[:extended_classes]}"
+    "block shadow rounded-md border text-gray-800 border-gray-200 outline-none px-3 py-4 mt-2 w-full 
+    #{options[:extended_classes]}"
   end
 
   def profile_form_label_class(options = {})

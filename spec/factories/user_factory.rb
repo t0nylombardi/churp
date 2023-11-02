@@ -44,6 +44,9 @@ FactoryBot.define do
     password_confirmation { 'Passw0rd1!' }
     username { "@#{Faker::Internet.username(specifier: 8)}" }
 
+  end
+
+  trait :with_profile do
     after(:create) do |user|
       user.profile ||= create(:profile, user:)
     end

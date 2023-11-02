@@ -1,0 +1,9 @@
+<span id="<%= content %>" class="font-bold text-white pr-2">
+  <%= number_to_human(@count, 
+      precision: 1,
+      round_mode: :down,
+      significant: false,
+      format: '%n%u',
+      units: { thousand: 'K', million: 'M', billion: 'B' }) %>
+  <span class="text-gray-600"><%= content %></span>
+</span>

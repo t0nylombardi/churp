@@ -1,0 +1,10 @@
+<div class="w-full h-12 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out px-2">
+  <div class="max-w-full text-sm flex justify-center align-middle">
+    <%= link_to @path.to_s, class: 'h-12 min-w-fit align-middle' do %>
+      <span class="text-sm <%= view == 'verified_user' ? 'font-bold' : '' %>">
+        Verified User
+      </span>
+      <%= render(Followers::ActiveUnderlineComponent.new()) %>
+    <% end %>
+  </div>
+</div>

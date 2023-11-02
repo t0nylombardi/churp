@@ -1,0 +1,16 @@
+<% unless current_user == profile.user %>
+  <%= turbo_frame_tag "profile_follow_#{profile.id}" do %>
+    <div class="inline-block" data-controller="profile-following">
+      <% if current_user.following?(profile.user) %>
+        <%= button_to 'Following', unfollow_profile_path(profile.user), 
+            data: {
+              action: 'mouseover->profile-following#unfollow mouseleave->profile-following#follow',
+              profile_following_target: "follow",
+              profile_following_target_profile: profile.id,
+            }, class: 'profile-following primary' %>
+      <% else %>
+        <%= button_to 'Follow', follow_profile_path(profile.user), class: 'profile-following primary' %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

@@ -33,6 +33,7 @@ gem 'foreman', '~> 0.87.2'
 gem 'letter_avatar'
 gem "mini_magick"
 gem "aws-sdk-s3"
+gem 'view_component', '~> 3.6'
 
 # feature flags
 gem 'flipper'
@@ -54,14 +55,7 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'pry-nav'
   gem 'faker'
-  gem 'reek', '~> 6.1', '>= 6.1.4'
-  gem 'rails_best_practices', '~> 1.23', '>= 1.23.2'
-  gem 'rubocop', '~> 1.57', '>= 1.57.1', require: false
-  gem 'rubocop-performance', '~> 1.12.0', require: false
-  gem 'rubocop-rails', '~> 2.12.0', require: false
-  gem 'rubocop-rake', '~> 0.6.0', require: false
-  gem 'rubocop-rspec', '~> 2.6.0', require: false
-  %w[rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
+  %w[rspec rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support].each do |lib|
     gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
   end
 end
@@ -70,6 +64,15 @@ group :development do
   gem 'web-console'
   gem 'brakeman', '~> 6.0', '>= 6.0.1'
   gem 'annotate'
+  # Code linting CLI and plugins
+  gem 'reek', '~> 6.1', '>= 6.1.4'
+  gem 'rails_best_practices', '~> 1.23', '>= 1.23.2'
+  gem 'rubocop', require: false
+  gem 'rubocop-capybara', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rails', require: false
+  gem 'rubocop-rspec', require: false
+  gem 'rspec-snapshot', '~> 2.0', '>= 2.0.1'
 end
 
 group :test do

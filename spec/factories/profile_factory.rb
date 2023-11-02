@@ -31,6 +31,7 @@ FactoryBot.define do
     description { Faker::Lorem.sentence(word_count: 20) }
     website { "https://#{Faker::Internet.domain_name}" }
     birth_date { Faker::Date.birthday(min_age: 18, max_age: 65) }
+    association :user, factory: :user
 
     after(:build) do |profile|
       profile.profile_bg.attach(

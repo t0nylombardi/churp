@@ -15,6 +15,7 @@
 #
 FactoryBot.define do
   factory :churp_hash_tag do
-    
+    churp
+    hash_tag
   end
 end
