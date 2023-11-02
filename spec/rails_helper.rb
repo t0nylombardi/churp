@@ -9,6 +9,8 @@ require_relative 'support/factory_bot'
 require_relative 'support/chrome'
 require 'devise'
 require_relative 'support/controller_macros'
+require "view_component/test_helpers"
+require "capybara/rspec"
 
 begin
   ActiveRecord::Migration.maintain_test_schema!
@@ -17,15 +19,25 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
+  config.include ViewComponent::TestHelpers, type: :component
+  config.include Capybara::RSpecMatchers, type: :component
+
+  config.after(:each, type: :component, snapshot: true) do |example|
+    class_name = example.metadata[:described_class].name.underscore
+    test_name = example.metadata[:full_description].gsub(example.metadata[:described_class].name, "").gsub(" ","_")
+    raise "component snapshot has no content" if rendered_component.blank?
+    expect(rendered_component).to match_snapshot("#{class_name}/#{test_name}")
+  end
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+  config.fixture_paths = Rails.root.join('spec', 'fixtures')
 
   # config.use_transactional_fixtures = true
 
   config.infer_spec_type_from_file_location!
 
   config.filter_rails_from_backtrace!
-  
+
   # ---------------------------------------------
   # add from here
   config.expect_with :rspec do |c|

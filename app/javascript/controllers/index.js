@@ -19,5 +19,8 @@ application.register("reset-form", ResetFormController)
 import ShowChurpController from "./show_churp_controller"
 application.register("show-churp", ShowChurpController)
 
+import ProfileFollowingController from "./profile_following_controller"
+application.register("profile-following", ProfileFollowingController)
+
 import ViewChurpsController from "./view_churps_controller"
 application.register("view-churps", ViewChurpsController)

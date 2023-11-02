@@ -1,0 +1,17 @@
+<div class="w-full sm:w-600 h-screen scrollbar-hide">
+  
+  <%= render 'shared/header', 
+      view: :followers, 
+      name: @user.profile&.name,
+      followers: @followers,
+      following: nil,
+      is_active: true
+  %>
+    <% @followers.each do |user| %>      
+      <%= render "follow", user: %>
+    <% end %>
+    
+
+    <%#= render 'churps/shared/next_page'%>
+
+</div>

@@ -62,3 +62,17 @@
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+.profile-following {
+  @apply flex justify-center max-h-max whitespace-nowrap focus:outline-none focus:ring;
+  @apply max-w-max border bg-transparent;
+  @apply items-center hover:shadow-lg font-bold py-2 px-4 rounded-full mr-0 ml-auto;
+}
+
+.primary {
+  @apply border-vividSkyBlue text-vividSkyBlue hover:border-cyan-600
+}
+
+.error {
+  @apply border-red-700 text-red-700 hover:border-red-700;
+}

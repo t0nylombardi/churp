@@ -45,6 +45,16 @@ GIT
   specs:
     rspec-support (3.13.0.pre)
 
+GIT
+  remote: https://github.com/rspec/rspec.git
+  revision: cfb135a48b343fa75f28841f14874ea05e8e195f
+  branch: main
+  specs:
+    rspec (3.13.0.pre)
+      rspec-core (= 3.13.0.pre)
+      rspec-expectations (= 3.13.0.pre)
+      rspec-mocks (= 3.13.0.pre)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -128,7 +138,11 @@ GEM
       tzinfo (~> 2.0)
     addressable (2.8.5)
       public_suffix (>= 2.0.2, < 6.0)
+    annotate (3.2.0)
+      activerecord (>= 3.2, < 8.0)
+      rake (>= 10.4, < 14.0)
     ast (2.4.2)
+    awesome_print (1.9.2)
     aws-eventstream (1.2.0)
     aws-partitions (1.842.0)
     aws-sdk-core (3.185.1)
@@ -373,6 +387,9 @@ GEM
       actionpack (>= 5.2)
       railties (>= 5.2)
     rexml (3.2.6)
+    rspec-snapshot (2.0.1)
+      awesome_print (> 1.0.0)
+      rspec (> 3.0.0)
     rubocop (1.57.1)
       base64 (~> 0.1.1)
       json (~> 2.3)
@@ -387,6 +404,8 @@ GEM
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.29.0)
       parser (>= 3.2.1.0)
+    rubocop-capybara (2.19.0)
+      rubocop (~> 1.41)
     rubocop-performance (1.12.0)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
@@ -394,8 +413,6 @@ GEM
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.7.0, < 2.0)
-    rubocop-rake (0.6.0)
-      rubocop (~> 1.0)
     rubocop-rspec (2.6.0)
       rubocop (~> 1.19)
     ruby-progressbar (1.13.0)
@@ -448,6 +465,10 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
+    view_component (3.6.0)
+      activesupport (>= 5.2.0, < 8.0)
+      concurrent-ruby (~> 1.0)
+      method_source (~> 1.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.1)
@@ -470,6 +491,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_storage_validations
+  annotate
   aws-sdk-s3
   bootsnap
   brakeman (~> 6.0, >= 6.0.1)
@@ -506,16 +528,18 @@ DEPENDENCIES
   rails_best_practices (~> 1.23, >= 1.23.2)
   redis (~> 4.0)
   reek (~> 6.1, >= 6.1.4)
+  rspec!
   rspec-core!
   rspec-expectations!
   rspec-mocks!
   rspec-rails!
+  rspec-snapshot (~> 2.0, >= 2.0.1)
   rspec-support!
-  rubocop (~> 1.57, >= 1.57.1)
-  rubocop-performance (~> 1.12.0)
-  rubocop-rails (~> 2.12.0)
-  rubocop-rake (~> 0.6.0)
-  rubocop-rspec (~> 2.6.0)
+  rubocop
+  rubocop-capybara
+  rubocop-performance
+  rubocop-rails
+  rubocop-rspec
   selenium-webdriver
   sentry-rails (~> 5.12)
   sentry-ruby (~> 5.12)
@@ -526,6 +550,7 @@ DEPENDENCIES
   stripe
   turbo-rails
   tzinfo-data
+  view_component (~> 3.6)
   web-console
 
 RUBY VERSION

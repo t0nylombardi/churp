@@ -1,5 +1,14 @@
 # frozen_string_literal: true
 
+# == Schema Information
+#
+# Table name: hash_tags
+#
+#  id         :bigint           not null, primary key
+#  name       :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
 class HashTag < ApplicationRecord
   has_many :churp_hash_tags
   has_many :churps, through: :churp_hash_tags

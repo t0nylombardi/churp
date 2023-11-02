@@ -1,0 +1,35 @@
+<%= turbo_frame_tag "follow_card_#{user.id}" do %> 
+  <div class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r">
+    <!-- link -->
+    <div class="text-blue-400 text-sm font-normal p-3 border-gray-200 dark:border-dim-200">
+      <div class="flex flex-row justify-between p-2">
+        <div class="flex flex-row">
+          <%= image_tag(avatar_pic(user.profile), class: 'inline-block h-10 w-10 rounded-full') %>
+          <div class="flex flex-col ml-2">
+            <h1 class="text-gray-900 dark:text-white font-bold text-sm">
+              <%= user.profile.name %>
+            </h1>
+            <p class="text-gray-400 text-sm"><%= user.username %></p>
+          </div>
+        </div>
+        <div class="">
+          <div class="flex items-center h-full text-gray-800 dark:text-white">
+            <% unless current_user.following?(user) %>
+            <%= puts "\n\n\n current_user following? #{user.username} #{current_user.following?(user)} \n\n\n"%>
+              <%= form_for(current_user.active_relationships.build, remote: true) do |f| %>
+                <div><%= hidden_field_tag :followed_id, user.id %></div>
+                <%= f.submit "Follow", class: "font-bold text-white bg-vividSkyBlue hover:bg-cyan-600 px-6 py-1 rounded-full" %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6">
+      <p class="my-2 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
+        <%= user.profile.description %>
+      </p>
+    </div>
+  </div>
+<% end %>
