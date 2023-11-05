@@ -1,7 +1,9 @@
+@import 'actiontext.css';
+@import 'actiontext-dracula.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'actiontext.css';
 
 @layer components {
   /* width */

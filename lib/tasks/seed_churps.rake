@@ -22,10 +22,10 @@ namespace :seed do
   task :create_churps, [:num_of_churps] => :environment do |_t, args|
     0.upto(args[:num_of_churps]) do |_i|
       sentence = Faker::Lorem.paragraph_by_chars(number: 200, supplemental: false)
-      hash_tag = 5.times.map { hash_tags.sample }.join(' ')
+      hash_tag = Array.new(5) { hash_tags.sample }.join(' ')
 
       churp = Churp.create(
-        body: sentence + hash_tag,
+        content: sentence + hash_tag,
         user_id: User.all.sample.id
       )
       Rake::Task['seed:create_comments'].invoke(churp:)

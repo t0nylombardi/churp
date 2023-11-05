@@ -10,17 +10,20 @@ application.register("broadcast-churps", BroadcastChurpsController)
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 
+import ProfileFollowingController from "./profile_following_controller"
+application.register("profile-following", ProfileFollowingController)
+
 import ProfileModalController from "./profile_modal_controller"
 application.register("profile-modal", ProfileModalController)
 
 import ResetFormController from "./reset_form_controller"
 application.register("reset-form", ResetFormController)
 
+import SearchController from "./search_controller"
+application.register("search", SearchController)
+
 import ShowChurpController from "./show_churp_controller"
 application.register("show-churp", ShowChurpController)
-
-import ProfileFollowingController from "./profile_following_controller"
-application.register("profile-following", ProfileFollowingController)
 
 import ViewChurpsController from "./view_churps_controller"
 application.register("view-churps", ViewChurpsController)

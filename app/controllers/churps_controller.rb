@@ -34,11 +34,12 @@ class ChurpsController < ApplicationController
 
     respond_to do |format|
       if @churp.save
-
+        puts "\n\n\n CHURP SAVE \n\n\n"
         format.html { redirect_to root_path, notice: 'churp was successfully created.' }
         format.json { render :show, status: 201, location: @churp }
       else
-        format.html { render :new, status: 422 }
+        puts "\n\n\n CHURP NO SAVE \n\n\n"
+        format.html { redirect_back fallback_location: @churp, alert: 'Could not churp' }
         format.json { render json: @churp.errors, status: 422 }
       end
     end
@@ -83,7 +84,7 @@ class ChurpsController < ApplicationController
   end
 
   def rechurp
-    @rechurp = current_user.churps.new(body: @churp.body, churp_id: @churp.id)
+    @rechurp = current_user.churps.new(body: @churp.content, churp_id: @churp.id)
     increment_count = @rechurp.rechurp_count + 1
     @rechurp.update(rechurp_count: increment_count)
 
@@ -105,6 +106,6 @@ class ChurpsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def churp_params
-    params.require(:churp).permit(:body, :churp_id, :churp_pic)
+    params.require(:churp).permit(:content, :churp_id, :churp_pic)
   end
 end

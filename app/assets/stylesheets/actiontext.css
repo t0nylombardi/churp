@@ -29,3 +29,16 @@
   padding: 0 !important;
   max-width: 100% !important;
 }
+
+trix-toolbar {
+  display: none;
+}
+
+.trix-content {
+  color: white;
+  padding-bottom: 1rem;
+}
+
+.trix-content pre {
+  background: #282A36;
+}
