@@ -14,7 +14,7 @@ module Middleware
       attr_accessor :ip
 
       GEO_IP_URL = 'https://api.ipgeolocation.io/ipgeo?'
-      API_KEY = ENV['GEO_API_KEY']
+      API_KEY = ENV.fetch('GEO_API_KEY', nil)
 
       def initialize(ip)
         @ip = ip
@@ -46,13 +46,13 @@ module Middleware
       end
 
       def random_ip_address
-        %w[ 104.156.54.182
+        %w( 104.156.54.182
             185.151.12.218
             185.151.12.226
             185.151.12.242
             107.181.191.68
             167.88.112.78
-            209.135.132.136 ].sample
+            209.135.132.136 ).sample
       end
     end
   end

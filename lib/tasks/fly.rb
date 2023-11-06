@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :fly do
   task :ssh do
     sh 'fly ssh console --pty -C "sudo -iu rails"'

@@ -36,10 +36,11 @@
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_slug                  (slug) UNIQUE
 #  index_users_on_unlock_token          (unlock_token) UNIQUE
+#  index_users_on_username              (username) UNIQUE
 #
 require 'rails_helper'
 
-RSpec.describe User, type: :model do
+RSpec.describe User do
   let(:message) do
     <<-TEXT.gsub(/\s+/, ' ').strip
     Complexity requirement not met. Length should be 8-128 characters and
@@ -48,58 +49,57 @@ RSpec.describe User, type: :model do
   end
 
   describe 'validations' do
-
     it 'requires password on build' do
-      user = FactoryBot.build(:user, password: nil, password_confirmation: nil)
+      user = build(:user, password: nil, password_confirmation: nil)
 
       user.valid?
       expect(user.errors.messages[:password]).to eq(["can't be blank"])
     end
 
     it 'does not accept a password without a confirmation' do
-      user = FactoryBot.build(:user, password: 'test_Blah1234', password_confirmation: nil)
+      user = build(:user, password: 'test_Blah1234', password_confirmation: nil)
 
-      user.valid?
+      expect(user.valid?).to be(true)
     end
 
     it 'requires email addresses be in email format' do
-      user = FactoryBot.build(:user, email: 'foo')
+      user = build(:user, email: 'foo')
 
       user.valid?
       expect(user.errors.messages[:email]).to be_present
     end
 
     it 'requires password and confirmation to match' do
-      user = FactoryBot.build(:user, password_confirmation: 'wtf')
+      user = build(:user, password_confirmation: 'wtf')
 
       user.valid?
       expect(user.errors.messages[:password_confirmation]).to eq(["doesn't match Password"])
     end
 
     it 'requires at least 10 characters for the password' do
-      user = FactoryBot.build(:user, password: 'hi1', password_confirmation: 'hi1')
+      user = build(:user, password: 'hi1', password_confirmation: 'hi1')
 
       user.valid?
       expect(user.errors.full_messages).to eq(['Password is too short (minimum is 10 characters)', "Password #{message}"])
     end
 
     it 'includes: 1 uppercase, 1 lowercase, 1 digit and 1 special character' do
-      user = FactoryBot.build(:user, password: '1234567890', password_confirmation: '1234567890')
+      user = build(:user, password: '1234567890', password_confirmation: '1234567890')
 
       user.valid?
       expect(user.errors.messages[:password]).to eq([message])
     end
 
     it 'does not included: 1 uppercase, 1 lowercase, 1 digit and 1 special character' do
-      user = FactoryBot.build(:user, password: 'abcdefghijkl', password_confirmation: 'abcdefghijkl')
+      user = build(:user, password: 'abcdefghijkl', password_confirmation: 'abcdefghijkl')
 
       user.valid?
       expect(user.errors.messages[:password]).to eq([message])
     end
 
     context 'with followers' do
-      let(:rick) { FactoryBot.create(:user) }
-      let(:morty) { FactoryBot.create(:user) }
+      let(:rick) { create(:user) }
+      let(:morty) { create(:user) }
 
       it 'does not follow a user' do
         expect(rick.following?(morty)).to be(false)

@@ -25,9 +25,9 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class View < ApplicationRecord
-  after_create_commit {
+  after_create_commit do
     broadcast_prepend_to('view_churps', partial: 'churps/shared/analytics', locals: { churp: }, target: 'view-churps')
-  }
+  end
   # validates_presence_of :ip_address
 
   belongs_to :user

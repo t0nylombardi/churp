@@ -17,8 +17,8 @@ class HashTag < ApplicationRecord
 
   scope :group_hashes, lambda {
     select(:name)
-    .group(:name)
-    .having('count(*) > 1').size
+      .group(:name)
+      .having('count(*) > 1').size
   }
 
   after_commit :reindex_hashtags

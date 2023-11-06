@@ -21,7 +21,7 @@ class MockRackApp
   end
 end
 
-# this file keeps  failing. will  come back to it. 
+# this file keeps  failing. will  come back to it.
 
 # describe Middleware::ViewPixel do
 #   include Rack::Test::Methods

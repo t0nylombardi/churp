@@ -6,5 +6,4 @@ class TrendingTopicComponent < ViewComponent::Base
     @hashtag = hashtag
     @num_of_churps = num_of_churps
   end
-
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'boot'
 
 require 'rails/all'
@@ -13,7 +15,7 @@ module ChurpSocial
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
 
-    config.exceptions_app = self.routes
+    config.exceptions_app = routes
 
     # Configuration for the application, engines, and railties goes here.
     #

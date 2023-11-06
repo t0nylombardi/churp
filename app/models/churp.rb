@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: churps
@@ -22,7 +24,10 @@ class Churp < ApplicationRecord
   belongs_to :churp, optional: true, dependent: :destroy
   has_many :likes, as: :likeable, dependent: :destroy
   has_many :comments, dependent: :destroy
-  has_many :views
+  # TODO: This is for the analytics feature on a churp.
+  #       The logic for this needs to be rewitten into a model
+  #       insead of a tracking pixel. (stupid idea)
+  # has_many :views
   has_many :churp_hash_tags, dependent: :destroy
   has_many :hash_tags, through: :churp_hash_tags, dependent: :destroy
 

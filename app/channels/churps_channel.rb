@@ -3,7 +3,6 @@
 class ChurpsChannel < ApplicationCable::Channel
   def subscribed
     stream_from 'churps_channel'
-    
   end
 
   def unsubscribed

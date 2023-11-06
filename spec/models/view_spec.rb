@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: views
@@ -24,6 +26,6 @@
 #
 require 'rails_helper'
 
-RSpec.describe View, type: :model do
+RSpec.describe View do
   pending "add some examples to (or delete) #{__FILE__}"
 end

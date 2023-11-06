@@ -2,6 +2,5 @@
 
 module Search
   class SearchBarComponent < ViewComponent::Base
-
   end
 end

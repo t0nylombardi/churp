@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: hash_tags
@@ -9,6 +11,6 @@
 #
 require 'rails_helper'
 
-RSpec.describe HashTag, type: :model do
+RSpec.describe HashTag do
   pending "add some examples to (or delete) #{__FILE__}"
 end

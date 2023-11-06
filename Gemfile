@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 git_source(:github) do |repo_name|
@@ -31,8 +33,8 @@ gem 'mini_magick'
 gem 'name_of_person'
 gem 'pagy'
 gem 'pundit', '~> 2.3', '>= 2.3.1'
-gem 'searchkick'
 gem 'searchjoy'
+gem 'searchkick'
 gem 'sidekiq', '~> 6.5', '>= 6.5.4'
 gem 'simple_form', '~> 5.2'
 gem 'stripe'
