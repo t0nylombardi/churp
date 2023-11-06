@@ -7,6 +7,9 @@ import { application } from "./application"
 import BroadcastChurpsController from "./broadcast_churps_controller"
 application.register("broadcast-churps", BroadcastChurpsController)
 
+import EmojiPickerController from "./emoji_picker_controller"
+application.register("emoji-picker", EmojiPickerController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 

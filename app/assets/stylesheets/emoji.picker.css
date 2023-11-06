@@ -1,0 +1,26 @@
+.emoji-picker {
+  --background-color:;
+  --accent-colo: ;
+  --background-color: ;
+  --border-color: ;
+  --category-name-background-color:;
+  --category-name-text-color:;
+  --error-color:;
+  --error-color-dark:;
+  --focus-indicator-color:;
+  --hover-background-color:;
+  --placeholder-background-color:;
+  --preview-background-color: #15202b;
+  --scrollbar-background-color:;
+  --scrollbar-color:;
+  --search-background-color:;
+  --search-focus-background-color:;
+  --search-icon-color:;
+  --search-placeholder-color:;
+  --secondary-background-color:;
+  --secondary-text-color:;
+  --tag-background-color:;
+  --text-color:;
+  --ui-font:;
+  --variant-popup-background-color:;
+}
