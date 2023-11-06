@@ -2,7 +2,7 @@
 
 namespace :seed do
   def hash_tags
-    %w[#train #transport #railway #bridge #metro #trains
+    %w(#train #transport #railway #bridge #metro #trains
        #trainspotting #trainphotography #ns #rail #freight #railroad
        #railwayphotography #railways_of_our_world #trainstation #railwaystation
        #station #railways #tram #trainstagram #trainspotter #railfan
@@ -13,7 +13,7 @@ namespace :seed do
        #cedarwaxwing #babygeese #whatsgoingon #worlddomination #babyducks
        #getoffmylawn #chirp #localwildlife #cheezits #goldeneagles #redbirds
        #cloudywithachanceofmeatballs #highjumper #canadiangeese #daft #whatsinaname
-       #saftb #whatisgoingon #youcantseeme #thebird]
+       #saftb #whatisgoingon #youcantseeme #thebird)
   end
 
   # Populates churps.
@@ -34,11 +34,11 @@ namespace :seed do
     end
   end
 
-  task :create_comments, %i[churp] => :environment do |_t, args|
+  task :create_comments, %i(churp) => :environment do |_t, args|
     churp = args[:churp].values.first
     0.upto(10) do |_i|
       churp.comments.create(
-        content: Faker::Lorem.sentence(word_count: 20) + 5.times.map { hash_tags.sample }.join(' '),
+        content: Faker::Lorem.sentence(word_count: 20) + Array(5) { hash_tags.sample }.join(' '),
         user_id: User.all.sample.id
       )
     end

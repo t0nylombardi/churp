@@ -2,10 +2,5 @@
 
 module Followers
   class ActiveUnderlineComponent < ViewComponent::Base
-    def initialize
-      super
-    end
-
   end
 end
-

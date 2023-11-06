@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe ViewChurpsChannel, type: :channel do
+RSpec.describe ViewChurpsChannel do
   pending "add some examples to (or delete) #{__FILE__}"
 end

@@ -1,14 +1,15 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 require_relative '../support/devise'
 
-RSpec.describe ProfilesController, type: :controller do
+RSpec.describe ProfilesController do
   render_views
 
   context 'when GET #show' do
     let!(:user) { create(:user, :with_profile) }
 
     context 'with a normal account in an HTML request' do
-
       it 'returns a standard HTML response', :aggregate_failures do
         sign_in user
 
@@ -19,7 +20,7 @@ RSpec.describe ProfilesController, type: :controller do
   end
 
   context 'when POST #create' do
-    let!(:user) { create :user }
+    let!(:user) { create(:user) }
 
     let(:params) do
       {
@@ -42,16 +43,10 @@ RSpec.describe ProfilesController, type: :controller do
         expect(response).to have_http_status(302)
       end
     end
-
-    context 'when failure' do
-      # this is not really needed since the profile is created 
-      # at sign up. However, I will come back to implement this test.
-
-    end
   end
 
   context 'when PUT #update' do
-    let!(:user) { create :user, :with_profile }
+    let!(:user) { create(:user, :with_profile) }
 
     let(:params) do
       {
@@ -80,9 +75,8 @@ RSpec.describe ProfilesController, type: :controller do
   end
 
   context 'when POST #follow' do
-
     context 'when success' do
-      let(:current_user) { FactoryBot.create(:user, :with_profile) }
+      let(:current_user) { create(:user, :with_profile) }
       let(:other_user) { create(:user, :with_profile) }
 
       before do
@@ -98,9 +92,8 @@ RSpec.describe ProfilesController, type: :controller do
   end
 
   context 'when POST #unfollow' do
-
     context 'when success' do
-      let(:current_user) { FactoryBot.create(:user, :with_profile) }
+      let(:current_user) { create(:user, :with_profile) }
       let(:other_user) { create(:user, :with_profile) }
 
       before do
@@ -115,5 +108,4 @@ RSpec.describe ProfilesController, type: :controller do
       end
     end
   end
-
 end

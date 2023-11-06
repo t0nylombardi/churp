@@ -22,7 +22,7 @@ namespace :seed do
       first_name: 'Anthony',
       last_name: 'Lombardi',
       description: 'I like Tacos and Tacos like me',
-      website: "t0nylombardi.dev",
+      website: 't0nylombardi.dev',
       birth_date: '1983-03-31'.to_date
     ).save!
     puts "Created admin: #{user.email}"

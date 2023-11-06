@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: relationships
@@ -16,6 +18,6 @@
 #
 require 'rails_helper'
 
-RSpec.describe Relationship, type: :model do
+RSpec.describe Relationship do
   pending "add some examples to (or delete) #{__FILE__}"
 end

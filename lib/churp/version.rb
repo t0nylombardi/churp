@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ChurpSocial
   module Version
     module_function

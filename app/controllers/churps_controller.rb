@@ -34,11 +34,9 @@ class ChurpsController < ApplicationController
 
     respond_to do |format|
       if @churp.save
-        puts "\n\n\n CHURP SAVE \n\n\n"
         format.html { redirect_to root_path, notice: 'churp was successfully created.' }
         format.json { render :show, status: 201, location: @churp }
       else
-        puts "\n\n\n CHURP NO SAVE \n\n\n"
         format.html { redirect_back fallback_location: @churp, alert: 'Could not churp' }
         format.json { render json: @churp.errors, status: 422 }
       end

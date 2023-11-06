@@ -3,7 +3,6 @@
 module ProfileComponents
   module Buttons
     class EditComponent < ViewComponent::Base
-
       def initialize(user:, profile:)
         super
         @user = user

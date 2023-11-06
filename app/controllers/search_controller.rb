@@ -8,7 +8,7 @@ class SearchController < ApplicationController
       query = params[:q].delete('#')
       @churps = Churp.search_hashtags(query)
     else
-      @churps =  Churp.with_all_rich_text.where('body like ?', "%#{params[:q]}%")
+      @churps = Churp.with_all_rich_text.where('body like ?', "%#{params[:q]}%")
     end
   end
 
@@ -45,10 +45,10 @@ class SearchController < ApplicationController
       HashTag.all
     else
       results = HashTag.search(params[:query],
-                     fields: [:name],
-                     match: :word_start,
-                     boost_by_recency: { created_at: { scale: '7d', decay: 0.5 } },
-                     limit: 10)
+                               fields: [:name],
+                               match: :word_start,
+                               boost_by_recency: { created_at: { scale: '7d', decay: 0.5 } },
+                               limit: 10)
       results.uniq { |r| r[:name] }
     end
   end

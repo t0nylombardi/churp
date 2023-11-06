@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: profiles
@@ -24,7 +26,7 @@
 #
 class Profile < ApplicationRecord
   has_person_name
-  
+
   has_one_attached :profile_pic do |attachable|
     attachable.variant :thumb, resize_to_limit: [200, 200]
   end
@@ -33,10 +35,9 @@ class Profile < ApplicationRecord
   belongs_to :user
 
   validates :name, presence: true, length: { minimum: 3 }
-  validates_length_of :description, maximum: 300
-  validates_length_of :website, maximum: 255
+  validates :description, length: { maximum: 300 }
+  validates :website, length: { maximum: 255 }
 
   validates :profile_pic, acceptable_image: true
   validates :profile_bg, acceptable_image: true
-
 end

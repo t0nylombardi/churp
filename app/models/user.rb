@@ -36,6 +36,7 @@
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_slug                  (slug) UNIQUE
 #  index_users_on_unlock_token          (unlock_token) UNIQUE
+#  index_users_on_username              (username) UNIQUE
 #
 class User < ApplicationRecord
   extend FriendlyId
@@ -52,13 +53,17 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_one :profile, dependent: :destroy
 
-  has_many :active_relationships, dependent: :destroy,
-                                  class_name: 'Relationship',
-                                  foreign_key: 'follower_id'
+  with_options inverse_of: :user do
+    has_many :active_relationships, dependent: :destroy,
+                                    class_name: 'Relationship',
+                                    foreign_key: 'follower_id'
+  end
 
-  has_many :passive_relationships, dependent: :destroy,
-                                   class_name: 'Relationship',
-                                   foreign_key: 'followed_id'
+  with_options inverse_of: :user do
+    has_many :passive_relationships, dependent: :destroy,
+                                     class_name: 'Relationship',
+                                     foreign_key: 'followed_id'
+  end
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower

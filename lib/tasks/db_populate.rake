@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 namespace :seed do
-
   desc 'Seeds database'
   task db_populate: :environment do
     message "--------------------------------------------------------------\n"
@@ -29,7 +28,6 @@ namespace :seed do
     View.destroy_all
   end
 end
-
 
 def message(message, delay = 0)
   puts message if Rails.env.development?

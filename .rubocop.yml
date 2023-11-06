@@ -1,3 +1,6 @@
+inherit_from: .rubocop_todo.yml
+
+
 require:
   - rubocop-rails
   - rubocop-rspec
@@ -5,13 +8,13 @@ require:
   - rubocop-capybara
 
 AllCops:
-  TargetRubyVersion: 3.2.1 # Set to minimum supported version of CI
+  TargetRubyVersion: 3.2.1
   DisplayCopNames: true
   DisplayStyleGuide: true
   ExtraDetails: true
   UseCache: true
   CacheRootDirectory: tmp
-  NewCops: enable # Opt-in to newly added rules
+  NewCops: enable
   Exclude:
     - db/schema.rb
     - 'bin/*'
@@ -21,6 +24,7 @@ AllCops:
     - 'lib/json_ld/*' # Generated files
     - 'lib/mastodon/migration_helpers.rb' # Vendored from GitLab
     - 'lib/templates/**/*'
+    - 'db/migrate/20231020170148_create_active_storage_variant_records.active_storage.rb'
 
 # Reason: Prefer Hashes without extreme indentation
 # https://docs.rubocop.org/rubocop/cops_layout.html#layoutfirsthashelementindentation
