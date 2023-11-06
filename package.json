@@ -2,11 +2,13 @@
   "name": "app",
   "private": "true",
   "dependencies": {
+    "@emoji-mart/data": "^1.1.2",
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^7.3.0",
     "@rails/actioncable": "^7.0.8",
     "@rails/actiontext": "^7.0.8",
     "autoprefixer": "^10.4.16",
+    "emoji-mart": "^5.5.2",
     "esbuild": "^0.19.4",
     "postcss": "^8.4.30",
     "react": "^18.2.0",

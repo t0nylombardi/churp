@@ -1,4 +1,4 @@
-<div class="z-10 flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
+<div class="flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
   
   <%= turbo_frame_tag "churp"  do %>
       <div class="flex flex-row items-center">
@@ -15,7 +15,7 @@
                 churp_id_value: churp.id,
                 view_churps_target: 'count'
             }) %>
-            <%= turbo_stream_from churp, :analytics, channel: ViewChurpsChannel %>
+            <%#= turbo_stream_from churp, :analytics, channel: ViewChurpsChannel %>
           </div>
       </div>
   <% end %>

@@ -31,6 +31,14 @@
 }
 
 trix-toolbar {
+  display: none !important;
+}
+
+.trix-dialogs {
+  display: none !important;
+}
+
+#trix-toolbar-1 {
   display: none;
 }
 
@@ -41,4 +49,8 @@ trix-toolbar {
 
 .trix-content pre {
   background: #282A36;
+}
+
+.trix-input--dialog {
+  display: none !important;
 }

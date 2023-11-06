@@ -1,5 +1,5 @@
-<div class="z-0 flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
-  <%= turbo_stream_from churp, :likes %>
+<div class="flex-1 flex items-center dark:text-white text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-600 transition duration-350 ease-in-out">
+  <%#= turbo_stream_from churp, :likes %>
   <%= turbo_frame_tag "like_#{churp.id}"  do %>
     <%= link_to churp_like_path(churp),
         data: {turbo_method: :post},
