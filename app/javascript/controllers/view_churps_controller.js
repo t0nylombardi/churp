@@ -19,7 +19,7 @@ export default class extends Controller {
       {
         connected() {
           // Called when the subscription is ready for use on the server
-          this.perform("churp_data");
+          // this.perform("churp_data");
         },
 
         disconnected() {
@@ -32,7 +32,7 @@ export default class extends Controller {
           // this.element.innerHTML = data.churp.view_count
 
           // console.log("target", this.countTarget.innerText)
-          element.innerHTML = data.churp.view_count;
+          // element.innerHTML = data.churp.view_count;
           // element.style.color = 'red';
 
           // console.log("countTarget", element)

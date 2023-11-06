@@ -3,7 +3,6 @@
 # Table name: churps
 #
 #  id            :bigint           not null, primary key
-#  body          :text
 #  rechurp_count :integer          default(0)
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
@@ -26,14 +25,14 @@ RSpec.describe Churp, type: :model do
     let(:churp) { create(:churp, user:) }
 
     it 'should not accept no characters in body' do
-      churp.body = ''
+      churp.content = ''
 
       expect(churp.valid?).to be_falsey
       expect(churp.errors.messages[:body]).to eq(['is too short (minimum is 1 character)'])
     end
 
     it 'should not accept too many characters in body' do
-      churp.body = Faker::Lorem.paragraph_by_chars(number: 332)
+      churp.conent = Faker::Lorem.paragraph_by_chars(number: 332)
 
       expect(churp.valid?).to be_falsey
       expect(churp.errors.messages[:body]).to eq(['is too long (maximum is 331 characters)'])

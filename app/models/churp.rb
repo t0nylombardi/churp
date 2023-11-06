@@ -3,7 +3,6 @@
 # Table name: churps
 #
 #  id            :bigint           not null, primary key
-#  body          :text
 #  rechurp_count :integer          default(0)
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
@@ -27,18 +26,19 @@ class Churp < ApplicationRecord
   has_many :churp_hash_tags, dependent: :destroy
   has_many :hash_tags, through: :churp_hash_tags, dependent: :destroy
 
+  has_rich_text :content
   has_one_attached :churp_pic
 
   validates :churp_pic, acceptable_image: true
-  validates :body, length: { maximum: 331 }, allow_blank: false, unless: :churp_id
+  validates :content, length: { maximum: 331 }, allow_blank: false, unless: :churp_id
 
   after_create :broadcast_churp
   after_commit :create_hash_tags, on: :create
 
-  scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: {name: query}) }
+  scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
   def churp_type
-    if churp_id? && body?
+    if churp_id? && content?
       'rechurp'
     else
       'churp'
@@ -52,7 +52,7 @@ class Churp < ApplicationRecord
   end
 
   def extract_name_hash_tags
-    body.to_s.scan(/#\w+/).map { |name| name.gsub('#', '') }
+    content.to_s.scan(/#\w+/).map { |name| name.delete('#') }
   end
 
   private
