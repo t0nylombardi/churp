@@ -1,0 +1,5 @@
+<span class="mention">
+  <%= link_to profile_path(user.username), class: 'hover:underline' do %>
+  <%= user.username.html_safe %>
+  <% end %>
+</span>

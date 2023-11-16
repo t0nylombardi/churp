@@ -13,6 +13,9 @@ application.register("emoji-picker", EmojiPickerController)
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 
+import MentionsController from "./mentions_controller"
+application.register("mentions", MentionsController)
+
 import ProfileFollowingController from "./profile_following_controller"
 application.register("profile-following", ProfileFollowingController)
 

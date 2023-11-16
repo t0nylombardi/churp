@@ -1,4 +1,4 @@
-<%= form_with(model: churp, data: { controller: 'emoji-picker' }) do |f| %>
+<%= form_with(model: Churp.new, local: true) do |f| %>
   <div class="border-b border-gray-200 dark:border-dim-200 pb-0 border-l border-r">
     <div class="flex flex-shrink-0 p-4 pb-0">
       <div class="w-12 flex items-top">
@@ -10,8 +10,11 @@
         <%# <trix-editor toolbar="blank-toolbar" style=""></trix-editor> %>
 
         <%= f.rich_text_area :content,
-                            data: { emoji_picker_target: "trixEditor" },
-                            class: "dark:text-white text-gray-900 placeholder-gray-400 w-full bg-transparent border-0 focus:outline-none focus:ring-0 resize-none",
+                             data: {
+                                     controller: "mentions",
+                                     mentions_target: "field",
+                                   },
+                            class: "newChurpText",
                             placeholder: "What's happening?",
                             label: false %>
       </div>

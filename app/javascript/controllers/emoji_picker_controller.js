@@ -1,7 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
-import { createPopup } from "@picmo/popup-picker";
-import { Emoji, Picker } from 'emoji-mart'
-import { EmojiPicker } from "picmo";
+import { Picker } from 'emoji-mart'
 
 // Connects to data-controller="emoji-picker"
 export default class extends Controller {

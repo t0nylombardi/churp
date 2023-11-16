@@ -31,7 +31,7 @@ class ChurpsController < ApplicationController
   # POST /churps.json
   def create
     @churp = Churp.new(churp_params.merge(user: current_user))
-
+    # binding.pry
     respond_to do |format|
       if @churp.save
         format.html { redirect_to root_path, notice: 'churp was successfully created.' }

@@ -33,11 +33,11 @@ gem 'mini_magick'
 gem 'name_of_person'
 gem 'pagy'
 gem 'pundit', '~> 2.3', '>= 2.3.1'
-gem 'searchjoy'
 gem 'searchkick'
 gem 'sidekiq', '~> 6.5', '>= 6.5.4'
 gem 'simple_form', '~> 5.2'
 gem 'stripe'
+gem 'twitter-text', '~> 3.1'
 gem 'view_component', '~> 3.6'
 
 # feature flags

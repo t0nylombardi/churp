@@ -42,6 +42,9 @@ Lint/UselessAccessModifier:
   ContextCreatingMethods:
     - class_methods
 
+# Lint/MissingSuper
+#   enforcedStyle: false
+
 ## Disable most Metrics/*Length cops
 # Reason: those are often triggered and force significant refactors when this happend
 #         but the team feel they are not really improving the code quality.
