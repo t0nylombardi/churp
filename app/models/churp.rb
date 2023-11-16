@@ -35,7 +35,7 @@ class Churp < ApplicationRecord
   has_one_attached :churp_pic
 
   validates :churp_pic, acceptable_image: true
-  validates :content, length: { maximum: 331 }, allow_blank: false, unless: :churp_id
+  validates :content, churp_length: true
 
   after_create :broadcast_churp
   after_commit :create_hash_tags, on: :create

@@ -28,6 +28,7 @@ namespace :seed do
         content: sentence + hash_tag,
         user_id: User.all.sample.id
       )
+      churp.save
       Rake::Task['seed:create_comments'].invoke(churp:)
       Rake::Task['seed:create_comments'].reenable
       puts "Created churp: #{churp.id} from: #{churp.user.email}"

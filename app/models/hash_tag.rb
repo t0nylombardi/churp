@@ -10,7 +10,8 @@
 #  updated_at :datetime         not null
 #
 class HashTag < ApplicationRecord
-  searchkick word_start: [:name]
+  include ActionText::Attachable
+  searchkick word_middle: [:name]
 
   has_many :churp_hash_tags, dependent: :restrict_with_exception
   has_many :churps, through: :churp_hash_tags
@@ -20,8 +21,6 @@ class HashTag < ApplicationRecord
       .group(:name)
       .having('count(*) > 1').size
   }
-
-  after_commit :reindex_hashtags
 
   def self.top_three
     most_popular.to_h.sort_by { |_k, v| -v }[0..3]
@@ -34,6 +33,7 @@ class HashTag < ApplicationRecord
 
   private
 
+  after_commit :reindex_hashtags
   def reindex_hashtags
     reindex
   end

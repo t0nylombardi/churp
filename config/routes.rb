@@ -3,9 +3,12 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  get 'mentions/index'
   get 'errors/not_found'
   get 'errors/internal_server_error'
+
   mount Flipper::UI.app(Flipper) => '/flipper'
+
   devise_for :users
   resources  :users, only: %i(index show) do
     member do
@@ -33,6 +36,8 @@ Rails.application.routes.draw do
   end
   resources :relationships, only: %i(create destroy)
 
+  resources :mentions, only: %i(index)
+
   get 'search', to: 'search#index'
   get 'search/hashtags', to: 'search#search_hashtags'
   post 'search/suggestions', to: 'search#suggestions', as: 'search_suggestions'
@@ -50,6 +55,8 @@ Rails.application.routes.draw do
   get '/ads_info', to: redirect('/ads-info')
 
   get '/about', to: 'static#about', as: :about
+
+  get '/test', to: 'static#test', as: :test
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

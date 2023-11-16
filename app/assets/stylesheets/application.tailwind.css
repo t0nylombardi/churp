@@ -78,3 +78,11 @@
 .error {
   @apply border-red-700 text-red-700 hover:border-red-700;
 }
+
+.newChurpText {
+  @apply dark:text-white text-gray-900 placeholder-gray-400 w-full bg-transparent border-0 focus:outline-none focus:ring-0 resize-none
+}
+
+.curpContent a {
+  @apply hover:underline
+}
