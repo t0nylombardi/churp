@@ -12,14 +12,6 @@ class ChurpLengthValidator < ActiveModel::EachValidator
   private
 
   def too_long?(value)
-    strip_whitespace(strip_html(value)) >= MAX_CHARS
-  end
-
-  def strip_html(value)
-    ActionView::Base.full_sanitizer.sanitize(value)
-  end
-
-  def strip_whitespace(value)
-    value.strip
+    Extractor.new.sanitize(value) >= MAX_CHARS
   end
 end

@@ -535,6 +535,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_storage_validations
+  addressable (~> 2.8)
   annotate
   aws-sdk-s3
   bootsnap

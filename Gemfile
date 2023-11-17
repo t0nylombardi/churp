@@ -19,6 +19,7 @@ gem 'sprockets-rails'
 gem 'stimulus-rails'
 gem 'turbo-rails'
 
+gem 'addressable', '~> 2.8'
 gem 'active_storage_validations'
 gem 'aws-sdk-s3'
 gem 'bulma-rails', '~> 0.6.1'

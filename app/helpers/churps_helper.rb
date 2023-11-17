@@ -1,29 +1,34 @@
 # frozen_string_literal: true
 
 module ChurpsHelper
-  def churp_div(view)
-    if view == :churp
-      <<-HTML
-    <div#{' '}
-      data-controller="show_churp"
-      data-action="click->show_churp#show"
-      data-show_churp-url-value="<%= show_churp_path(current_user, churp) %>"
-      class="#{churp_class(view)}">
-      HTML
-    end
+  URL_PATTERN = %r{((https?|ftp|file):\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?}
 
-    <<-HTML
-    <div class="#{churp_class(view)}">
-    HTML
+  def link_wrapper(content)
+    text = content_to_s(content)
+
+    href_wrapper(hashtag_wrapper(text)).html_safe
   end
 
-  def churp_class(view, options = {})
-    if view == :churp
-      "z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-dim-300
-      cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r #{options[:extended_classes]}"
-    end
+  def href_wrapper(text)
+    text.strip.gsub(URL_PATTERN, html_wrapper(search: false))
+  end
 
-    "z-0 churp-block border-b border-gray-200 dark:border-dim-200 pb-4 border-l border-r #{options[:extended_classes]}"
+  def hashtag_wrapper(text)
+    text.gsub(/#\w+/, html_wrapper(search: true))
+  end
+
+  def html_wrapper(search: false)
+    search_str = search ? '/search?q=\\0 ' : '\\0 '
+
+    "<a href=#{search_str} class='hover:underline' rel='noopener noreferrer nofollow' target='_blank'>\\0</a>"
+  end
+
+  def shorten_url(url)
+    URI(url).host
+  end
+
+  def content_to_s(content)
+    content.body.to_s
   end
 
   def share_icon_class(options = {})
