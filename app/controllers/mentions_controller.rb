@@ -4,7 +4,7 @@ class MentionsController < ApplicationController
   def index
     # service ||= MentionsQueryService.call(params[:query])
     # @mentions = parse_mentions(service.result) if service.success?
-    @mentions = User.where('username ILIKe ?', "%#{params[:query]}%").limit(10)
+    @mentions = User.where('username ILIKe ?', "%#{params[:query]}%").limit(5)
 
     respond_to do |format|
       format.json

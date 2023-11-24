@@ -25,7 +25,7 @@ export default class extends Controller {
       menuItemTemplate(item) {
         return `<div class="mentionsListContainer">
                 <div class="mentions-list-centered">
-                  <div class="flex flex-row">
+                  <div class="flex flex-row justify-around">
                     <img class="w-10 h-10 rounded-full" src="${item.original.profile_pic}" alt="${item.original.name}"/>
                     <div class="flex flex-col ml-2">
                       <h1 class="mentions-list-header">
@@ -61,11 +61,11 @@ export default class extends Controller {
     this.editor.insertString(" ")
   }
 
-  _pasteHtml(html, startPos, endPos) {
+  _pasteHtml(_html, startPos, endPos) {
     let range = this.editor.getSelectedRange()
     let position = range[0]
     let length = endPos - startPos
-    this.editor.setSelectedRange([range[0] - length, range[0]])
+    this.editor.setSelectedRange([position - length, position])
     this.editor.deleteInDirection("backward")
   }
 }

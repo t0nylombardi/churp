@@ -7,7 +7,6 @@ class MentionsQueryService < ApplicationService
   attr_accessor :query
 
   def initialize(query)
-    # super(query)
     @query = query
   end
 

@@ -1,0 +1,10 @@
+  <div>
+    <%= turbo_stream_from "notifications_count_#{user.id}" %>
+    <%= turbo_frame_tag "notifications_count_#{user.id}" do %>
+      <% if count.positive? %>
+        <div class="notificationCount">
+          <%= count %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>

@@ -7,6 +7,23 @@ module ApplicationHelper
     ChurpSocial::Version.to_s
   end
 
+  def link_wrapper(content)
+    ChurpWrapperService.call(content).result
+  end
+
+  def header_links(controller, options = {})
+    case controller
+    when 'users'
+      render Followers::HeaderComponent.new(view: options[:view],
+                                            followers: options[:followers],
+                                            following: options[:following])
+    when 'notifications'
+      render Notifications::HeaderComponent.new
+    else
+      ''
+    end
+  end
+
   def flash_classes(flash_type)
     flash_base = 'px-2 py-4 mx-auto font-sans font-medium text-center text-white'
     {
@@ -80,22 +97,5 @@ module ApplicationHelper
     end
   end
 
-  def profile_image(user, options = {})
-    size = case options[:size]
-           when 'large'
-             'w-20 h-20'
-           when 'small'
-             'w-10 h-10'
-           else
-             'w-14 h-14'
-           end
 
-    classes = "#{size} flex-skrink-0 rounded-full border-2 border-white"
-
-    if user.profile_image.attached?
-      image_tag user.profile_image, class: classes
-    else
-      image_tag 'https://doodleipsum.com/700/avatar-5?bg=3D27F6&i=f339578a64040310d3eb5bd82b550627', class: classes
-    end
-  end
 end

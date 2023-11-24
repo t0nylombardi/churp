@@ -1,16 +1,22 @@
 <div class="w-full sm:w-600 h-screen scrollbar-hide">
   
-  <%= render 'shared/header', view: nil, name: 'Home' %>
+  <%= render 'shared/header',
+              view: nil,
+              name: 'Home',
+              followers: nil,
+              following: nil,
+              is_active: nil %>
 
   <%= render 'new_churp', churp: @churp %>
 
+  <div data-controller="broadcast-churps" class="border-l border-r border-gray-200 dark:border-dim-200">
     <%= render 'notify_new_churps' %>
-
-    <%#= turbo_frame_tag "churps" do %>
+    <div data-broadcast-churps-target="container">
       <% @churps.each do |c| %>
         <%= render partial: "churps/#{c.churp_type}", locals: { churp: c } %>
       <% end %>
-    <%# end %>
+    </div>
+  </div>
     <%= render 'churps/shared/next_page' %>
 
     <%= render 'timeline_notication' %>

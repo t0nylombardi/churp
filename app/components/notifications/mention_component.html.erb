@@ -1,0 +1,39 @@
+  <div
+    data-controller="show-churp"
+    data-action="click->show-churp#showChurp"
+    data-show-churp-url-value="<%= show_churp_path(@churp.user, @churp) %>"
+    style="<%= @unread ? 'background-color:#16232E;' : ''%>"
+    class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-[#16232E] cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
+    <!-- link -->
+    <%= render 'churps/shared/user_link', churp: @churp %>
+
+    <div class="pl-16 pr-12">
+
+      <p class="curp-content my-4 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
+        <%= helpers.link_wrapper(@churp.content) %>
+      </p>
+
+      <% if @churp.churp_pic.attached? %>
+        <img class="rounded-2xl" src=<%= url_for(@churp.churp_pic) %>/>
+      <% end %>
+
+        <div class="flex items-center justify-center">
+
+          <%# Comments %>
+          <%= render 'churps/shared/comments', churp: @churp %>
+
+          <%# Rechurp %>
+          <%= render 'churps/shared/rechurp_button', churp: @churp %>
+
+          <%= render 'churps/shared/likes', churp: @churp %>
+
+          <%# Number of views %>
+          <%= render 'churps/shared/analytics', churp: @churp %>
+
+          <%# Share %>
+          <%= render 'churps/shared/share' %>
+
+        </div>
+
+    </div>
+  </div>
