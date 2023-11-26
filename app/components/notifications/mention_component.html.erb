@@ -3,9 +3,10 @@
     data-action="click->show-churp#showChurp"
     data-show-churp-url-value="<%= show_churp_path(@churp.user, @churp) %>"
     style="<%= @unread ? 'background-color:#16232E;' : ''%>"
-    class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-[#16232E] cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
+    class="<%= new_notification? ? 'dark:bg-[#16232E]' : ''%> z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-[#16232E] cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
     <!-- link -->
-    <%= render 'churps/shared/user_link', churp: @churp %>
+    <%= render ChurpComponents::UserLinkComponent.new(churp: @churp) %>
+    <%#= render 'churps/shared/user_link', churp: @churp %>
 
     <div class="pl-16 pr-12">
 

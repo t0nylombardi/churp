@@ -11,7 +11,7 @@
       <%= render Notifications::MentionComponent.new(
         user: notification.to_notification.creator,
         churp: notification.to_notification.churp,
-        unread: notification.unread?) %>
+        unread: notification.unread?),
+        read_at: notification.read_at %>
     <% end %>
-
 </div>

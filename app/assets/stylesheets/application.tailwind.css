@@ -96,5 +96,7 @@
 }
 
 .notificationCount {
-  @apply absolute bottom-auto left-auto right-0 top-0 z-10 inline-block -translate-y-1/2 translate-x-[36%] rotate-0 skew-x-0 skew-y-0 scale-x-100 scale-y-100 whitespace-nowrap text-xs font-bold rounded-[50%] w-[1.4rem] h-[1.4rem] p-1 bg-vividSkyBlue text-gray-100 text-center;
+  @apply absolute bottom-auto left-auto right-0 top-0 z-10 inline-block -translate-y-1/2 translate-x-[36%];
+  @apply rotate-0 skew-x-0 skew-y-0 scale-x-100 scale-y-100 whitespace-nowrap text-xs font-bold rounded-[50%];
+  @apply p-1 bg-vividSkyBlue text-gray-100 text-center;
 }

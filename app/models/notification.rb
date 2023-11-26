@@ -20,7 +20,6 @@ class Notification < ApplicationRecord
   include Noticed::Model
   belongs_to :recipient, polymorphic: true
 
-
   def unread_notifications
     notifications.unread
   end

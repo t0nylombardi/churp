@@ -6,7 +6,7 @@ class NotificationsController < ApplicationController
   def index
     return unless current_user
 
+    @notifications = current_user.notifications.sort.reverse
     current_user.notifications.mark_as_read!
-    @notifications = current_user.notifications.reverse
   end
 end

@@ -14,7 +14,6 @@
     <span class="hidden xl:block ml-4 font-bold text-md">Explore</span>
   </a>
 
-  <%= turbo_stream_from "notifications_count" %>
   <%= render 'shared/notificaions', user: current_user %>
   <%#= render Nav::NotificationsComponent.new(user: current_user) %>
 

@@ -70,6 +70,13 @@ class Churp < ApplicationRecord
     ActionCable.server.broadcast('churps_channel', rendered_churp)
   end
 
+  def rendered_churp
+    ApplicationController.renderer.render(
+      partial: 'churps/churp',
+      locals: { churp: self }
+    )
+  end
+
   def broadcast_notifications
     usernames = extract_usernames(text)
 
@@ -78,12 +85,6 @@ class Churp < ApplicationRecord
     send_notifications(usernames)
   end
 
-  def rendered_churp
-    ApplicationController.renderer.render(
-      partial: 'churps/churp',
-      locals: { churp: self }
-    )
-  end
 
   def text
     content.body.to_s
@@ -105,8 +106,8 @@ class Churp < ApplicationRecord
   def broadcast(user)
     count = user.unread_notifications.count
     broadcast_update_later_to "notifications_count_#{user.id}",
-                               target: "notification_count_#{user.id}",
-                               partial: 'mentions/notification_count',
-                               locals: { user:, count: }
+                              target: "notifications_count_#{user.id}",
+                              partial: 'mentions/notification_count',
+                              locals: { user:, count: }
   end
 end
