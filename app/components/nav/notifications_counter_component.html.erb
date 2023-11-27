@@ -1,0 +1,10 @@
+<div>
+  <%= helpers.turbo_stream_from "notifications_count_#{@user.id}" %>
+  <%= tag.turbo_frame "notifications_count_#{@user.id}" do %>
+    <% if @count.positive? %>
+      <div class="notificationCount">
+        <%= counter %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

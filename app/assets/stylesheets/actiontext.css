@@ -29,3 +29,86 @@
   padding: 0 !important;
   max-width: 100% !important;
 }
+
+trix-toolbar {
+  display: none !important;
+}
+
+.trix-dialogs {
+  display: none !important;
+}
+
+#trix-toolbar-1 {
+  display: none;
+}
+
+.attachment__toolbar {
+  display: none !important;
+}
+
+.trix-content {
+  color: white;
+  padding-bottom: 1rem;
+}
+
+.trix-content pre {
+  background: #282A36;
+}
+
+.trix-input--dialog {
+  display: none !important;
+}
+
+
+figure.attachment[data-trix-content-type~='inline-element'] {
+  display: inline-block;
+  width: auto;
+  padding: 0;
+  margin: 0 !important;
+}
+
+.tribute-container {
+  display: block;
+  background-color: #192734;
+  /* white-space: nowrap; */
+  position: absolute;
+  height: 230px;
+  /* overflow: hidden; */
+  top: 118.199px !important;
+  left: 541.143px !important;
+  border: #000;
+  box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 15px;
+  z-index: 99999;
+}
+
+.tribute-container ul {
+  /* display: block;
+  overflow: scroll; */
+}
+
+.tribute-container ul li:first-of-type {
+  background-color: #1e3040;
+}
+
+.tribute-container ul li {
+  color:#fff;
+  background-color: #192734;
+  padding: 0.5rem 2rem;
+}
+
+.tribute-container ul li:hover {
+  background-color: #1e3040;
+}
+
+.mentions-list-container {
+  @apply text-blue-400 text-sm font-normal border-b border-gray-200 dark:border-dim-200;
+  @apply hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-300 ease-in-out;
+}
+
+.mentions-list-centered {
+  @apply flex flex-row justify-between;
+}
+
+.mentions-list-header {
+  @apply text-gray-900 dark:text-white font-bold text-sm;
+}

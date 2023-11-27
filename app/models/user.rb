@@ -36,8 +36,10 @@
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_slug                  (slug) UNIQUE
 #  index_users_on_unlock_token          (unlock_token) UNIQUE
+#  index_users_on_username              (username) UNIQUE
 #
 class User < ApplicationRecord
+  include ActionText::Attachable
   extend FriendlyId
   friendly_id :username, use: :slugged
   has_person_name
@@ -50,7 +52,7 @@ class User < ApplicationRecord
   has_many :churps, dependent: :destroy
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
-  has_one :profile, dependent: :destroy
+  has_many :notifications, as: :recipient, dependent: :destroy
 
   has_many :active_relationships, dependent: :destroy,
                                   class_name: 'Relationship',
@@ -62,6 +64,9 @@ class User < ApplicationRecord
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
+  has_one :profile, dependent: :destroy
+
+  searchkick highlight: [:username], word_middle: [:username]
 
   accepts_nested_attributes_for :profile
 
@@ -69,6 +74,11 @@ class User < ApplicationRecord
   # TODO: Uniqueness validation should have a unique index on the database column.
   validates :username, :email, uniqueness: true
   validate :password_complexity
+
+  after_create :set_username
+  def set_username
+    self[:username] = "@#{username}" unless username.start_with?('@')
+  end
 
   # Follows a user.
   def follow(other_user)
@@ -85,7 +95,16 @@ class User < ApplicationRecord
     following.include?(other_user)
   end
 
+  def unread_notifications
+    notifications.unread
+  end
+
   private
+
+  after_commit :reindex_users
+  def reindex_users
+    reindex
+  end
 
   def password_complexity
     message = <<-TEXT.gsub(/\s+/, ' ').strip

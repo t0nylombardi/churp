@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 namespace :seed do
-
   desc 'Seeds database'
   task db_populate: :environment do
     message "--------------------------------------------------------------\n"
@@ -10,8 +9,8 @@ namespace :seed do
 
     Rake::Task['seed:destroy_all_records'].execute
     Rake::Task['seed:create_admin'].execute
-    Rake::Task['seed:create_users'].execute(num_of_users: 50)
-    Rake::Task['seed:create_churps'].execute(num_of_churps: 50)
+    Rake::Task['seed:create_users'].execute(num_of_users: 250)
+    Rake::Task['seed:create_churps'].execute(num_of_churps: 250)
     Rake::Task['seed:create_follows'].execute
 
     message '--------------------------------------------------------------'
@@ -29,7 +28,6 @@ namespace :seed do
     View.destroy_all
   end
 end
-
 
 def message(message, delay = 0)
   puts message if Rails.env.development?

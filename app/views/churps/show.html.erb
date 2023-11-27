@@ -1,6 +1,11 @@
 <div class="w-full sm:w-600 h-screen scrollbar-hide">
 
-  <%= render 'shared/header', view: :show, name: 'Post' %>
+  <%= render 'shared/header',
+              view: :show,
+              name: 'Post',
+              followers: nil,
+              following: nil,
+              is_active: nil %>
 
   <%= render 'show_churp', churp: @churp %>
 

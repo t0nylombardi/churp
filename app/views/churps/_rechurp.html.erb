@@ -23,14 +23,14 @@
       <p
         data-action="click->show_churp#show" 
         class="my-8 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
-        <%= churp.body %>
+        <%= churp.content %>
       </p>
 
       <% if churp.churp_pic.attached? %>
         <img class="rounded-2xl" src=<%= url_for(churp.churp_pic) %>/>
       <% end %>
 
-        <div class="z-20 flex items-center justify-center">
+        <div class="z-0 flex items-center justify-center">
 
           <%# Comments %>
           <%= render 'churps/shared/comments', churp: churp %>

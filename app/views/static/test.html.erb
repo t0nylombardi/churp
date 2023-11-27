@@ -1,0 +1,14 @@
+<%= form_with do |f| %>
+
+  <%= f.rich_text_area :content,
+                        data: {
+                          controller: "mentions",
+                          mentions_target: "field",
+                        },
+                      class: "",
+                      placeholder: "What's happening?",
+                      label: false %>
+
+      <%= f.button :submit, value: "churp", class: "" %>
+
+<% end %>

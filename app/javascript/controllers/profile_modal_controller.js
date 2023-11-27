@@ -2,6 +2,9 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["modal", "hideable"]
+  connect(){
+    console.log("modal connect ");
+  }
 
   // hide modal
   // action: "profile-modal#hideModal"

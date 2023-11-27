@@ -5,7 +5,6 @@
 # Table name: churps
 #
 #  id            :bigint           not null, primary key
-#  body          :text
 #  rechurp_count :integer          default(0)
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
@@ -23,7 +22,7 @@
 
 FactoryBot.define do
   factory :churp do
-    body { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
+    content { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
     user
   end
 

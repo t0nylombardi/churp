@@ -36,14 +36,14 @@
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_slug                  (slug) UNIQUE
 #  index_users_on_unlock_token          (unlock_token) UNIQUE
+#  index_users_on_username              (username) UNIQUE
 #
 FactoryBot.define do
   factory :user do
     email { Faker::Internet.email }
     password { 'Passw0rd1!' }
     password_confirmation { 'Passw0rd1!' }
-    username { "@#{Faker::Internet.username(specifier: 8)}" }
-
+    username { Faker::Internet.username(specifier: 10).camelize }
   end
 
   trait :with_profile do

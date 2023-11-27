@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: likes
@@ -21,5 +23,4 @@
 class Like < ApplicationRecord
   belongs_to :user, dependent: :destroy
   belongs_to :likeable, polymorphic: true
-  
 end

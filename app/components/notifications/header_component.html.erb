@@ -1,0 +1,28 @@
+<div class="border-b border-l border-r dark:border-gray-700 mt-4">
+  <div class="flex items-stretch justify-between text-white">
+
+    <div class="w-full h-16 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out py-4 px-2">
+      <div class="max-w-full text-sm flex justify-center align-middle">
+        <%= link_to 'verified_followers', class: 'h-12 min-w-fit align-middle' do %>
+          <span class="text-sm font-bold">
+            Mentions
+          </span>
+          <%= render Notifications::ActiveUnderlineComponent.new %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="w-full h-16 py-4 px-2">
+      <div class="max-w-full text-sm flex justify-center align-middle">
+        <%# spacers for futer views %>
+      </div>
+    </div>
+
+    <div class="w-full h-16 py-4 px-2">
+      <div class="max-w-full text-sm flex justify-center align-middle">
+        <%# spacers for futer views %>
+      </div>
+    </div>
+
+  </div>
+</div>

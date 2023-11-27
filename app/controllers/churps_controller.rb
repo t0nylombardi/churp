@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ChurpsController < ApplicationController
-  before_action :authenticate_user!, except: %i(show)
+  before_action :authenticate_user!
   before_action :set_churp, only: %i(show edit update destroy like rechurp)
 
   def index
@@ -31,14 +31,12 @@ class ChurpsController < ApplicationController
   # POST /churps.json
   def create
     @churp = Churp.new(churp_params.merge(user: current_user))
-
     respond_to do |format|
       if @churp.save
-
         format.html { redirect_to root_path, notice: 'churp was successfully created.' }
         format.json { render :show, status: 201, location: @churp }
       else
-        format.html { render :new, status: 422 }
+        format.html { redirect_back fallback_location: @churp, alert: 'Could not churp' }
         format.json { render json: @churp.errors, status: 422 }
       end
     end
@@ -83,7 +81,7 @@ class ChurpsController < ApplicationController
   end
 
   def rechurp
-    @rechurp = current_user.churps.new(body: @churp.body, churp_id: @churp.id)
+    @rechurp = current_user.churps.new(body: @churp.content, churp_id: @churp.id)
     increment_count = @rechurp.rechurp_count + 1
     @rechurp.update(rechurp_count: increment_count)
 
@@ -103,8 +101,8 @@ class ChurpsController < ApplicationController
     @churp = Churp.find(params[:id] || params[:churp_id])
   end
 
-  # Never trust parameters from the scary internet, only allow the white list through.
+  # Never trust a big booty and a smile
   def churp_params
-    params.require(:churp).permit(:body, :churp_id, :churp_pic)
+    params.require(:churp).permit(:content, :churp_id, :churp_pic)
   end
 end

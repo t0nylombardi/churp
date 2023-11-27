@@ -2,7 +2,6 @@
 
 class ProfilesController < ApplicationController
   include ActiveStorage::SetCurrent
-  before_action :authenticate_user!
   before_action :set_profile, only: %i(show update follow unfollow)
 
   def show
@@ -74,7 +73,8 @@ class ProfilesController < ApplicationController
   end
 
   def set_profile
-    @profile = User.friendly.find(params[:id]).profile
+    username = params[:id].delete('@')
+    @profile = User.friendly.find(username).profile
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.

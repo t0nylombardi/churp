@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: churp_hash_tags
@@ -15,6 +17,6 @@
 #
 require 'rails_helper'
 
-RSpec.describe ChurpHashTag, type: :model do
+RSpec.describe ChurpHashTag do
   pending "add some examples to (or delete) #{__FILE__}"
 end

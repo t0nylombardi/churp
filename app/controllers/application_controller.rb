@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 class ApplicationController < ActionController::Base
   include Pagy::Backend
+  before_action :authenticate_user!
 
   layout :layout_by_resource
 
@@ -18,15 +21,15 @@ class ApplicationController < ActionController::Base
     @popular_hashtags = HashTag.top_three
   end
 
-  def self.render_with_signed_in_user(user, *args)
+  def self.render_with_signed_in_user(user, *)
     ActionController::Renderer::RACK_KEY_TRANSLATION['warden'] ||= 'warden'
-    proxy = Warden::Proxy.new({}, Warden::Manager.new({})).tap{ |i| i.set_user(user, scope: :user) }
+    proxy = Warden::Proxy.new({}, Warden::Manager.new({})).tap { |i| i.set_user(user, scope: :user) }
     renderer = self.renderer.new('warden' => proxy)
-    renderer.render(*args)
+    renderer.render(*)
   end
 
   def not_found_method
-    render file: Rails.public_path.join('404.html'), status: :not_found, layout: false
+    render file: Rails.public_path.join('404.html'), status: 404, layout: false
   end
 
   protected

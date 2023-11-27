@@ -6,7 +6,7 @@ module ProfilesHelper
   def profile_background_image(profile_bg)
     return "background-image: url(#{DEFAULT_BG});" unless profile_bg&.attached?
 
-    "background-image: url(\'#{profile_bg.url}\');"
+    "background-image: url('#{profile_bg.url}');"
   end
 
   def form_profile_bg(profile_bg)
@@ -17,7 +17,7 @@ module ProfilesHelper
 
   def avatar_pic(profile)
     profile_pic = profile&.profile_pic
-    return  profile_pic.url if profile_pic&.attached?
+    return url_for_attachment(profile) if profile_pic&.attached?
     return letter_avatar(profile) unless profile_pic&.attached?
 
     'stanley-roper-profile.png'
@@ -27,6 +27,12 @@ module ProfilesHelper
     name = profile.name || 'Sage Doe'
     path = LetterAvatar.generate(name, 400).sub('public/', '')
     "#{churp_root_url}/#{path}"
+  end
+
+  def url_for_attachment(profile)
+    return Rails.application.routes.url_helpers.url_for profile.profile_pic if Rails.env.test?
+
+    profile.profile_pic.url
   end
 
   def churp_root_url
@@ -61,16 +67,15 @@ module ProfilesHelper
   end
 
   def profile_form_input_class(options = {})
-    "block shadow rounded-md border text-gray-800 border-gray-200 outline-none px-3 py-4 mt-2 w-full 
+    "block shadow rounded-md border text-gray-800 border-gray-200 outline-none px-3 py-4 mt-2 w-full
     #{options[:extended_classes]}"
   end
 
   def profile_form_label_class(options = {})
-    "absolute text-gray-400 dark:text-gray-500 duration-300 transform 
+    "absolute text-gray-400 dark:text-gray-500 duration-300 transform
     -translate-y-4 scale-75 top-4 z-10 origin-[0] left-2.5\
     peer-focus:text-blue-600 peer-focus:dark:text-blue-500\
     peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0
     peer-focus:scale-75 peer-focus:-translate-y-4 #{options[:extended_classes]}"
   end
-  
 end

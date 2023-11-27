@@ -11,7 +11,7 @@ module Middleware
 
     def call(env)
       @req = ::Rack::Request.new(env)
-      if @req.path_info =~ /view_pixel.png/
+      if /view_pixel.png/.match?(@req.path_info)
         pixel if View.create!(params)
       else
         @app.call(env)
