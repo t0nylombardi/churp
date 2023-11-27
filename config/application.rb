@@ -15,7 +15,7 @@ module ChurpSocial
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
 
-    config.exceptions_app = routes
+    config.exceptions_app = routes unless Rails.env.development?
 
     # Configuration for the application, engines, and railties goes here.
     #

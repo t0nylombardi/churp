@@ -6,9 +6,12 @@ export default class extends Controller {
   static values = { 
     url: String 
   }
-  connect() {}
+  connect() {
+    console.log("Connectting to data-controller='how-churp'");
+  }
 
   showChurp() {
+    console.log("show_churp");
     window.location.href = this.urlValue
   }
 }

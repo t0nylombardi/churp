@@ -20,6 +20,8 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Churp < ApplicationRecord
+  include Twitter::TwitterText::Extractor
+
   belongs_to :user
   belongs_to :churp, optional: true, dependent: :destroy
   has_many :likes, as: :likeable, dependent: :destroy
@@ -30,6 +32,7 @@ class Churp < ApplicationRecord
   # has_many :views
   has_many :churp_hash_tags, dependent: :destroy
   has_many :hash_tags, through: :churp_hash_tags, dependent: :destroy
+  has_many :notifications, as: :recipient, dependent: :destroy
 
   has_rich_text :content
   has_one_attached :churp_pic
@@ -37,8 +40,9 @@ class Churp < ApplicationRecord
   validates :churp_pic, acceptable_image: true
   validates :content, churp_length: true
 
+  after_create :create_hash_tags
   after_create :broadcast_churp
-  after_commit :create_hash_tags, on: :create
+  after_commit :broadcast_notifications
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
@@ -71,5 +75,9 @@ class Churp < ApplicationRecord
       partial: 'churps/churp',
       locals: { churp: self }
     )
+  end
+
+  def broadcast_notifications
+    BroadcastNotificationsService.call(self)
   end
 end

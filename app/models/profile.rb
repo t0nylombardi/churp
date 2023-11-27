@@ -53,6 +53,16 @@ class Profile < ApplicationRecord
 
   private
 
+  after_create :generate_profile_pic
+  def generate_profile_pic
+    path = LetterAvatar.generate(name, 400)
+    profile_pic.attach(
+      io: File.open(path),
+      filename: File.basename(path),
+      content_type: 'image/png'
+    ).save
+  end
+
   after_commit :reindex_profiles
   def reindex_profiles
     reindex

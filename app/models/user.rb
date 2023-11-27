@@ -52,7 +52,7 @@ class User < ApplicationRecord
   has_many :churps, dependent: :destroy
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
-  has_one :profile, dependent: :destroy
+  has_many :notifications, as: :recipient, dependent: :destroy
 
   has_many :active_relationships, dependent: :destroy,
                                   class_name: 'Relationship',
@@ -64,6 +64,7 @@ class User < ApplicationRecord
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
+  has_one :profile, dependent: :destroy
 
   searchkick highlight: [:username], word_middle: [:username]
 
@@ -76,7 +77,7 @@ class User < ApplicationRecord
 
   after_create :set_username
   def set_username
-    self[:username] = "@#{username}"
+    self[:username] = "@#{username}" unless username.start_with?('@')
   end
 
   # Follows a user.
@@ -92,6 +93,10 @@ class User < ApplicationRecord
   # Returns true if the current user is following the other user.
   def following?(other_user)
     following.include?(other_user)
+  end
+
+  def unread_notifications
+    notifications.unread
   end
 
   private

@@ -1,8 +1,24 @@
 # frozen_string_literal: true
 
-# This file is copied to spec/ when you run 'rails generate rspec:install'
-require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
+if ENV['RAILS_ENV'] == 'test'
+  require 'simplecov'
+  SimpleCov.start 'rails' do
+    add_filter 'config/initializers/sentry.rb'
+    add_filter 'config/initializers/flipper.rb'
+    add_filter 'config/routes.rb'
+    add_filter 'spec/factories/*'
+    add_filter 'spec/support/*'
+
+    add_group 'Policies', 'app/policies'
+    add_group 'Presenters', 'app/presenters'
+    add_group 'Serializers', 'app/serializers'
+    add_group 'Services', 'app/services'
+    add_group 'Validators', 'app/validators'
+  end
+end
+
+require 'spec_helper'
 require_relative '../config/environment'
 # Prevent database truncation if the environment is production
 abort('The Rails environment is running in production mode!') if Rails.env.production?
@@ -50,6 +66,9 @@ RSpec.configure do |config|
   config.include Devise::Test::ControllerHelpers, type: :controller
 
   config.include Warden::Test::Helpers
+
+  ActiveStorage::Current.url_options = { host: 'https://example.com' }
+
 
   # add until here
   # ---------------------------------------------

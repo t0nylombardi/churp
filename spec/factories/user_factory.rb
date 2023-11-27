@@ -43,7 +43,7 @@ FactoryBot.define do
     email { Faker::Internet.email }
     password { 'Passw0rd1!' }
     password_confirmation { 'Passw0rd1!' }
-    username { "@#{Faker::Internet.username(specifier: 8)}" }
+    username { Faker::Internet.username(specifier: 10).camelize }
   end
 
   trait :with_profile do

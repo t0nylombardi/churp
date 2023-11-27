@@ -3,22 +3,22 @@ import { Controller } from "@hotwired/stimulus";
 // Connects to data-controller="new_churps"
 export default class extends Controller {
   static targets = ["container", "notification", "notificationParent"];
+  static classes = ["change"]
+
   connect() {
-    this.newChurps = [];    
+    this.newChurps = [];
     window.addEventListener("newChurp", (e) => {
       this.newChurps.push(e.detail);
-      setTimeout(() => {
-        console.log("Delayed for 1 second.");
-        this.showNotification();
-      }, "1000");
+      this.showNotification();
     });
   }
+
   disconnect() {
     window.removeEventListener("newChurp", this.showNotification);
   }
+
   showNotification() {
-    this.notificationParentTarget.style.display = "block";
-    this.notificationTarget.style.display = "block";
+    this.toggle()
     this.notificationTarget.innerText = `Load ${this.newChurps.length} new Churps`;
   }
 
@@ -34,6 +34,12 @@ export default class extends Controller {
       this.containerTarget.prepend(churpNode);
     });
       this.newChurps = [];
-      this.notificationTarget.style.display = "none";
+      this.toggle();
+  }
+
+  toggle() {
+    this.notificationParentTargets.forEach((el) => {
+      el.hidden = !el.hidden;
+    });
   }
 }

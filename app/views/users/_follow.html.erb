@@ -15,7 +15,6 @@
         <div class="">
           <div class="flex items-center h-full text-gray-800 dark:text-white">
             <% unless current_user.following?(user) %>
-            <%= puts "\n\n\n current_user following? #{user.username} #{current_user.following?(user)} \n\n\n"%>
               <%= form_for(current_user.active_relationships.build, remote: true) do |f| %>
                 <div><%= hidden_field_tag :followed_id, user.id %></div>
                 <%= f.submit "Follow", class: "font-bold text-white bg-vividSkyBlue hover:bg-cyan-600 px-6 py-1 rounded-full" %>

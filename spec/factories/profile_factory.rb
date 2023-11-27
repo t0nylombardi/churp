@@ -39,12 +39,6 @@ FactoryBot.define do
         filename: 'twitter_bg.jpeg',
         content_type: 'image/jpeg'
       )
-
-      profile.profile_pic.attach(
-        io: File.open(Rails.root.join('spec', 'fixtures', 'images', 'stanley-roper-profile.png')),
-        filename: 'twitter_bg.jpeg',
-        content_type: 'image/jpeg'
-      )
     end
   end
 end

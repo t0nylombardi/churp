@@ -1,6 +1,10 @@
 test:
   service: Disk
   root: <%= Rails.root.join("tmp/storage") %>
+  url_options:
+    protocol: 'http'
+    host: 'localhost'
+    port: '3000'
 
 local:
   service: Disk

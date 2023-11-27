@@ -1,0 +1,11 @@
+<div>
+  <a href="/notifications" class="flex items-center justify-center xl:justify-start text-gray-800 dark:text-white hover:text-vividSkyBlue dark:hover:text-vividSkyBlue mb-8 transition duration-350 ease-in-out">
+    <div class="relative">
+      <%= render Icons::NotificationBellComponent.new  %>
+      <%= render Nav::NotificationsCounterComponent.new(user: @user, count: @user.unread_notifications.count) %>
+    </div>
+    <div>
+      <span class="hidden xl:block ml-4 font-bold text-md">Notifications</span>
+    </div>
+  </a>
+</div>

@@ -22,7 +22,7 @@
 
 FactoryBot.define do
   factory :churp do
-    body { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
+    content { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
     user
   end
 

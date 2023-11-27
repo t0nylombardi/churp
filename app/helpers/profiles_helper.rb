@@ -17,7 +17,7 @@ module ProfilesHelper
 
   def avatar_pic(profile)
     profile_pic = profile&.profile_pic
-    return profile_pic.url if profile_pic&.attached?
+    return url_for_attachment(profile) if profile_pic&.attached?
     return letter_avatar(profile) unless profile_pic&.attached?
 
     'stanley-roper-profile.png'
@@ -27,6 +27,12 @@ module ProfilesHelper
     name = profile.name || 'Sage Doe'
     path = LetterAvatar.generate(name, 400).sub('public/', '')
     "#{churp_root_url}/#{path}"
+  end
+
+  def url_for_attachment(profile)
+    return Rails.application.routes.url_helpers.url_for profile.profile_pic if Rails.env.test?
+
+    profile.profile_pic.url
   end
 
   def churp_root_url

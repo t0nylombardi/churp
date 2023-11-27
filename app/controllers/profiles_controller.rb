@@ -2,7 +2,6 @@
 
 class ProfilesController < ApplicationController
   include ActiveStorage::SetCurrent
-  before_action :authenticate_user!
   before_action :set_profile, only: %i(show update follow unfollow)
 
   def show

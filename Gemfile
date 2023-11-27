@@ -19,7 +19,9 @@ gem 'sprockets-rails'
 gem 'stimulus-rails'
 gem 'turbo-rails'
 
+gem 'activerecord-import', '~> 1.5', '>= 1.5.1'
 gem 'active_storage_validations'
+gem 'addressable', '~> 2.8'
 gem 'aws-sdk-s3'
 gem 'bulma-rails', '~> 0.6.1'
 gem 'cssbundling-rails'
@@ -31,6 +33,7 @@ gem 'httparty', '~> 0.21.0'
 gem 'letter_avatar'
 gem 'mini_magick'
 gem 'name_of_person'
+gem 'noticed', '~> 1.6', '>= 1.6.3'
 gem 'pagy'
 gem 'pundit', '~> 2.3', '>= 2.3.1'
 gem 'searchkick'
@@ -89,4 +92,5 @@ group :test do
   gem 'capybara'
   gem 'database_cleaner'
   gem 'selenium-webdriver'
+  gem 'simplecov', require: false
 end

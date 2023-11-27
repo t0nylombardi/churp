@@ -1,7 +1,7 @@
   <div 
     data-controller="show-churp"
     data-show-churp-url-value="<%= show_churp_path(churp.user, churp) %>"
-    class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
+    class="z-0 churp-block border-b border-gray-200 dark:border-dim-200 hover:bg-gray-100 dark:hover:bg-[#16232E] cursor-pointer transition duration-350 ease-in-out pb-4 border-l border-r">
     <!-- link -->
     <%= render 'churps/shared/user_link', churp: churp %>
 
@@ -10,7 +10,7 @@
       <p
         data-action="click->show-churp#showChurp" 
         class="curp-content my-4 text-base width-auto font-medium text-gray-800 dark:text-white flex-shrink">
-        <%= churp.content %>
+        <%= link_wrapper(churp.content) %>
       </p>
 
       <% if churp.churp_pic.attached? %>

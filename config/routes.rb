@@ -3,10 +3,6 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  get 'mentions/index'
-  get 'errors/not_found'
-  get 'errors/internal_server_error'
-
   mount Flipper::UI.app(Flipper) => '/flipper'
 
   devise_for :users
@@ -37,6 +33,7 @@ Rails.application.routes.draw do
   resources :relationships, only: %i(create destroy)
 
   resources :mentions, only: %i(index)
+  resources :notifications, only: %i(index)
 
   get 'search', to: 'search#index'
   get 'search/hashtags', to: 'search#search_hashtags'
@@ -62,8 +59,13 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get 'up', to: 'rails/health#show', as: :rails_health_check
 
-  match '/404', to: 'errors#not_found', via: :all
-  match '/500', to: 'errors#internal_server_error', via: :all
+  unless Rails.env.development?
+    get 'errors/not_found'
+    get 'errors/internal_server_error'
+
+    match '/404', to: 'errors#not_found', via: :all
+    match '/500', to: 'errors#internal_server_error', via: :all
+  end
 
   root to: 'churps#index'
 end
