@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class BroadcastNotificationsService < ApplicationService
-  include Turbo::StreamsHelper
   include ActionView::RecordIdentifier
   include Twitter::TwitterText::Extractor
 
@@ -22,7 +21,7 @@ class BroadcastNotificationsService < ApplicationService
 
   def extract_usernames(text)
     usernames = extract_mentioned_screen_names(text)
-    usernames.detect { |username| usernames.count(username) > 1 }.split unless usernames.empty?
+    usernames.detect { |username| usernames.count(username) >= 1 }.split unless usernames.nil?
   end
 
   def send_notifications(usernames)
@@ -35,10 +34,10 @@ class BroadcastNotificationsService < ApplicationService
 
   def broadcast(user)
     count = user.unread_notifications.count
-    Turbo::Streams::Broadcasts.broadcast_update_later_to "notifications_count_#{user.id}",
-                                                         target: "notifications_count_#{user.id}",
-                                                         partial: 'mentions/notification_count',
-                                                         locals: { user:, count: }
+    Turbo::StreamsChannel.broadcast_update_later_to "notifications_count_#{user.id}",
+                                                    target: "notifications_count_#{user.id}",
+                                                    partial: 'mentions/notification_count',
+                                                    locals: { user:, count: }
   end
 
   def text

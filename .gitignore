@@ -49,3 +49,4 @@
 .env*.local
 Dockerfile.production
 
+coverage

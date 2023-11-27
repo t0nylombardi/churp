@@ -42,7 +42,7 @@ class Churp < ApplicationRecord
 
   after_create :create_hash_tags
   after_create :broadcast_churp
-  after_create_commit :broadcast_notifications
+  after_commit :broadcast_notifications
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
@@ -78,36 +78,6 @@ class Churp < ApplicationRecord
   end
 
   def broadcast_notifications
-    usernames = extract_usernames(text)
-
-    return false unless usernames
-
-    send_notifications(usernames)
-  end
-
-
-  def text
-    content.body.to_s
-  end
-
-  def extract_usernames(text)
-    usernames = extract_mentioned_screen_names(text)
-    usernames.detect { |username| usernames.count(username) > 1 }.split unless usernames.empty?
-  end
-
-  def send_notifications(usernames)
-    usernames.each do |username|
-      user = User.friendly.find(username)
-      MentionNotification.with(message: self).deliver_later(user)
-      broadcast(user)
-    end
-  end
-
-  def broadcast(user)
-    count = user.unread_notifications.count
-    broadcast_update_later_to "notifications_count_#{user.id}",
-                              target: "notifications_count_#{user.id}",
-                              partial: 'mentions/notification_count',
-                              locals: { user:, count: }
+    BroadcastNotificationsService.call(self)
   end
 end
