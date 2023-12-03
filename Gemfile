@@ -7,13 +7,13 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-ruby '3.2.1'
+ruby '3.2.2'
 
 gem 'jbuilder'
 gem 'jsbundling-rails'
 gem 'pg', '~> 1.1'
-gem 'puma', '~> 5.0'
-gem 'rails', '~> 7.1.1'
+gem 'puma', '~> 6.3'
+gem 'rails', '~> 7.1', '>= 7.1.2'
 gem 'redis', '~> 4.0'
 gem 'sprockets-rails'
 gem 'stimulus-rails'
@@ -40,7 +40,6 @@ gem 'searchkick'
 gem 'sidekiq', '~> 6.5', '>= 6.5.4'
 gem 'simple_form', '~> 5.2'
 gem 'stripe'
-gem 'twitter-text', '~> 3.1'
 gem 'view_component', '~> 3.6'
 
 # feature flags

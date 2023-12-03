@@ -1,30 +1,25 @@
 Arguments: 
-  /Users/t0nylombardi/.asdf/installs/nodejs/19.8.1/bin/node /Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs add @emoji-mart/
+  /Users/t0nylombardi/.asdf/installs/nodejs/21.1.0/bin/node /Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs add @tailwindcss/forms @tailwindcss/typography
 
 PATH: 
-  /Users/t0nylombardi/.asdf/plugins/nodejs/shims:/Users/t0nylombardi/.asdf/installs/nodejs/19.8.1/bin:/Applications/Postgres.app/Contents/MacOS/bin:/Users/t0nylombardi/.asdf/shims:/usr/local/opt/asdf/libexec/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin:/Applications/Postgres.app/Contents/MacOS/bin:/Users/t0nylombardi/.cargo/bin
+  /Users/t0nylombardi/.asdf/plugins/nodejs/shims:/Users/t0nylombardi/.asdf/installs/nodejs/21.1.0/bin:/Applications/Postgres.app/Contents/MacOS/bin:/Users/t0nylombardi/.asdf/shims:/usr/local/opt/asdf/libexec/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin:/Applications/Postgres.app/Contents/MacOS/bin:/Users/t0nylombardi/.cargo/bin
 
 Yarn version: 
   1.22.19
 
 Node version: 
-  19.8.1
+  21.1.0
 
 Platform: 
   darwin x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@emoji-mart%2f: Request "https://registry.yarnpkg.com/@emoji-mart%2f" returned a 405
-      at params.callback [as _callback] (/Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:77684:18)
-      at self.callback (/Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:135297:22)
-      at Request.emit (node:events:512:28)
-      at Request.<anonymous> (/Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:136269:10)
-      at Request.emit (node:events:512:28)
-      at IncomingMessage.<anonymous> (/Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:136191:12)
-      at Object.onceWrapper (node:events:626:28)
-      at IncomingMessage.emit (node:events:524:35)
-      at endReadableNT (node:internal/streams/readable:1359:12)
-      at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+  SyntaxError: /Users/t0nylombardi/dev/t0nylombardi/churp/package.json: Expected double-quoted property name in JSON at position 960 (line 29 column 3)
+      at JSON.parse (<anonymous>)
+      at /Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:1104:57
+      at Generator.next (<anonymous>)
+      at step (/Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:310:30)
+      at /Users/t0nylombardi/dev/t0nylombardi/churp/.yarn/releases/yarn-1.22.19.cjs:321:13
 
 npm manifest: 
   {
@@ -34,18 +29,18 @@ npm manifest:
       "@emoji-mart/data": "^1.1.2",
       "@hotwired/stimulus": "^3.2.2",
       "@hotwired/turbo-rails": "^7.3.0",
-      "@picmo/popup-picker": "^5.8.5",
       "@rails/actioncable": "^7.0.8",
       "@rails/actiontext": "^7.0.8",
       "autoprefixer": "^10.4.16",
+      "emoji-mart": "^5.5.2",
       "esbuild": "^0.19.4",
-      "picmo": "^5.8.5",
       "postcss": "^8.4.30",
       "react": "^18.2.0",
       "react-dom": "^18.2.0",
       "stimulus-autocomplete": "^3.1.0",
       "stimulus-rails-nested-form": "^4.1.0",
       "tailwindcss": "^3.3.3",
+      "tributejs": "^5.1.3",
       "trix": "^2.0.6"
     },
     "scripts": {
@@ -54,10 +49,9 @@ npm manifest:
     },
     "devDependencies": {
       "@tailwindcss/aspect-ratio": "^0.4.2",
-      "@tailwindcss/forms": "^0.5.6",
       "@tailwindcss/line-clamp": "^0.4.4",
-      "@tailwindcss/typography": "^0.5.10"
     },
+  
     "packageManager": "yarn@1.22.19"
   }
 
@@ -189,26 +183,6 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.19.4.tgz#d46a6e220a717f31f39ae80f49477cc3220be0f0"
     integrity sha512-HP0GDNla1T3ZL8Ko/SHAS2GgtjOg+VmWnnYLhuTksr++EnduYB0f3Y2LzHsUwb2iQ13JGoY6G3R8h6Du/WG6uA==
   
-  "@floating-ui/core@^1.4.2":
-    version "1.5.0"
-    resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.5.0.tgz#5c05c60d5ae2d05101c3021c1a2a350ddc027f8c"
-    integrity sha512-kK1h4m36DQ0UHGj5Ah4db7R0rHemTqqO0QLvUqi1/mUUp3LuAWbWxdxSIf/XsnH9VS6rRVPLJCncjRzUvyCLXg==
-    dependencies:
-      "@floating-ui/utils" "^0.1.3"
-  
-  "@floating-ui/dom@^1.0.0":
-    version "1.5.3"
-    resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.5.3.tgz#54e50efcb432c06c23cd33de2b575102005436fa"
-    integrity sha512-ClAbQnEqJAKCJOEbbLo5IUlZHkNszqhuxS4fHAVxRPXPya6Ysf2G8KypnYcOTpx6I8xcgF9bbHb6g/2KpbV8qA==
-    dependencies:
-      "@floating-ui/core" "^1.4.2"
-      "@floating-ui/utils" "^0.1.3"
-  
-  "@floating-ui/utils@^0.1.3":
-    version "0.1.6"
-    resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.1.6.tgz#22958c042e10b67463997bd6ea7115fe28cbcaf9"
-    integrity sha512-OfX7E2oUDYxtBvsuS4e/jSn4Q9Qb6DzgeYtsAdkPZ47znpoNsMgZw0+tVijiv3uGNR6dgNlty6r9rzIzHjtd/A==
-  
   "@hotwired/stimulus@^3.2.2":
     version "3.2.2"
     resolved "https://registry.yarnpkg.com/@hotwired/stimulus/-/stimulus-3.2.2.tgz#071aab59c600fed95b97939e605ff261a4251608"
@@ -280,13 +254,6 @@ Lockfile:
       "@nodelib/fs.scandir" "2.1.5"
       fastq "^1.6.0"
   
-  "@picmo/popup-picker@^5.8.5":
-    version "5.8.5"
-    resolved "https://registry.yarnpkg.com/@picmo/popup-picker/-/popup-picker-5.8.5.tgz#081eb027d4fc88833642871d758665f9ec3397b2"
-    integrity sha512-s5BGZps8LnhEeO4EMU+t8Wcc05gtbzJvdD5vovulof18+uxN2tMFpX6RMpKwhh49AQMk2EK1t31PEyjAIK7UVw==
-    dependencies:
-      "@floating-ui/dom" "^1.0.0"
-  
   "@rails/actioncable@^7.0":
     version "7.0.8"
     resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-7.0.8.tgz#f44e7517f2d1570f1eabeea457dbeb17ed3a2d12"
@@ -328,10 +295,10 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/@tailwindcss/aspect-ratio/-/aspect-ratio-0.4.2.tgz#9ffd52fee8e3c8b20623ff0dcb29e5c21fb0a9ba"
     integrity sha512-8QPrypskfBa7QIMuKHg2TA7BqES6vhBrDLOv8Unb6FcFyd3TjKbc6lcmb9UPQHxfl24sXoJ41ux/H7qQQvfaSQ==
   
-  "@tailwindcss/forms@^0.5.6":
-    version "0.5.6"
-    resolved "https://registry.yarnpkg.com/@tailwindcss/forms/-/forms-0.5.6.tgz#29c6c2b032b363e0c5110efed1499867f6d7e868"
-    integrity sha512-Fw+2BJ0tmAwK/w01tEFL5TiaJBX1NLT1/YbWgvm7ws3Qcn11kiXxzNTEQDMs5V3mQemhB56l3u0i9dwdzSQldA==
+  "@tailwindcss/forms@^0.5.7":
+    version "0.5.7"
+    resolved "https://registry.yarnpkg.com/@tailwindcss/forms/-/forms-0.5.7.tgz#db5421f062a757b5f828bc9286ba626c6685e821"
+    integrity sha512-QE7X69iQI+ZXwldE+rzasvbJiyV/ju1FGHH0Qn2W3FKbuYtqp8LKcy6iSw79fVUT5/Vvf+0XgLCeYVG+UV6hOw==
     dependencies:
       mini-svg-data-uri "^1.2.3"
   
@@ -674,9 +641,9 @@ Lockfile:
     integrity sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==
   
   caniuse-lite@^1.0.30001538, caniuse-lite@^1.0.30001541:
-    version "1.0.30001541"
-    resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001541.tgz#b1aef0fadd87fb72db4dcb55d220eae17b81cdb1"
-    integrity sha512-bLOsqxDgTqUBkzxbNlSBt8annkDpQB9NdzdTbO2ooJ+eC/IQcvDspDc058g84ejCelF7vHUx57KIOjEecOHXaw==
+    version "1.0.30001565"
+    resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001565.tgz"
+    integrity sha512-xrE//a3O7TP0vaJ8ikzkD2c2NgcVUvsEe2IvFTntV4Yd1Z9FVzh+gW+enX96L0psrbaFMcVcH2l90xNuGDWc8w==
   
   chalk@^4.0.0:
     version "4.1.2"
@@ -895,10 +862,10 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.535.tgz#f14765820a0aa31425e1dbbae917cc70872b2a53"
     integrity sha512-4548PpR4S5X5dlvX8NUIw0njH7btQtBoJWcgzpq7n2F9NQ5gMXOPP/6p6iVx6+YT3FVioNhEGa14WJj1k+2SfA==
   
-  emojibase@^6.1.0:
-    version "6.1.0"
-    resolved "https://registry.yarnpkg.com/emojibase/-/emojibase-6.1.0.tgz#c3bc281e998a0e06398416090c23bac8c5ed3ee8"
-    integrity sha512-1GkKJPXP6tVkYJHOBSJHoGOr/6uaDxZ9xJ6H7m6PfdGXTmQgbALHLWaVRY4Gi/qf5x/gT/NUXLPuSHYLqtLtrQ==
+  emoji-mart@^5.5.2:
+    version "5.5.2"
+    resolved "https://registry.yarnpkg.com/emoji-mart/-/emoji-mart-5.5.2.tgz#3ddbaf053139cf4aa217650078bc1c50ca8381af"
+    integrity sha512-Sqc/nso4cjxhOwWJsp9xkVm8OF5c+mJLZJFoFfzRuKO+yWiN7K8c96xmtughYb0d/fZ8UC6cLIQ/p4BR6Pv3/A==
   
   end-of-stream@^1.1.0, end-of-stream@^1.4.1:
     version "1.4.4"
@@ -1546,13 +1513,6 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
     integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
   
-  picmo@^5.8.5:
-    version "5.8.5"
-    resolved "https://registry.yarnpkg.com/picmo/-/picmo-5.8.5.tgz#0719390979d638817d05d000a3b086cc93b71ebf"
-    integrity sha512-7I8jfuHALF9lkt3d+XCZGP+IwH7g91vYZv6XtRnJ99IDjnm92zel0L5DEo2FX0oaHUwRMBD/kn2knTZqwItudQ==
-    dependencies:
-      emojibase "^6.1.0"
-  
   picocolors@^1.0.0:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.0.0.tgz#cb5bdc74ff3f51892236eaf79d68bc44564ab81c"
@@ -1994,6 +1954,11 @@ Lockfile:
     version "0.0.3"
     resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
     integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
+  
+  tributejs@^5.1.3:
+    version "5.1.3"
+    resolved "https://registry.yarnpkg.com/tributejs/-/tributejs-5.1.3.tgz#980600fc72865be5868893078b4bfde721129eae"
+    integrity sha512-B5CXihaVzXw+1UHhNFyAwUTMDk1EfoLP5Tj1VhD9yybZ1I8DZJEv8tZ1l0RJo0t0tk9ZhR8eG5tEsaCvRigmdQ==
   
   trix@^2.0.6:
     version "2.0.6"

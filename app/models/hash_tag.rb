@@ -11,7 +11,7 @@
 #
 class HashTag < ApplicationRecord
   include ActionText::Attachable
-  searchkick word_middle: [:name]
+  # searchkick word_middle: [:name]
 
   has_many :churp_hash_tags, dependent: :restrict_with_exception
   has_many :churps, through: :churp_hash_tags
@@ -33,8 +33,8 @@ class HashTag < ApplicationRecord
 
   private
 
-  after_commit :reindex_hashtags
+  # after_commit :reindex_hashtags
   def reindex_hashtags
-    reindex
+    # reindex
   end
 end

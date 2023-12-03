@@ -9,11 +9,11 @@ module ChurpSocial
     end
 
     def minor
-      3
+      4
     end
 
     def patch
-      1
+      2
     end
 
     def default_prerelease

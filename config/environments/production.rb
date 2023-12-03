@@ -67,6 +67,8 @@ Rails.application.configure do
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
   config.action_mailer.default_url_options = { host: 'https://churp-app.fly.dev/' }
+  Rails.application.routes.default_url_options[:host] = 'https://churp-app.fly.dev/'
+
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
