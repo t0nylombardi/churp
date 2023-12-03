@@ -2,7 +2,6 @@
 
 class BroadcastNotificationsService < ApplicationService
   include ActionView::RecordIdentifier
-  include Twitter::TwitterText::Extractor
 
   attr_reader :churp
 
@@ -20,8 +19,9 @@ class BroadcastNotificationsService < ApplicationService
   private
 
   def extract_usernames(text)
-    usernames = extract_mentioned_screen_names(text)
-    usernames.detect { |username| usernames.count(username) >= 1 }.split unless usernames.nil?
+    usernames = ChurpExtractor::Extractor.new.extract_mentioned_screen_names(text)
+
+    usernames&.detect { |username| usernames.count(username) >= 1 }&.split
   end
 
   def send_notifications(usernames)

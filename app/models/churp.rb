@@ -20,7 +20,6 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class Churp < ApplicationRecord
-  include Twitter::TwitterText::Extractor
 
   belongs_to :user
   belongs_to :churp, optional: true, dependent: :destroy
