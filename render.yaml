@@ -1,6 +1,7 @@
 databases:
   - name: postgres
     ipAllowList: []
+    region: ohio
     databaseName: churp_production
     user: churp_render
 
