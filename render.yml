@@ -31,7 +31,7 @@ services:
     runtime: ruby
     region: ohio
     buildCommand: "script/render-build.sh"
-    startCommand: bundle exec puma -t 5:5 -p ${PORT:-3000} -e ${RACK_ENV:-development}
+    startCommand: "bundle exec rails s"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
