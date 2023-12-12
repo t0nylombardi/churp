@@ -45,8 +45,8 @@
 .db-created
 .DS_Store
 
-.env
 .env*.local
+.env
 Dockerfile.production
 
 coverage
