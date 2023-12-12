@@ -8,8 +8,8 @@ class MoveThemeToPorfile < ActiveRecord::Migration[7.1]
     end
 
     change_table :profiles, bulk: true do |t|
-      t.integer :theme, :integer, default: 0
-      t.integer :theme_color, :integer, default: 0
+      t.integer :theme, default: 0
+      t.integer :theme_color, default: 0
     end
   end
 
