@@ -25,8 +25,8 @@ module ProfilesHelper
 
   def letter_avatar(profile)
     name = profile.name || 'Sage Doe'
-    path = LetterAvatar.generate(name, 400).sub('public/', '')
-    "#{churp_root_url}/#{path}"
+
+    LetterAvatar.generate(name, 400).sub('public/', '')
   end
 
   def url_for_attachment(profile)

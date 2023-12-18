@@ -9,8 +9,8 @@ namespace :seed do
 
     Rake::Task['seed:destroy_all_records'].execute
     Rake::Task['seed:create_admin'].execute
-    Rake::Task['seed:create_users'].execute(num_of_users: 250)
-    Rake::Task['seed:create_churps'].execute(num_of_churps: 250)
+    Rake::Task['seed:create_users'].execute(num_of_users: 50)
+    Rake::Task['seed:create_churps'].execute(num_of_churps: 50)
     Rake::Task['seed:create_follows'].execute
 
     message '--------------------------------------------------------------'
