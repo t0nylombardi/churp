@@ -578,7 +578,7 @@ DEPENDENCIES
   pry
   pry-nav
   pry-stack_explorer
-  puma (~> 6.3)
+  puma (~> 6.4)
   pundit (~> 2.3, >= 2.3.1)
   rails (~> 7.1, >= 7.1.2)
   rails_best_practices (~> 1.23, >= 1.23.2)
