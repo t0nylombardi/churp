@@ -27,7 +27,7 @@ class CommentsController < ApplicationController
       if @comment.save
         format.html { redirect_to churp_path(params[:churp_id]), notice: 'Comment was successfully created.' }
       else
-        format.html { redirect_back fallback_location: @churp, alert: 'Could not comment' }
+        format.html { redirect_to churp_path(params[:churp_id]), alert: 'Could not comment' }
       end
     end
   end
@@ -50,7 +50,7 @@ class CommentsController < ApplicationController
     @comment.destroy
 
     respond_to do |format|
-      format.html { redirect_to comments_url, notice: 'Comment was successfully destroyed.' }
+      format.html { redirect_to churp_path(params[:churp_id]), notice: 'Comment was successfully destroyed.' }
       format.json { head 204 }
     end
   end

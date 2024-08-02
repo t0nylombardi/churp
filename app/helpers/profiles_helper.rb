@@ -24,7 +24,7 @@ module ProfilesHelper
   end
 
   def letter_avatar(profile)
-    name = profile.name || 'Sage Doe'
+    name = profile&.name || 'Sage Doe'
 
     LetterAvatar.generate(name, 400).sub('public/', '')
   end

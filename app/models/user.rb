@@ -72,13 +72,16 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :profile
 
   validates :username, :email, :password, presence: true
-  # TODO: Uniqueness validation should have a unique index on the database column.
-  validates :username, :email, uniqueness: true
+  validates :username, uniqueness: true
+  validates :email, uniqueness: true
   validate :password_complexity
 
-  after_create :set_username
-  def set_username
-    self[:username] = "@#{username}" unless username.start_with?('@')
+  before_commit on: :create do
+    self.username = "@#{username.downcase}" unless username.start_with?('@')
+  end
+
+  def normalize_friendly_id(value)
+    value.to_s.downcase
   end
 
   # Follows a user.

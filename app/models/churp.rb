@@ -38,6 +38,7 @@ class Churp < ApplicationRecord
   has_one_attached :churp_pic
 
   validates :churp_pic, acceptable_image: true
+  validates :content, presence: true
   validates :content, churp_length: true
 
   after_create :create_hash_tags

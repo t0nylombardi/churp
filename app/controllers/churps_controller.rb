@@ -87,9 +87,9 @@ class ChurpsController < ApplicationController
 
     respond_to do |format|
       if @rechurp.save
-        format.html { redirect_to churps_url }
+        format.html { redirect_to churps_path, notice: 'Rechurp was successful' }
       else
-        format.html { redirect_back fallback_location: @churp, alert: 'Could not rechurp' }
+        format.html { redirect_to churps_path, notice: 'Could not rechurp' }
       end
     end
   end

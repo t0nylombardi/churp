@@ -6,7 +6,15 @@ Rails.application.routes.draw do
   mount Flipper::UI.app(Flipper) => '/flipper'
 
   devise_for :users
-  resources  :users, only: %i(index show) do
+  devise_scope :user do
+    authenticated :user do
+      root to: 'churps#index'
+    end
+    unauthenticated :user do
+      root to: 'devise/registrations#new', as: :unauthenticated_root
+    end
+  end
+  resources :users, only: %i(index show) do
     member do
       get :following, :followers, :verified_followers, :followers_you_know
     end
@@ -17,7 +25,7 @@ Rails.application.routes.draw do
   # end
 
   get ':slug/status/:churp_id', to: 'churps#show', as: 'show_churp'
-  resources :churps, excep: %i(edit update) do
+  resources :churps do
     resources :comments, only: %i(create destroy)
     member do
       post :rechurp
@@ -59,13 +67,13 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get 'up', to: 'rails/health#show', as: :rails_health_check
 
-  unless Rails.env.development?
-    get 'errors/not_found'
-    get 'errors/internal_server_error'
+  # unless Rails.env.development?
+  #   get 'errors/not_found'
+  #   get 'errors/internal_server_error'
 
-    match '/404', to: 'errors#not_found', via: :all
-    match '/500', to: 'errors#internal_server_error', via: :all
-  end
+  #   match '/404', to: 'errors#not_found', via: :all
+  #   match '/500', to: 'errors#internal_server_error', via: :all
+  # end
 
-  root to: 'churps#index'
+
 end

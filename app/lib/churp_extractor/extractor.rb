@@ -67,5 +67,10 @@ module ChurpExtractor
         indices: [start_position, end_position]
       }
     end
+
+    def sanitize(string)
+      sanitized_str = ActionView::Base.full_sanitizer.sanitize(string)
+      sanitized_str.strip
+    end
   end
 end

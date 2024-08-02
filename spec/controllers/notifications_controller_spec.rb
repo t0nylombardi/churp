@@ -10,7 +10,7 @@ RSpec.describe NotificationsController do
     context 'when signed in' do
       before { sign_in user }
 
-      let!(:churp) { create(:churp, content: 'hey there! @ricksanchez', user: churper) }
+      let!(:churp) { create(:churp, content: 'hey there! @ricksanchez') }
 
       it 'returns notifications' do
         churp.run_callbacks(:commit)

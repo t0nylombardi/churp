@@ -4,108 +4,74 @@ require 'rails_helper'
 require_relative '../support/devise'
 
 RSpec.describe ProfilesController do
-  render_views
+  let(:user) { create(:user_with_profile) }
 
-  context 'when GET #show' do
-    let!(:user) { create(:user, :with_profile) }
+  describe 'GET #show' do
+    it 'renders the show template' do
+      sign_in user
 
-    context 'with a normal account in an HTML request' do
-      it 'returns a standard HTML response', :aggregate_failures do
+      profile = create(:profile, user:)
+      get :show, params: { id: profile.user.username }
+      expect(response).to render_template(:show)
+    end
+  end
+
+  describe 'GET #new' do
+    it 'assigns a new profile to @profile' do
+      sign_in user
+      get :new
+      expect(assigns(:profile)).to be_a_new(Profile)
+    end
+  end
+
+  describe 'GET #edit' do
+    it 'renders the edit template' do
+      sign_in user
+      profile = create(:profile, user:)
+      get :edit, params: { id: profile.user.username }
+      expect(response).to render_template(:edit)
+    end
+  end
+
+  describe 'PATCH #update' do
+    let(:profile) { create(:profile) }
+
+    context 'with valid parameters' do
+      it 'updates the profile' do
         sign_in user
-
-        get :show, params: { id: user.slug }
-        expect(response).to have_http_status(200)
+        patch :update, params: { id: profile.user.username, profile: { name: 'New Name' } }
+        profile.reload
+        expect(profile.name).to eq('New Name')
       end
     end
-  end
 
-  context 'when POST #create' do
-    let!(:user) { create(:user) }
-
-    let(:params) do
-      {
-        profile: {
-          name: 'Rick',
-          description: 'Sanchez',
-          website: 't0nylombardi.dev',
-          birth_date: Faker::Date.birthday(min_age: 18, max_age: 110),
-          user_id: user.id
-        }
-      }
-    end
-
-    context 'when success' do
-      it 'creates a record' do
+    context 'with invalid parameters' do
+      it 'does not update the profile' do
         sign_in user
-        post(:create, params:)
-        expect { post :create, params: }.to change(Profile, :count).by(1)
-
-        expect(response).to have_http_status(302)
+        patch :update, params: { id: profile.user.username, profile: { name: '' } }
+        profile.reload
+        expect(profile.name).to_not eq('')
       end
     end
   end
 
-  context 'when PUT #update' do
-    let!(:user) { create(:user, :with_profile) }
-
-    let(:params) do
-      {
-        profile: {
-          name: 'Rick Sanchez',
-          description: 'I love tacos',
-          website: 't0nylombardi.dev',
-          birth_date: '1983-10-10'.to_date,
-          user_id: user.id
-        }
-      }
-    end
-
-    context 'when success' do
-      before { sign_in user }
-
-      it 'creates a record' do
-        post(:create, params:)
-
-        expect(Profile.last.name).to eq('Rick Sanchez')
-        expect(Profile.last.description).to eq('I love tacos')
-        expect(Profile.last.website).to eq('t0nylombardi.dev')
-        expect(response).to have_http_status(302)
-      end
+  describe 'POST #follow' do
+    it 'allows a user to follow another user' do
+      sign_in user
+      other_user = create(:user_with_profile)
+      post :follow, params: { id: other_user.username }
+      expect(user.following?(other_user)).to be_truthy
     end
   end
 
-  context 'when POST #follow' do
-    context 'when success' do
-      let(:current_user) { create(:user, :with_profile) }
-      let(:other_user) { create(:user, :with_profile) }
+  describe 'POST #unfollow' do
+    it 'allows a user to unfollow another user' do
+      sign_in user
+      other_user = create(:user_with_profile)
+      user.follow(other_user)
+      post :unfollow, params: { id: other_user.username }
 
-      before do
-        sign_in current_user
-      end
-
-      it 'follows a person' do
-        post :follow, params: { id: other_user.id }
-
-        expect(current_user.following.include?(other_user)).to be(true)
-      end
-    end
-  end
-
-  context 'when POST #unfollow' do
-    context 'when success' do
-      let(:current_user) { create(:user, :with_profile) }
-      let(:other_user) { create(:user, :with_profile) }
-
-      before do
-        sign_in current_user
-      end
-
-      it 'follows a person' do
-        current_user.follow(other_user)
-        post :unfollow, params: { id: other_user.id }
-
-        expect(current_user.following.include?(other_user)).to be(false)
-      end
+      expect(user.following?(other_user)).to be_falsy
     end
   end
 end

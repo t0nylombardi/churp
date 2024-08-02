@@ -2,7 +2,7 @@
 
 class ProfilesController < ApplicationController
   include ActiveStorage::SetCurrent
-  before_action :set_profile, only: %i(show update follow unfollow)
+  before_action :set_profile, only: %i(show edit update follow unfollow)
 
   def show
     @user_churps = @profile.user.churps
@@ -12,6 +12,8 @@ class ProfilesController < ApplicationController
   def new
     @profile = current_user.build_profile
   end
+
+  def edit; end
 
   # profile /profiles or /profiles.json
   def create
@@ -26,10 +28,6 @@ class ProfilesController < ApplicationController
         format.json { render json: @profile.errors, status: 422 }
       end
     end
-  end
-
-  def edit
-    @profile = User.friendly.find(params[:id]).profile
   end
 
   # PATCH/PUT /profiles/1
@@ -47,7 +45,7 @@ class ProfilesController < ApplicationController
   end
 
   def follow
-    @user = User.friendly.find(params[:id])
+    @user = User.friendly.find(params[:id].downcase.delete('@'))
     @user_churps = @profile.user.churps
     current_user.follow(@user)
 
@@ -73,7 +71,7 @@ class ProfilesController < ApplicationController
   end
 
   def set_profile
-    username = params[:id].delete('@')
+    username = params[:id].downcase.delete('@')
     @profile = User.friendly.find(username).profile
   end
 

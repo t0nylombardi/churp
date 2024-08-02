@@ -38,6 +38,8 @@ FactoryBot.define do
   end
 
   trait :rechurp do
-    churp_id { churp.id }
+    after(:build) do |churp|
+      churp.churp_id = create(:churp).id
+    end
   end
 end

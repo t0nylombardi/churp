@@ -15,6 +15,9 @@ if ENV['RAILS_ENV'] == 'test'
     add_group 'Serializers', 'app/serializers'
     add_group 'Services', 'app/services'
     add_group 'Validators', 'app/validators'
+    Dir['app/*'].each do |dir|
+      add_group File.basename(dir).downcase, dir
+    end
   end
 end
 
@@ -110,5 +113,12 @@ RSpec.configure do |config|
 
   config.append_after do
     DatabaseCleaner.clean
+  end
+end
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
   end
 end

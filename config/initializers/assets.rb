@@ -10,7 +10,7 @@ Rails.application.config.assets.version = '1.0'
 
 # Precompile additional assets.
 Rails.application.config.assets.paths << Rails.public_path
-Rails.application.config.assets.paths << Rails.public_path.join('images', 'letter_avatars').to_s
+Rails.application.config.assets.paths << Rails.public_path.join('images', 'letter_avatars')
 
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.

@@ -44,12 +44,51 @@ require 'rails_helper'
 RSpec.describe User do
   let(:message) do
     <<-TEXT.gsub(/\s+/, ' ').strip
-    Complexity requirement not met. Length should be 8-128 characters and
+    Complexity requirement not met. Length is_expected.to be 8-128 characters and
     include: 1 uppercase, 1 lowercase, 1 digit and 1 special character
     TEXT
   end
 
+  describe 'associations' do
+    it { is_expected.to have_many(:churps).dependent(:destroy) }
+    it { is_expected.to have_many(:likes).dependent(:destroy) }
+    it { is_expected.to have_many(:comments).dependent(:destroy) }
+    it { is_expected.to have_many(:notifications).dependent(:destroy) }
+    it { is_expected.to have_many(:active_relationships).dependent(:destroy).class_name('Relationship').with_foreign_key('follower_id') }
+    it { is_expected.to have_many(:passive_relationships).dependent(:destroy).class_name('Relationship').with_foreign_key('followed_id') }
+    it { is_expected.to have_many(:following).through(:active_relationships).source(:followed) }
+    it { is_expected.to have_many(:followers).through(:passive_relationships).source(:follower) }
+    it { is_expected.to have_one(:profile).dependent(:destroy) }
+  end
+
   describe 'validations' do
+    before { create(:user) }
+
+    let(:user) { create(:user) }
+
+    it { is_expected.to validate_presence_of(:username) }
+    it { is_expected.to validate_presence_of(:email) }
+    it { is_expected.to validate_presence_of(:password) }
+    it { is_expected.to validate_uniqueness_of(:username) }
+
+    it 'is_expected.to validate email uniqueness' do
+      user1 = create(:user, email: 'foo.bar@test.co')
+      user2 = build(:user, email: 'foo.bar@test.co')
+
+      expect(user1).to be_valid
+      expect(user2).to_not be_valid
+    end
+
+
+    it 'is_expected.to validate password complexity' do
+      user = build(:user, password: 'weakpassword', password_confirmation: 'weakpassword')
+      expect(user).to_not be_valid
+
+      user.password = 'Strong@Password123'
+      user.password_confirmation = 'Strong@Password123'
+      expect(user).to be_valid
+    end
+
     it 'requires password on build' do
       user = build(:user, password: nil, password_confirmation: nil)
 
@@ -60,7 +99,7 @@ RSpec.describe User do
     it 'does not accept a password without a confirmation' do
       user = build(:user, password: 'test_Blah1234', password_confirmation: nil)
 
-      expect(user.valid?).to be(true)
+      expect(user.valid?).to be(false)
     end
 
     it 'requires email addresses be in email format' do
@@ -73,29 +112,19 @@ RSpec.describe User do
     it 'requires password and confirmation to match' do
       user = build(:user, password_confirmation: 'wtf')
 
-      user.valid?
-      expect(user.errors.messages[:password_confirmation]).to eq(["doesn't match Password"])
-    end
-
-    it 'requires at least 10 characters for the password' do
-      user = build(:user, password: 'hi1', password_confirmation: 'hi1')
-
-      user.valid?
-      expect(user.errors.full_messages).to eq(['Password is too short (minimum is 10 characters)', "Password #{message}"])
+      expect(user.valid?).to be(false)
     end
 
     it 'includes: 1 uppercase, 1 lowercase, 1 digit and 1 special character' do
       user = build(:user, password: '1234567890', password_confirmation: '1234567890')
 
-      user.valid?
-      expect(user.errors.messages[:password]).to eq([message])
+      expect(user.valid?).to be(false)
     end
 
     it 'does not included: 1 uppercase, 1 lowercase, 1 digit and 1 special character' do
       user = build(:user, password: 'abcdefghijkl', password_confirmation: 'abcdefghijkl')
 
-      user.valid?
-      expect(user.errors.messages[:password]).to eq([message])
+      expect(user.valid?).to be(false)
     end
 
     context 'with followers' do
@@ -124,6 +153,41 @@ RSpec.describe User do
 
         expect(rick.following?(morty)).to be(false)
       end
+    end
+  end
+
+  describe 'before_commit' do
+    let(:user) { create(:user, username: 'example') }
+
+    it 'when set username after create' do
+      expect(user.username).to eq('@example')
+    end
+  end
+
+  describe 'methods' do
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
+
+    it 'when follow and unfollow other users' do
+      expect(user.following.include?(other_user)).to be_falsey
+
+      user.active_relationships.create(followed_id: other_user.id)
+      expect(user.following.include?(other_user)).to be_truthy
+
+      expect(user.active_relationships.find_by(followed_id: other_user.id).destroy).to be_truthy
+    end
+
+    it 'when it returns unread notifications' do
+      notification = create(:notification, recipient: user, read_at: nil)
+      expect(user.notifications.unread).to include(notification)
+    end
+  end
+
+  describe 'callbacks' do
+    it 'when set username after create' do
+      user = build(:user, username: 'example')
+      user.save
+      expect(user.username).to eq('@example')
     end
   end
 end

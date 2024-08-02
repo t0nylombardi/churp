@@ -27,5 +27,11 @@
 require 'rails_helper'
 
 RSpec.describe View do
-  pending "add some examples to (or delete) #{__FILE__}"
+  let(:user) { create(:user) }
+  let(:churp) { create(:churp) }
+
+  describe 'associations' do
+    it { is_expected.to belong_to(:user) }
+    it { is_expected.to belong_to(:churp) }
+  end
 end

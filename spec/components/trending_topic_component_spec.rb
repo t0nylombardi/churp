@@ -3,13 +3,16 @@
 require 'rails_helper'
 
 RSpec.describe TrendingTopicComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
+  # Example 1: Testing the initialization of the component
+  describe 'initialization' do
+    let(:hashtag) { 'johnwick' }
+    let(:num_of_churps) { 10 }
 
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
+    it 'is initialized with the correct values' do
+      component = render_inline(described_class.new(hashtag:, num_of_churps:))
+      expect(component.css('.trending-topic')).to be_present
+      expect(component.css('.trending-topic').text).to include(hashtag)
+      expect(component.css('.num-of-churps').text).to include(num_of_churps.to_s)
+    end
+  end
 end

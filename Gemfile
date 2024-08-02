@@ -66,6 +66,12 @@ group :development, :test do
   gem 'pry'
   gem 'pry-nav'
   gem 'pry-stack_explorer'
+  gem 'rails-controller-testing', '~> 1.0', '>= 1.0.5'
+  gem 'rblineprof', '~> 0.3.7'
+  gem 'rblineprof-report', '~> 0.0.4'
+  gem 'shoulda-callback-matchers', '~> 1.1', '>= 1.1.4'
+  gem 'shoulda-matchers', '~> 6.0'
+  gem 'stackprof', '~> 0.2.25'
   %w(rspec rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support).each do |lib|
     gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
   end

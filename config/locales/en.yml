@@ -36,10 +36,10 @@ en:
       format: "%{message} for %{attribute}"
       churp:
         attributes:
-          body:
+          content:
             blank: 'too short'
-            too_short: "Body is too short (minimum is 2 characters)"
-            too_long: "Body is too long (maximum is 331 characters)"
+            too_short: "Content is too short (minimum is 2 characters)"
+            too_long: "Content is too long (maximum is 331 characters)"
       messages:
         content_type_invalid: "The image has an invalid content type"
         file_size_out_of_range: "size %{file_size} is not between required range"
@@ -48,5 +48,6 @@ en:
     post_policy:
       update?: 'You cannot edit this post!'
       create?: 'You cannot create posts!'
-  churp:
-    over_character_limit: character limit of %{max} exceeded
+  churps:
+    under_character_limit: content is too short (minimum is %{min} characters)
+    over_character_limit: content is too long (maximum is %{max} characters)

@@ -187,8 +187,14 @@ Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: 'no_comma'
 
 RSpec/MultipleExpectations:
-  Max: 8
+  Max: 12
 
 # Configuration parameters: AllowSubject.
 RSpec/MultipleMemoizedHelpers:
   Max: 21
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/ExampleLength
+  Max: 20
