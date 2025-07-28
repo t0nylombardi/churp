@@ -19,6 +19,6 @@ class CreateFriendlyIdSlugs < MIGRATION_CLASS
     add_index :friendly_id_slugs, %i[sluggable_type sluggable_id]
     add_index :friendly_id_slugs, %i[slug sluggable_type], length: { slug: 140, sluggable_type: 50 }
     add_index :friendly_id_slugs, %i[slug sluggable_type scope], length: { slug: 70, sluggable_type: 50, scope: 70 },
-                                                                 unique: true
+      unique: true
   end
 end

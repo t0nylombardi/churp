@@ -13,19 +13,19 @@ module ApplicationHelper
 
   def header_links(controller, options = {})
     case controller
-    when 'users'
+    when "users"
       render Followers::HeaderComponent.new(view: options[:view],
-                                            followers: options[:followers],
-                                            following: options[:following])
-    when 'notifications'
+        followers: options[:followers],
+        following: options[:following])
+    when "notifications"
       render Notifications::HeaderComponent.new
     else
-      ''
+      ""
     end
   end
 
   def flash_classes(flash_type)
-    flash_base = 'px-2 py-4 mx-auto font-sans font-medium text-center text-white'
+    flash_base = "px-2 py-4 mx-auto font-sans font-medium text-center text-white"
     {
       notice: "bg-indigo-600 #{flash_base}",
       error: "bg-red-600 #{flash_base}",
@@ -34,9 +34,9 @@ module ApplicationHelper
   end
 
   def nav_classes
-    if ['devise/registrations', 'devise/sessions', 'devise/confirmations', 'devise/passwords',
-        'devise/unlocks'].include?(params[:controller])
-      'hidden'
+    if ["devise/registrations", "devise/sessions", "devise/confirmations", "devise/passwords",
+      "devise/unlocks"].include?(params[:controller])
+      "hidden"
     end
   end
 
@@ -65,35 +65,35 @@ module ApplicationHelper
 
   def theme_button(theme)
     themes = {
-      primary: 'primary',
-      secondary: 'secondary',
-      transparent: 'transparent',
-      dark: 'dark'
+      primary: "primary",
+      secondary: "secondary",
+      transparent: "transparent",
+      dark: "dark"
     }
 
     case theme
     when themes[:primary]
-      'bg-vividSkyBlue hover:bg-cyan-600 text-white'
+      "bg-vividSkyBlue hover:bg-cyan-600 text-white"
     when themes[:secondary]
-      'bg-teal-600 hover:bg-teal-700 text-white'
+      "bg-teal-600 hover:bg-teal-700 text-white"
     when themes[:transparent]
-      'bg-transparent hover:bg-gray-100 text-gray-700'
+      "bg-transparent hover:bg-gray-100 text-gray-700"
     when themes[:dark]
-      'bg-gray-800 text-white shadow-sm hover:bg-gray-900'
+      "bg-gray-800 text-white shadow-sm hover:bg-gray-900"
     else
-      'bg-white border border-gray-300 shadow-sm hover:bg-gray-100'
+      "bg-white border border-gray-300 shadow-sm hover:bg-gray-100"
     end
   end
 
   def style_button(variant, theme)
-    base = 'rounded text-center font-sans font-normal outline-none leading-normal cursor-pointer transition ease-in-out duration-200 font-medium'
+    base = "rounded text-center font-sans font-normal outline-none leading-normal cursor-pointer transition ease-in-out duration-200 font-medium"
 
     case variant
-    when 'large'
+    when "large"
       "px-5 py-4 text-lg #{base} #{theme}"
-    when 'small'
+    when "small"
       "py-2 px-4 text-sm #{base} #{theme}"
-    when 'expanded'
+    when "expanded"
       "p-3 w-full block #{base} #{theme}"
     else
       "px-5 py-2 text-base #{base} #{theme}"

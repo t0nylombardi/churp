@@ -2,7 +2,7 @@
 
 module ChurpExtractor
   class Extractor
-    require 'English'
+    require "English"
     attr_reader :text
 
     # Extracts a list of all usernames mentioned in the Tweet <tt>text</tt>. If the

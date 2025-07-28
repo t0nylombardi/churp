@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'Errors' do
-  describe 'GET /not_found' do
-    it 'returns http success' do
-      get '/errors/not_found'
+RSpec.describe "Errors" do
+  describe "GET /not_found" do
+    it "returns http success" do
+      get "/errors/not_found"
       expect(response).to have_http_status(:success)
     end
   end
 
-  describe 'GET /internal_server_error' do
-    it 'returns http success' do
-      get '/errors/internal_server_error'
+  describe "GET /internal_server_error" do
+    it "returns http success" do
+      get "/errors/internal_server_error"
       expect(response).to have_http_status(:success)
     end
   end

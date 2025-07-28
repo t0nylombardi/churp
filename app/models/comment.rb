@@ -27,5 +27,5 @@ class Comment < ApplicationRecord
 
   validates :content, length: { minimum: 1, maximum: 500 }, allow_blank: false
 
-  scope :recent_comments, -> { order('created_at DESC') }
+  scope :recent_comments, -> { order("created_at DESC") }
 end

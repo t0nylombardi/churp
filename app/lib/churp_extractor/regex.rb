@@ -2,7 +2,7 @@
 
 module ChurpExtractor
   class Regex
-    require 'yaml'
+    require "yaml"
 
     REGEXEN = {}.freeze
 
@@ -22,7 +22,7 @@ module ChurpExtractor
       0x202F,          # White_Space # Zs       NARROW NO-BREAK SPACE
       0x205F,          # White_Space # Zs       MEDIUM MATHEMATICAL SPACE
       0x3000           # White_Space # Zs       IDEOGRAPHIC SPACE
-    ].flatten.map { |c| [c].pack('U*') }.freeze
+    ].flatten.map { |c| [c].pack("U*") }.freeze
     REGEXEN[:spaces] = /[#{UNICODE_SPACES.join}]/o
 
     DIRECTIONAL_CHARACTERS = [
@@ -38,7 +38,7 @@ module ChurpExtractor
       0x2067,          # RIGHT-TO-LEFT ISOLATE (RLI)
       0x2068,          # FIRST STRONG ISOLATE (FSI)
       0x2069           # POP DIRECTIONAL ISOLATE (PDI)
-    ].map { |cp| [cp].pack('U') }.freeze
+    ].map { |cp| [cp].pack("U") }.freeze
     REGEXEN[:directional_characters] = /[#{DIRECTIONAL_CHARACTERS.join}]/o
 
     REGEXEN[:valid_mention_preceding_chars] = /(?:[^a-z0-9_!#$%&*@＠]|^|(?:^|[^a-z0-9_+~.-])[rR][tT]:?)/io

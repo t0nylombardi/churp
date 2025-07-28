@@ -35,9 +35,9 @@ class BroadcastNotificationsService < ApplicationService
   def broadcast(user)
     count = user.unread_notifications.count
     Turbo::StreamsChannel.broadcast_update_later_to "notifications_count_#{user.id}",
-                                                    target: "notifications_count_#{user.id}",
-                                                    partial: 'mentions/notification_count',
-                                                    locals: { user:, count: }
+      target: "notifications_count_#{user.id}",
+      partial: "mentions/notification_count",
+      locals: { user:, count: }
   end
 
   def text

@@ -8,7 +8,7 @@ class ChurpsController < ApplicationController
     @pagy, @churps = pagy(Churp.order(created_at: :desc), items: 15)
     @churp = current_user.churps.new
 
-    render 'scrollable_list' if params[:page]
+    render "scrollable_list" if params[:page]
   end
 
   # GET /churps/1
@@ -25,7 +25,8 @@ class ChurpsController < ApplicationController
   end
 
   # GET /churps/1/edit
-  def edit; end
+  def edit
+  end
 
   # POST /churps
   # POST /churps.json
@@ -33,10 +34,10 @@ class ChurpsController < ApplicationController
     @churp = Churp.new(churp_params.merge(user: current_user))
     respond_to do |format|
       if @churp.save
-        format.html { redirect_to root_path, notice: 'churp was successfully created.' }
+        format.html { redirect_to root_path, notice: "churp was successfully created." }
         format.json { render :show, status: 201, location: @churp }
       else
-        format.html { redirect_back fallback_location: @churp, alert: 'Could not churp' }
+        format.html { redirect_back fallback_location: @churp, alert: "Could not churp" }
         format.json { render json: @churp.errors, status: 422 }
       end
     end
@@ -47,7 +48,7 @@ class ChurpsController < ApplicationController
   def update
     respond_to do |format|
       if @churp.update(churp_params)
-        format.html { redirect_to @churp, notice: 'churp was successfully updated.' }
+        format.html { redirect_to @churp, notice: "churp was successfully updated." }
         format.json { render :show, status: 200, location: @churp }
       else
         format.html { render :edit }
@@ -61,21 +62,16 @@ class ChurpsController < ApplicationController
   def destroy
     @churp.destroy
     respond_to do |format|
-      format.html { redirect_to churps_url, notice: 'churp was successfully destroyed.' }
+      format.html { redirect_to churps_url, notice: "churp was successfully destroyed." }
       format.json { head 204 }
     end
   end
 
   def like
-    current_user.likes.create(likeable: @churp)
+    create_like_for_churp
+
     respond_to do |format|
-      format.turbo_stream do
-        render turbo_stream: turbo_stream.replace(
-          "like_#{@churp.id}",
-          partial: 'churps/shared/likes',
-          locals: { churp: @churp }
-        )
-      end
+      format.turbo_stream { render_turbo_like_partial }
       format.html { redirect_to churps_path }
     end
   end
@@ -87,14 +83,26 @@ class ChurpsController < ApplicationController
 
     respond_to do |format|
       if @rechurp.save
-        format.html { redirect_to churps_path, notice: 'Rechurp was successful' }
+        format.html { redirect_to churps_path, notice: "Rechurp was successful" }
       else
-        format.html { redirect_to churps_path, notice: 'Could not rechurp' }
+        format.html { redirect_to churps_path, notice: "Could not rechurp" }
       end
     end
   end
 
   private
+
+  def create_like_for_churp
+    current_user.likes.create(likeable: @churp)
+  end
+
+  def render_turbo_like_partial
+    render turbo_stream: turbo_stream.replace(
+      "like_#{@churp.id}",
+      partial: "churps/shared/likes",
+      locals: {churp: @churp}
+    )
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_churp

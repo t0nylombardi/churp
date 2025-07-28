@@ -48,9 +48,9 @@ class Churp < ApplicationRecord
 
   def churp_type
     if churp_id? && content?
-      'rechurp'
+      "rechurp"
     else
-      'churp'
+      "churp"
     end
   end
 
@@ -61,18 +61,18 @@ class Churp < ApplicationRecord
   end
 
   def extract_name_hash_tags
-    content.to_s.scan(/#\w+/).map { |name| name.delete('#') }
+    content.to_s.scan(/#\w+/).map { |name| name.delete("#") }
   end
 
   private
 
   def broadcast_churp
-    ActionCable.server.broadcast('churps_channel', rendered_churp)
+    ActionCable.server.broadcast("churps_channel", rendered_churp)
   end
 
   def rendered_churp
     ApplicationController.renderer.render(
-      partial: 'churps/churp',
+      partial: "churps/churp",
       locals: { churp: self }
     )
   end

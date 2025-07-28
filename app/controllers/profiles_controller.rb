@@ -13,7 +13,8 @@ class ProfilesController < ApplicationController
     @profile = current_user.build_profile
   end
 
-  def edit; end
+  def edit
+  end
 
   # profile /profiles or /profiles.json
   def create
@@ -21,7 +22,7 @@ class ProfilesController < ApplicationController
 
     respond_to do |format|
       if @profile.save
-        format.html { redirect_to profile_url(current_user.id), notice: 'profile was successfully created.' }
+        format.html { redirect_to profile_url(current_user.id), notice: "profile was successfully created." }
         format.json { render :show, status: 201, location: @profile }
       else
         format.html { render :show, status: 422 }
@@ -35,7 +36,7 @@ class ProfilesController < ApplicationController
   def update
     respond_to do |format|
       if @profile.update(profile_params)
-        format.html { redirect_to profile_url(current_user.id), notice: 'profile was successfully created.' }
+        format.html { redirect_to profile_url(current_user.id), notice: "profile was successfully created." }
         format.json { render :show, status: 201, location: @profile }
       else
         format.html { render :new, status: 422 }
@@ -45,7 +46,7 @@ class ProfilesController < ApplicationController
   end
 
   def follow
-    @user = User.friendly.find(params[:id].downcase.delete('@'))
+    @user = User.friendly.find(params[:id].downcase.delete("@"))
     @user_churps = @profile.user.churps
     current_user.follow(@user)
 
@@ -65,13 +66,13 @@ class ProfilesController < ApplicationController
   def update_follow_card
     render turbo_stream: turbo_stream.replace(
       "profile_follow_#{@profile.id}",
-      partial: 'profiles/follow_button',
+      partial: "profiles/follow_button",
       locals: { profile: @profile }
     )
   end
 
   def set_profile
-    username = params[:id].downcase.delete('@')
+    username = params[:id].downcase.delete("@")
     @profile = User.friendly.find(username).profile
   end
 

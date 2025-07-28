@@ -1,37 +1,37 @@
 # frozen_string_literal: true
 
-ENV['RAILS_ENV'] ||= 'test'
-if ENV['RAILS_ENV'] == 'test'
-  require 'simplecov'
-  SimpleCov.start 'rails' do
-    add_filter 'config/initializers/sentry.rb'
-    add_filter 'config/initializers/flipper.rb'
-    add_filter 'config/routes.rb'
-    add_filter 'spec/factories/*'
-    add_filter 'spec/support/*'
+ENV["RAILS_ENV"] ||= "test"
+if ENV["RAILS_ENV"] == "test"
+  require "simplecov"
+  SimpleCov.start "rails" do
+    add_filter "config/initializers/sentry.rb"
+    add_filter "config/initializers/flipper.rb"
+    add_filter "config/routes.rb"
+    add_filter "spec/factories/*"
+    add_filter "spec/support/*"
 
-    add_group 'Policies', 'app/policies'
-    add_group 'Presenters', 'app/presenters'
-    add_group 'Serializers', 'app/serializers'
-    add_group 'Services', 'app/services'
-    add_group 'Validators', 'app/validators'
-    Dir['app/*'].each do |dir|
+    add_group "Policies", "app/policies"
+    add_group "Presenters", "app/presenters"
+    add_group "Serializers", "app/serializers"
+    add_group "Services", "app/services"
+    add_group "Validators", "app/validators"
+    Dir["app/*"].each do |dir|
       add_group File.basename(dir).downcase, dir
     end
   end
 end
 
-require 'spec_helper'
-require_relative '../config/environment'
+require "spec_helper"
+require_relative "../config/environment"
 # Prevent database truncation if the environment is production
-abort('The Rails environment is running in production mode!') if Rails.env.production?
-require 'rspec/rails'
-require_relative 'support/factory_bot'
-require_relative 'support/chrome'
-require 'devise'
-require_relative 'support/controller_macros'
-require 'view_component/test_helpers'
-require 'capybara/rspec'
+abort("The Rails environment is running in production mode!") if Rails.env.production?
+require "rspec/rails"
+require_relative "support/factory_bot"
+require_relative "support/chrome"
+require "devise"
+require_relative "support/controller_macros"
+require "view_component/test_helpers"
+require "capybara/rspec"
 
 begin
   ActiveRecord::Migration.maintain_test_schema!
@@ -45,14 +45,14 @@ RSpec.configure do |config|
 
   config.after(:each, :snapshot, type: :component) do |example|
     class_name = example.metadata[:described_class].name.underscore
-    test_name = example.metadata[:full_description].gsub(example.metadata[:described_class].name, '').tr(' ', '_')
-    raise 'component snapshot has no content' if rendered_component.blank?
+    test_name = example.metadata[:full_description].gsub(example.metadata[:described_class].name, "").tr(" ", "_")
+    raise "component snapshot has no content" if rendered_component.blank?
 
     expect(rendered_component).to match_snapshot("#{class_name}/#{test_name}")
   end
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_paths = Rails.root.join('spec', 'fixtures')
+  config.fixture_paths = Rails.root.join("spec/fixtures")
 
   # config.use_transactional_fixtures = true
 
@@ -70,7 +70,7 @@ RSpec.configure do |config|
 
   config.include Warden::Test::Helpers
 
-  ActiveStorage::Current.url_options = { host: 'https://example.com' }
+  ActiveStorage::Current.url_options = { host: "https://example.com" }
 
   # add until here
   # ---------------------------------------------

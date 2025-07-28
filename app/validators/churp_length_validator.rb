@@ -6,8 +6,8 @@ class ChurpLengthValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, _value)
     # return unless record.content.body.empty?
 
-    record.errors.add(attribute, I18n.t('churps.under_character_limit', min: 1)) if too_short?(record)
-    record.errors.add(attribute, I18n.t('churps.over_character_limit', max: MAX_CHARS)) if too_long?(record)
+    record.errors.add(attribute, I18n.t("churps.under_character_limit", min: 1)) if too_short?(record)
+    record.errors.add(attribute, I18n.t("churps.over_character_limit", max: MAX_CHARS)) if too_long?(record)
   end
 
   private

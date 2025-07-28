@@ -12,9 +12,9 @@ class ApplicationController < ActionController::Base
 
   def layout_by_resource
     if devise_controller?
-      'devise'
+      "devise"
     else
-      'application'
+      "application"
     end
   end
 
@@ -23,14 +23,14 @@ class ApplicationController < ActionController::Base
   end
 
   def self.render_with_signed_in_user(user, *)
-    ActionController::Renderer::RACK_KEY_TRANSLATION['warden'] ||= 'warden'
+    ActionController::Renderer::RACK_KEY_TRANSLATION["warden"] ||= "warden"
     proxy = Warden::Proxy.new({}, Warden::Manager.new({})).tap { |i| i.set_user(user, scope: :user) }
-    renderer = self.renderer.new('warden' => proxy)
+    renderer = self.renderer.new("warden" => proxy)
     renderer.render(*)
   end
 
   def not_found_method
-    render file: Rails.public_path.join('404.html'), status: 404, layout: false
+    render file: Rails.public_path.join("404.html"), status: 404, layout: false
   end
 
   protected

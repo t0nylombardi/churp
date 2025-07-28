@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
-require_relative '../support/devise'
+require "rails_helper"
+require_relative "../support/devise"
 
 RSpec.describe ProfilesController do
   let(:user) { create(:user_with_profile) }
 
-  describe 'GET #show' do
-    it 'renders the show template' do
+  describe "GET #show" do
+    it "renders the show template" do
       sign_in user
 
       profile = create(:profile, user:)
@@ -16,16 +16,16 @@ RSpec.describe ProfilesController do
     end
   end
 
-  describe 'GET #new' do
-    it 'assigns a new profile to @profile' do
+  describe "GET #new" do
+    it "assigns a new profile to @profile" do
       sign_in user
       get :new
       expect(assigns(:profile)).to be_a_new(Profile)
     end
   end
 
-  describe 'GET #edit' do
-    it 'renders the edit template' do
+  describe "GET #edit" do
+    it "renders the edit template" do
       sign_in user
       profile = create(:profile, user:)
       get :edit, params: { id: profile.user.username }
@@ -33,45 +33,45 @@ RSpec.describe ProfilesController do
     end
   end
 
-  describe 'PATCH #update' do
+  describe "PATCH #update" do
     let(:profile) { create(:profile) }
 
-    context 'with valid parameters' do
-      it 'updates the profile' do
+    context "with valid parameters" do
+      it "updates the profile" do
         sign_in user
-        patch :update, params: { id: profile.user.username, profile: { name: 'New Name' } }
+        patch :update, params: { id: profile.user.username, profile: { name: "New Name" } }
         profile.reload
-        expect(profile.name).to eq('New Name')
+        expect(profile.name).to eq("New Name")
       end
     end
 
-    context 'with invalid parameters' do
-      it 'does not update the profile' do
+    context "with invalid parameters" do
+      it "does not update the profile" do
         sign_in user
-        patch :update, params: { id: profile.user.username, profile: { name: '' } }
+        patch :update, params: { id: profile.user.username, profile: { name: "" } }
         profile.reload
-        expect(profile.name).to_not eq('')
+        expect(profile.name).not_to eq("")
       end
     end
   end
 
-  describe 'POST #follow' do
-    it 'allows a user to follow another user' do
+  describe "POST #follow" do
+    it "allows a user to follow another user" do
       sign_in user
       other_user = create(:user_with_profile)
       post :follow, params: { id: other_user.username }
-      expect(user.following?(other_user)).to be_truthy
+      expect(user).to be_following(other_user)
     end
   end
 
-  describe 'POST #unfollow' do
-    it 'allows a user to unfollow another user' do
+  describe "POST #unfollow" do
+    it "allows a user to unfollow another user" do
       sign_in user
       other_user = create(:user_with_profile)
       user.follow(other_user)
       post :unfollow, params: { id: other_user.username }
 
-      expect(user.following?(other_user)).to be_falsy
+      expect(user).not_to be_following(other_user)
     end
   end
 end

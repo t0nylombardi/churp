@@ -13,8 +13,8 @@ module Middleware
       include ActiveModel::Validations
       attr_accessor :ip
 
-      GEO_IP_URL = 'https://api.ipgeolocation.io/ipgeo?'
-      API_KEY = ENV.fetch('GEO_API_KEY', nil)
+      GEO_IP_URL = "https://api.ipgeolocation.io/ipgeo?"
+      API_KEY = ENV.fetch("GEO_API_KEY", nil)
 
       def initialize(ip)
         @ip = ip
@@ -41,18 +41,18 @@ module Middleware
       def call_url
         HTTParty.get(geo_ip_url, timeout: 2)
       rescue Timeout::Error
-        Rails.logger.warn('Could not post to ipgeolocation: timeout')
+        Rails.logger.warn("Could not post to ipgeolocation: timeout")
         { city: nil, state_code: nil }
       end
 
       def random_ip_address
         %w[ 104.156.54.182
-            185.151.12.218
-            185.151.12.226
-            185.151.12.242
-            107.181.191.68
-            167.88.112.78
-            209.135.132.136 ].sample
+          185.151.12.218
+          185.151.12.226
+          185.151.12.242
+          107.181.191.68
+          167.88.112.78
+          209.135.132.136 ].sample
       end
     end
   end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'rack/test'
+require "spec_helper"
+require "rack/test"
 
 class MockRackApp
   attr_reader :request_body
@@ -12,8 +12,8 @@ class MockRackApp
 
   def call(env)
     @env = env
-    @req = env['PATH_INFO']
-    [200, { 'Content-Type' => 'image/png' }, ['OK']]
+    @req = env["PATH_INFO"]
+    [200, { "Content-Type" => "image/png" }, ["OK"]]
   end
 
   def [](key)

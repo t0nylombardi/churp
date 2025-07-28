@@ -7,14 +7,14 @@ class UsersController < ApplicationController
     @pagy, @following = pagy(@user.following, items: 15)
     @is_active = true
 
-    render 'users/scrollable_list' if params[:page]
+    render "users/scrollable_list" if params[:page]
   end
 
   def followers
     @pagy, @followers = pagy(@user.followers, items: 15)
     @is_active = true
 
-    render 'users/scrollable_list' if params[:page]
+    render "users/scrollable_list" if params[:page]
   end
 
   private

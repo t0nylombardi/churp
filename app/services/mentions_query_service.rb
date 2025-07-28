@@ -13,7 +13,7 @@ class MentionsQueryService < ApplicationService
   def execute!
     mentions ||= multi_search
     if mentions.all?(&:empty?)
-      errors.add(:base, 'query is empty')
+      errors.add(:base, "query is empty")
     else
       mentions
     end
@@ -24,9 +24,8 @@ class MentionsQueryService < ApplicationService
   def multi_search
     return [] if query.blank?
 
-    search_array = []
-    SEARCH_MODELS.each do |model|
-      search_array << mention_query(model)
+    search_array = SEARCH_MODELS.map do |model|
+      mention_query(model)
     end
 
     Searchkick.multi_search(search_array)
@@ -34,14 +33,14 @@ class MentionsQueryService < ApplicationService
 
   def mention_query(model)
     model.safe_constantize.search(query, fields: fields(model),
-                                         match:,
-                                         limit:)
+      match:,
+      limit:)
   end
 
   def boost_by_recency
     {
       created_at: {
-        scale: '7d',
+        scale: "7d",
         decay: 0.5
       }
     }

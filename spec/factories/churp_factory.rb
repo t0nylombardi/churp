@@ -30,9 +30,9 @@ FactoryBot.define do
   trait :with_attachment do
     after(:build) do |churp|
       churp.churp_pic.attach(
-        io: File.open(Rails.root.join('spec', 'fixtures', 'images', 'churp.jpeg')),
-        filename: 'churp.jpeg',
-        content_type: 'image/jpeg'
+        io: Rails.root.join("spec/fixtures/images/churp.jpeg").open,
+        filename: "churp.jpeg",
+        content_type: "image/jpeg"
       )
     end
   end

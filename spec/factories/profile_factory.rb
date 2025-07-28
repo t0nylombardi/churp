@@ -35,9 +35,9 @@ FactoryBot.define do
 
     after(:build) do |profile|
       profile.profile_bg.attach(
-        io: File.open(Rails.root.join('spec', 'fixtures', 'images', 'twitter_bg.jpeg')),
-        filename: 'twitter_bg.jpeg',
-        content_type: 'image/jpeg'
+        io: Rails.root.join("spec/fixtures/images/twitter_bg.jpeg").open,
+        filename: "twitter_bg.jpeg",
+        content_type: "image/jpeg"
       )
     end
   end

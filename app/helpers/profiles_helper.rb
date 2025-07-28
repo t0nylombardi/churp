@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ProfilesHelper
-  DEFAULT_BG = '/images/rod-long-bg.jpeg'
+  DEFAULT_BG = "/images/rod-long-bg.jpeg"
 
   def profile_background_image(profile_bg)
     return "background-image: url(#{DEFAULT_BG});" unless profile_bg&.attached?
@@ -20,13 +20,13 @@ module ProfilesHelper
     return url_for_attachment(profile) if profile_pic&.attached?
     return letter_avatar(profile) unless profile_pic&.attached?
 
-    'stanley-roper-profile.png'
+    "stanley-roper-profile.png"
   end
 
   def letter_avatar(profile)
-    name = profile&.name || 'Sage Doe'
+    name = profile&.name || "Sage Doe"
 
-    LetterAvatar.generate(name, 400).sub('public/', '')
+    LetterAvatar.generate(name, 400).sub("public/", "")
   end
 
   def url_for_attachment(profile)
@@ -37,9 +37,9 @@ module ProfilesHelper
 
   def churp_root_url
     Rails.application
-         .default_url_options
-         .values
-         .first
+      .default_url_options
+      .values
+      .first
   end
 
   def edit_profile_class
@@ -55,15 +55,15 @@ module ProfilesHelper
   end
 
   def primary_colors
-    'border-vividSkyBlue text-vividSkyBlue hover:border-vividSkyBlue'
+    "border-vividSkyBlue text-vividSkyBlue hover:border-vividSkyBlue"
   end
 
   def error_colors
-    'border-red-700 text-red-700 hover:border-red-700'
+    "border-red-700 text-red-700 hover:border-red-700"
   end
 
   def profile_modal_class
-    'mx-2 text-2xl font-medium rounded-full text-vividSkyBlue hover:bg-cyan-600 hover:text-blue-300 float-right'
+    "mx-2 text-2xl font-medium rounded-full text-vividSkyBlue hover:bg-cyan-600 hover:text-blue-300 float-right"
   end
 
   def profile_form_input_class(options = {})
