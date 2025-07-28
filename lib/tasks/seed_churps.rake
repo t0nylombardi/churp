@@ -2,7 +2,7 @@
 
 namespace :seed do
   def hash_tags
-    %w(#train #transport #railway #bridge #metro #trains
+    %w[#train #transport #railway #bridge #metro #trains
        #trainspotting #trainphotography #ns #rail #freight #railroad
        #railwayphotography #railways_of_our_world #trainstation #railwaystation
        #station #railways #tram #trainstagram #trainspotter #railfan
@@ -13,7 +13,7 @@ namespace :seed do
        #cedarwaxwing #babygeese #whatsgoingon #worlddomination #babyducks
        #getoffmylawn #chirp #localwildlife #cheezits #goldeneagles #redbirds
        #cloudywithachanceofmeatballs #highjumper #canadiangeese #daft #whatsinaname
-       #saftb #whatisgoingon #youcantseeme #thebird)
+       #saftb #whatisgoingon #youcantseeme #thebird]
   end
 
   # Populates churps.

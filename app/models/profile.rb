@@ -27,7 +27,7 @@
 class Profile < ApplicationRecord
   include ActionText::Attachable
   has_person_name
-  searchkick word_middle: [:first_name, :last_name]
+  searchkick word_middle: %i[first_name last_name]
 
   has_one_attached :profile_pic do |attachable|
     attachable.variant :thumb, resize_to_limit: [200, 200]

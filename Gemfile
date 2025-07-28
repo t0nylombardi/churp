@@ -48,19 +48,18 @@ gem 'flipper-active_record'
 gem 'flipper-ui'
 
 gem 'bootsnap', require: false
-gem 'tzinfo-data', platforms: %i(mingw mswin x64_mingw jruby)
+gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
 gem 'image_processing', '~> 1.2'
 
-gem 'dotenv-rails', groups: %i(development test production)
+gem 'dotenv-rails', groups: %i[development test production]
 
 gem 'dockerfile-rails', '>= 1.5', group: :development
 gem 'sentry-rails', '~> 5.12'
 gem 'sentry-ruby', '~> 5.12'
 
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem 'debug', platforms: %i(mri mingw x64_mingw)
+  gem 'debug', platforms: %i[mri mingw x64_mingw]
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'pry'
@@ -72,23 +71,22 @@ group :development, :test do
   gem 'shoulda-callback-matchers', '~> 1.1', '>= 1.1.4'
   gem 'shoulda-matchers', '~> 6.0'
   gem 'stackprof', '~> 0.2.25'
-  %w(rspec rspec-core rspec-expectations rspec-mocks rspec-rails rspec-support).each do |lib|
-    gem lib, git: "https://github.com/rspec/#{lib}.git", branch: 'main'
-  end
 end
 
 group :development do
-  gem 'annotate'
+  gem 'annotaterb'
   gem 'brakeman', '~> 6.0', '>= 6.0.1'
   # Code linting CLI and plugins
-  gem 'rails_best_practices', '~> 1.23', '>= 1.23.2'
-  gem 'reek', '~> 6.1', '>= 6.1.4'
-  gem 'rspec-snapshot', '~> 2.0', '>= 2.0.1'
   gem 'rubocop', require: false
   gem 'rubocop-capybara', require: false
-  gem 'rubocop-performance', require: false
-  gem 'rubocop-rails', require: false
-  gem 'rubocop-rspec', require: false
+  gem 'rubocop-rails-omakase', require: false
+  gem 'rubocop-rake'
+  gem 'rubocop-rspec'
+  gem 'rubocop-thread_safety'
+  gem 'ruby_audit'
+  gem 'ruby-lsp-rspec'
+  gem 'standard'
+  gem 'standard-rails'
   gem 'web-console'
 end
 

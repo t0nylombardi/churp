@@ -28,7 +28,7 @@ module ChurpSocial
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks middleware))
+    config.autoload_lib(ignore: %w[assets tasks middleware])
 
     # Autoload and also eager load lib.
     config.autoload_paths << config.root.join('lib')

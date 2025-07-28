@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
-  before_action :set_user, only: %i(following followers)
+  before_action :set_user, only: %i[following followers]
 
   def following
     @pagy, @following = pagy(@user.following, items: 15)
@@ -20,6 +20,6 @@ class UsersController < ApplicationController
   private
 
   def set_user
-    @user  = User.friendly.find(params[:id])
+    @user = User.friendly.find(params[:id])
   end
 end

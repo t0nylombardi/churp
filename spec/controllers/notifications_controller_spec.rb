@@ -30,7 +30,6 @@ RSpec.describe NotificationsController do
 
     context 'when not signed in' do
       it 'redirects to signin/up page' do
-
         get :index
         expect(response).to have_http_status(302)
       end

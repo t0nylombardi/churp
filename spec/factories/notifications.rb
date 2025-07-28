@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: notifications
@@ -19,8 +21,8 @@
 FactoryBot.define do
   factory :notification do
     recipient { nil }
-    type { "" }
-    params { "" }
-    read_at { "2023-11-18 00:48:52" }
+    type { '' }
+    params { '' }
+    read_at { '2023-11-18 00:48:52' }
   end
 end

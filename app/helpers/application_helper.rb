@@ -34,7 +34,10 @@ module ApplicationHelper
   end
 
   def nav_classes
-    ['devise/registrations', 'devise/sessions', 'devise/confirmations', 'devise/passwords', 'devise/unlocks'].include?(params[:controller]) ? 'hidden' : nil
+    if ['devise/registrations', 'devise/sessions', 'devise/confirmations', 'devise/passwords',
+        'devise/unlocks'].include?(params[:controller])
+      'hidden'
+    end
   end
 
   def label_class(options = {})
@@ -96,6 +99,4 @@ module ApplicationHelper
       "px-5 py-2 text-base #{base} #{theme}"
     end
   end
-
-
 end

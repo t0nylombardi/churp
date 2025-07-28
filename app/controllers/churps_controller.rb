@@ -2,7 +2,7 @@
 
 class ChurpsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_churp, only: %i(show edit update destroy like rechurp)
+  before_action :set_churp, only: %i[show edit update destroy like rechurp]
 
   def index
     @pagy, @churps = pagy(Churp.order(created_at: :desc), items: 15)

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class MentionsQueryService < ApplicationService
-  SEARCH_MODELS = %w(HashTag User Profile).freeze
+  SEARCH_MODELS = %w[HashTag User Profile].freeze
   LIMIT = 10
 
   attr_accessor :query
@@ -54,11 +54,11 @@ class MentionsQueryService < ApplicationService
   def fields(model)
     case model.downcase.to_sym
     when :user
-      %i(username)
+      %i[username]
     when :profile
-      %i(first_name last_name)
+      %i[first_name last_name]
     when :hashtag
-      %i(name)
+      %i[name]
     else
       []
     end

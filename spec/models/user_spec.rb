@@ -54,8 +54,12 @@ RSpec.describe User do
     it { is_expected.to have_many(:likes).dependent(:destroy) }
     it { is_expected.to have_many(:comments).dependent(:destroy) }
     it { is_expected.to have_many(:notifications).dependent(:destroy) }
-    it { is_expected.to have_many(:active_relationships).dependent(:destroy).class_name('Relationship').with_foreign_key('follower_id') }
-    it { is_expected.to have_many(:passive_relationships).dependent(:destroy).class_name('Relationship').with_foreign_key('followed_id') }
+    it {
+      is_expected.to have_many(:active_relationships).dependent(:destroy).class_name('Relationship').with_foreign_key('follower_id')
+    }
+    it {
+      is_expected.to have_many(:passive_relationships).dependent(:destroy).class_name('Relationship').with_foreign_key('followed_id')
+    }
     it { is_expected.to have_many(:following).through(:active_relationships).source(:followed) }
     it { is_expected.to have_many(:followers).through(:passive_relationships).source(:follower) }
     it { is_expected.to have_one(:profile).dependent(:destroy) }
@@ -78,7 +82,6 @@ RSpec.describe User do
       expect(user1).to be_valid
       expect(user2).to_not be_valid
     end
-
 
     it 'is_expected.to validate password complexity' do
       user = build(:user, password: 'weakpassword', password_confirmation: 'weakpassword')

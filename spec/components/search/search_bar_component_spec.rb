@@ -7,8 +7,8 @@ RSpec.describe Search::SearchBarComponent, type: :component do
     rendered = render_inline(Search::SearchBarComponent.new)
 
     expect(rendered).to have_selector("form[action='/search'][method='get'][data-local='true']") do |form|
-      expect(form).to have_selector("div.relative.m-2") do |div|
-        expect(div).to have_selector("div.absolute.text-gray-600.flex.items-center.pl-4.h-full.cursor-pointer") do |icon_div|
+      expect(form).to have_selector('div.relative.m-2') do |div|
+        expect(div).to have_selector('div.absolute.text-gray-600.flex.items-center.pl-4.h-full.cursor-pointer') do |icon_div|
           expect(icon_div).to have_selector("svg.icon.icon-tabler.icon-tabler-mail[width='18'][height='18']")
         end
 

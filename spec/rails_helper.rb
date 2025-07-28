@@ -72,7 +72,6 @@ RSpec.configure do |config|
 
   ActiveStorage::Current.url_options = { host: 'https://example.com' }
 
-
   # add until here
   # ---------------------------------------------
 

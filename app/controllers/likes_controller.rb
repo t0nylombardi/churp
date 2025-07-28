@@ -28,7 +28,9 @@ class LikesController < ApplicationController
 
   def already_liked?
     true if Rails.env.development?
-    Like.exists?(user_id: current_user.id,
-                 churp_id: params[:id])
+    Like.exists?(
+      user_id: current_user.id,
+      churp_id: params[:id]
+    )
   end
 end

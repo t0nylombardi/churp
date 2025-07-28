@@ -4,7 +4,7 @@ module ChurpExtractor
   class Regex
     require 'yaml'
 
-    REGEXEN = {}
+    REGEXEN = {}.freeze
 
     # Space is more than %20, U+3000 for example is the full-width space used with Kanji. Provide a short-hand
     # to access both the list of characters and a pattern suitible for use with String#split
@@ -41,18 +41,18 @@ module ChurpExtractor
     ].map { |cp| [cp].pack('U') }.freeze
     REGEXEN[:directional_characters] = /[#{DIRECTIONAL_CHARACTERS.join}]/o
 
-    REGEXEN[:valid_mention_preceding_chars] = /(?:[^a-z0-9_!#\$%&*@＠]|^|(?:^|[^a-z0-9_+~.-])[rR][tT]:?)/io
+    REGEXEN[:valid_mention_preceding_chars] = /(?:[^a-z0-9_!#$%&*@＠]|^|(?:^|[^a-z0-9_+~.-])[rR][tT]:?)/io
     REGEXEN[:at_signs] = /[@＠]/
     REGEXEN[:valid_mention_or_list] = %r{
       (#{REGEXEN[:valid_mention_preceding_chars]})  # $1: Preceeding character
       (#{REGEXEN[:at_signs]})                       # $2: At mark
       ([a-z0-9_]{1,20})                             # $3: Screen name
-      (\/[a-z][a-zA-Z0-9_\-]{0,24})?                # $4: List (optional)
+      (/[a-z][a-zA-Z0-9_-]{0,24})?                # $4: List (optional)
     }iox
     REGEXEN[:valid_reply] = /^(?:[#{UNICODE_SPACES}#{DIRECTIONAL_CHARACTERS}])*#{REGEXEN[:at_signs]}([a-z0-9_]{1,20})/io
 
     # Used in Extractor for final filtering
-    REGEXEN[:end_mention_match] = %r{\A(?:#{REGEXEN[:at_signs]}|#{REGEXEN[:latin_accents]}|:\/\/)}io
+    REGEXEN[:end_mention_match] = %r{\A(?:#{REGEXEN[:at_signs]}|#{REGEXEN[:latin_accents]}|://)}io
 
     REGEXEN.each_pair { |_k, v| v.freeze }
     REGEXEN[:at_signs] = /[@＠]/

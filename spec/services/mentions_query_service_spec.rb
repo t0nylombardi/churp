@@ -3,13 +3,12 @@
 require 'rails_helper'
 
 describe MentionsQueryService do
-
   describe 'with Call' do
-
     context 'when searching for usernames' do
       # need a large enough dataset to get a good result back from searchkick/elasticSearch
       let(:usernames) do
-        %w(Rick Rick Ricky Dick Nick Rickii Rico Yick Ricki Rock Crick Gick Irick Rice Rich Rico Rieck Riek Rinck Rink Risk)
+        %w[Rick Rick Ricky Dick Nick Rickii Rico Yick Ricki Rock Crick Gick Irick Rice Rich Rico Rieck Riek Rinck Rink
+           Risk]
       end
       let(:query) { 'ick' }
 

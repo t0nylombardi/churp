@@ -22,7 +22,7 @@ describe ChurpExtractor::Extractor do
 
     context 'with multiple screen names' do
       it 'both linked' do
-        expect(extractor.extract_mentioned_screen_names('@alice @bob')).to be == %w(alice bob)
+        expect(extractor.extract_mentioned_screen_names('@alice @bob')).to be == %w[alice bob]
       end
     end
 
@@ -47,28 +47,41 @@ describe ChurpExtractor::Extractor do
   describe 'mentions with indices' do
     context 'with single screen name alone' do
       it 'links and the correct indices' do
-        expect(extractor.extract_mentioned_screen_names_with_indices('@alice')).to be == [{ screen_name: 'alice', indices: [0, 6] }]
+        expect(extractor.extract_mentioned_screen_names_with_indices('@alice')).to be == [{ screen_name: 'alice',
+                                                                                            indices: [0, 6] }]
       end
 
       it 'linked with _ and the correct indices' do
-        expect(extractor.extract_mentioned_screen_names_with_indices('@alice_adams')).to be == [{ screen_name: 'alice_adams', indices: [0, 12] }]
+        expect(extractor.extract_mentioned_screen_names_with_indices('@alice_adams')).to be == [{
+          screen_name: 'alice_adams', indices: [0, 12]
+        }]
       end
 
       it 'linked if numeric and the correct indices' do
-        expect(extractor.extract_mentioned_screen_names_with_indices('@1234')).to be == [{ screen_name: '1234', indices: [0, 5] }]
+        expect(extractor.extract_mentioned_screen_names_with_indices('@1234')).to be == [{ screen_name: '1234',
+                                                                                           indices: [0, 5] }]
       end
     end
 
     context 'with multiple screen names' do
       it 'both are linked with the correct indices' do
         expect(extractor.extract_mentioned_screen_names_with_indices('@alice @bob')).to be == [{ screen_name: 'alice', indices: [0, 6] },
-                                                                                               { screen_name: 'bob', indices: [7, 11] }]
+                                                                                               { screen_name: 'bob',
+                                                                                                 indices: [7, 11] }]
       end
 
       it 'links with the correct indices even when repeated' do
         expect(extractor.extract_mentioned_screen_names_with_indices('@alice @alice @bob')).to be == [{ screen_name: 'alice', indices: [0, 6] },
-                                                                                                      { screen_name: 'alice', indices: [7, 13] },
-                                                                                                      { screen_name: 'bob', indices: [14, 18] }]
+                                                                                                      {
+                                                                                                        screen_name: 'alice', indices: [
+                                                                                                          7, 13
+                                                                                                        ]
+                                                                                                      },
+                                                                                                      {
+                                                                                                        screen_name: 'bob', indices: [
+                                                                                                          14, 18
+                                                                                                        ]
+                                                                                                      }]
       end
     end
   end

@@ -34,10 +34,8 @@ RSpec.describe MentionsController do
       it 'returns matching account' do
         get :index, params: { query: nil }, as: :json
 
-        expect(JSON.parse(response.body)).to include({ "error" => 'query empty' })
+        expect(JSON.parse(response.body)).to include({ 'error' => 'query empty' })
       end
     end
-
-
   end
 end

@@ -2,7 +2,7 @@
 
 class ProfilesController < ApplicationController
   include ActiveStorage::SetCurrent
-  before_action :set_profile, only: %i(show edit update follow unfollow)
+  before_action :set_profile, only: %i[show edit update follow unfollow]
 
   def show
     @user_churps = @profile.user.churps

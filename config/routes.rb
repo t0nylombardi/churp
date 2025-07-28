@@ -14,7 +14,7 @@ Rails.application.routes.draw do
       root to: 'devise/registrations#new', as: :unauthenticated_root
     end
   end
-  resources :users, only: %i(index show) do
+  resources :users, only: %i[index show] do
     member do
       get :following, :followers, :verified_followers, :followers_you_know
     end
@@ -26,7 +26,7 @@ Rails.application.routes.draw do
 
   get ':slug/status/:churp_id', to: 'churps#show', as: 'show_churp'
   resources :churps do
-    resources :comments, only: %i(create destroy)
+    resources :comments, only: %i[create destroy]
     member do
       post :rechurp
     end
@@ -38,10 +38,10 @@ Rails.application.routes.draw do
       post :follow, :unfollow
     end
   end
-  resources :relationships, only: %i(create destroy)
+  resources :relationships, only: %i[create destroy]
 
-  resources :mentions, only: %i(index)
-  resources :notifications, only: %i(index)
+  resources :mentions, only: %i[index]
+  resources :notifications, only: %i[index]
 
   get 'search', to: 'search#index'
   get 'search/hashtags', to: 'search#search_hashtags'
@@ -74,6 +74,4 @@ Rails.application.routes.draw do
   #   match '/404', to: 'errors#not_found', via: :all
   #   match '/500', to: 'errors#internal_server_error', via: :all
   # end
-
-
 end
