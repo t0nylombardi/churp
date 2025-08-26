@@ -19,7 +19,7 @@
 #  index_notifications_on_recipient  (recipient_type,recipient_id)
 #
 class Notification < ApplicationRecord
-  include Noticed::Model
+  # include Noticed::Model
   belongs_to :recipient, polymorphic: true
 
   def unread_notifications

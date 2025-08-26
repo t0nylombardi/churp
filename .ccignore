@@ -1,0 +1,7 @@
+vendor/
+script/
+tmp/
+public/
+.*
+/*
+!*/
