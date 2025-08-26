@@ -13,7 +13,7 @@ gem "jbuilder"
 gem "jsbundling-rails"
 gem "pg"
 gem "puma"
-gem "rails", "~> 7.1", ">= 7.1.5.2"
+gem 'rails', '~> 8.0', '>= 8.0.2.1'
 gem "redis"
 gem "sprockets-rails"
 gem "stimulus-rails"
