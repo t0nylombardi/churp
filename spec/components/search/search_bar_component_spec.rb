@@ -1,15 +1,27 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Search::SearchBarComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
+  subject(:rendered) { render_inline(described_class.new) }
 
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
+  it "renders the form with correct attributes" do
+    expect(rendered).to have_selector("form[action='/search'][method='get']")
+  end
+
+  it "renders the form container div" do
+    expect(rendered).to have_selector("div.relative.m-2")
+  end
+
+  it "renders the search icon container" do
+    expect(rendered).to have_selector("div.absolute.text-gray-600.flex.items-center.pl-4.h-full.cursor-pointer")
+  end
+
+  it "renders the mail icon" do
+    expect(rendered).to have_selector("svg.icon.icon-tabler.icon-tabler-mail[width='18'][height='18']")
+  end
+
+  it "renders the input with expected attributes" do
+    expect(rendered).to have_selector("input[type='text'][name='q']")
+  end
 end

@@ -19,7 +19,7 @@ class HashTag < ApplicationRecord
   scope :group_hashes, lambda {
     select(:name)
       .group(:name)
-      .having('count(*) > 1').size
+      .having("count(*) > 1").size
   }
 
   def self.top_three

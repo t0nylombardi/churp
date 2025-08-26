@@ -42,18 +42,24 @@
 FactoryBot.define do
   factory :user do
     email { Faker::Internet.email }
-    password { 'Passw0rd1!' }
-    password_confirmation { 'Passw0rd1!' }
+    password { "Passw0rd1!" }
+    password_confirmation { "Passw0rd1!" }
     username { Faker::Internet.username(specifier: 10).camelize }
+
+    factory :user_with_profile do
+      after(:create) do |user|
+        create(:profile, user:)
+      end
+    end
   end
 
   trait :with_profile do
     after(:create) do |user|
-      user.profile ||= create(:profile, user:)
+      create(:profile, user:)
     end
   end
 
   trait :admin do
-    role { 'admin' }
+    role { "admin" }
   end
 end

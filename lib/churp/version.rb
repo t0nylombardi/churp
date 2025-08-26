@@ -17,15 +17,15 @@ module ChurpSocial
     end
 
     def default_prerelease
-      'alpha.0'
+      "alpha.0"
     end
 
     def prerelease
-      ENV['CHURP_VERSION_PRERELEASE'].presence || default_prerelease
+      ENV["CHURP_VERSION_PRERELEASE"].presence || default_prerelease
     end
 
     def build_metadata
-      ENV.fetch('CHURP_VERSION_METADATA', nil)
+      ENV.fetch("CHURP_VERSION_METADATA", nil)
     end
 
     def to_a
@@ -33,7 +33,7 @@ module ChurpSocial
     end
 
     def to_s
-      components = [to_a.join('.')]
+      components = [to_a.join(".")]
       components << "-#{prerelease}" if prerelease.present?
       components << "+#{build_metadata}" if build_metadata.present?
       components.join
@@ -41,7 +41,7 @@ module ChurpSocial
 
     # specify git tag or commit hash here
     def source_tag
-      ENV.fetch('SOURCE_TAG', nil)
+      ENV.fetch("SOURCE_TAG", nil)
     end
   end
 end

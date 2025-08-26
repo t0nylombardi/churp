@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class ChurpWrapperService < ApplicationService
-  URL_PATTERN = %r{((https?|ftp|file):\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?}
+  URL_PATTERN = %r{((https?|ftp|file)://)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*/?}
 
   attr_reader :content
 
@@ -40,5 +42,4 @@ class ChurpWrapperService < ApplicationService
   def content_to_s(content)
     content.body.to_s
   end
-
 end

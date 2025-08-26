@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
-class Icons::BackArrowComponent < ViewComponent::Base
-
+module Icons
+  class BackArrowComponent < ViewComponent::Base
+  end
 end

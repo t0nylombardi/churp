@@ -3,15 +3,15 @@
 namespace :seed do
   # Populates users and profiles.
   #   Api `rails 'db:create_users'`
-  desc 'seed users and create respective profiles'
+  desc "seed users and create respective profiles"
   task :create_users, [:num_of_users] => :environment do |_t, args|
     valid_users = []
     invalid_users = []
     0.upto(args[:num_of_users].to_i) do |i|
       user = User.new(
         email: "test@test#{i}.com",
-        password: 'Passw0rd1!',
-        password_confirmation: 'Passw0rd1!',
+        password: "Passw0rd1!",
+        password_confirmation: "Passw0rd1!",
         username: "#{Faker::Internet.username(specifier: 10).camelize}#{i}",
         role: :basic
       )
@@ -37,6 +37,6 @@ namespace :seed do
     end
 
     User.import valid_users, recursive: true
-    puts 'Created users'
+    puts "Created users"
   end
 end

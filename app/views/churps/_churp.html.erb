@@ -13,7 +13,9 @@
         <%= link_wrapper(churp.content) %>
       </p>
 
-      <% if churp.churp_pic.attached? %>
+      <% if churp.churp_pic.attached? &&
+            churp.churp_pic.attachment.blob.present? &&
+            churp.churp_pic.attachment.blob.persisted?  %>
         <img class="rounded-2xl" src=<%= url_for(churp.churp_pic) %>/>
       <% end %>
 

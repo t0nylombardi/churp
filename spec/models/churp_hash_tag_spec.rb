@@ -15,7 +15,7 @@
 #  index_churp_hash_tags_on_churp_id     (churp_id)
 #  index_churp_hash_tags_on_hash_tag_id  (hash_tag_id)
 #
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe ChurpHashTag do
   pending "add some examples to (or delete) #{__FILE__}"

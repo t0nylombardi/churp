@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ApplicationService
   class Failure < StandardError; end
 
@@ -10,23 +12,35 @@ class ApplicationService
   include ActiveModel::Validations
 
   attr_reader :result, :success
-  alias success? success
+  alias_method :success?, :success
 
-  def self.call(...)
-    new(...).call
+  # Class method to create an instance of the service and call its `call` method.
+  #
+  # @param args [Array] Arguments passed to the service's initializer.
+  # @return [Utils::Result] The result of the service call.
+  def self.call(*, &)
+    new(*, &).call
   end
 
-  def self.call!(...)
-    response = new(...).call
-    response if response.success?
-
-    raise ServiceFailed, response.errors.full_messages.to_sentence unless response.success?
+  # Class method to create an instance of the service, call its `call` method, and raise an exception if the service fails.
+  #
+  # @param args [Array] Arguments passed to the service's initializer.
+  # @return [Utils::Result] The result of the service call if successful.
+  # @raise [ServiceFailed] If the service encounters errors.
+  def self.call!(**args)
+    response = new(**args).call
+    if response.success?
+      response
+    else
+      error_message = Array(response.error).join(", ")
+      raise ServiceFailed, error_message
+    end
   end
 
   def call
     if errors.empty? && valid?
       @result = execute!
-      @success = errors.any? ? false : true
+      @success = errors.none?
     else
       @success = false
     end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
-class Icons::NotificationBellComponent < ViewComponent::Base
-
+module Icons
+  class NotificationBellComponent < ViewComponent::Base
+  end
 end

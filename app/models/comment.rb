@@ -25,5 +25,7 @@ class Comment < ApplicationRecord
   belongs_to :churp
   belongs_to :user
 
-  scope :recent_comments, -> { order('created_at DESC') }
+  validates :content, length: { minimum: 1, maximum: 500 }, allow_blank: false
+
+  scope :recent_comments, -> { order("created_at DESC") }
 end

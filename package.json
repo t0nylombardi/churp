@@ -27,6 +27,10 @@
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --outdir=app/assets/builds --public-path=/assets --loader:.js=jsx",
     "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@prettier/plugin-ruby": "^4.0.4",
+    "prettier": "^3.1.1",
+    "prettier-plugin-erb": "^0.4.0"
+  },
   "packageManager": "yarn@1.22.19"
 }

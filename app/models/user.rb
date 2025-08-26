@@ -48,7 +48,7 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+    :recoverable, :rememberable, :validatable
 
   has_many :churps, dependent: :destroy
   has_many :likes, dependent: :destroy
@@ -56,12 +56,12 @@ class User < ApplicationRecord
   has_many :notifications, as: :recipient, dependent: :destroy
 
   has_many :active_relationships, dependent: :destroy,
-                                  class_name: 'Relationship',
-                                  foreign_key: 'follower_id'
+    class_name: "Relationship",
+    foreign_key: "follower_id"
 
   has_many :passive_relationships, dependent: :destroy,
-                                   class_name: 'Relationship',
-                                   foreign_key: 'followed_id'
+    class_name: "Relationship",
+    foreign_key: "followed_id"
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
@@ -72,13 +72,16 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :profile
 
   validates :username, :email, :password, presence: true
-  # TODO: Uniqueness validation should have a unique index on the database column.
-  validates :username, :email, uniqueness: true
+  validates :username, uniqueness: true
+  validates :email, uniqueness: true
   validate :password_complexity
 
-  after_create :set_username
-  def set_username
-    self[:username] = "@#{username}" unless username.start_with?('@')
+  before_commit on: :create do
+    self.username = "@#{username.downcase}" unless username.start_with?("@")
+  end
+
+  def normalize_friendly_id(value)
+    value.to_s.downcase
   end
 
   # Follows a user.
@@ -108,7 +111,7 @@ class User < ApplicationRecord
   end
 
   def password_complexity
-    message = <<-TEXT.gsub(/\s+/, ' ').strip
+    message = <<-TEXT.gsub(/\s+/, " ").strip
     Complexity requirement not met. Length should be 8-128 characters and
     include: 1 uppercase, 1 lowercase, 1 digit and 1 special character
     TEXT

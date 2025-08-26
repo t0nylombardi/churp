@@ -1,15 +1,16 @@
 # frozen_string_literal: true
 
 class CommentsController < ApplicationController
-  before_action :set_comment, only: %i(show edit update destroy)
+  before_action :set_comment, only: %i[show edit update destroy]
 
   # GET /comments or /comments.json
   def index
-    @comments = Comment.all.order('created_at DESC')
+    @comments = Comment.all.order("created_at DESC")
   end
 
   # GET /comments/1 or /comments/1.json
-  def show; end
+  def show
+  end
 
   # GET /comments/new
   def new
@@ -17,7 +18,8 @@ class CommentsController < ApplicationController
   end
 
   # GET /comments/1/edit
-  def edit; end
+  def edit
+  end
 
   # POST /comments or /comments.json
   def create
@@ -25,9 +27,9 @@ class CommentsController < ApplicationController
 
     respond_to do |format|
       if @comment.save
-        format.html { redirect_to churp_path(params[:churp_id]), notice: 'Comment was successfully created.' }
+        format.html { redirect_to churp_path(params[:churp_id]), notice: "Comment was successfully created." }
       else
-        format.html { redirect_back fallback_location: @churp, alert: 'Could not comment' }
+        format.html { redirect_to churp_path(params[:churp_id]), alert: "Could not comment" }
       end
     end
   end
@@ -36,7 +38,7 @@ class CommentsController < ApplicationController
   def update
     respond_to do |format|
       if @comment.update(comment_params)
-        format.html { redirect_to comment_url(@comment), notice: 'Comment was successfully updated.' }
+        format.html { redirect_to comment_url(@comment), notice: "Comment was successfully updated." }
         format.json { render :show, status: 200, location: @comment }
       else
         format.html { render :edit, status: 422 }
@@ -50,7 +52,7 @@ class CommentsController < ApplicationController
     @comment.destroy
 
     respond_to do |format|
-      format.html { redirect_to comments_url, notice: 'Comment was successfully destroyed.' }
+      format.html { redirect_to churp_path(params[:churp_id]), notice: "Comment was successfully destroyed." }
       format.json { head 204 }
     end
   end

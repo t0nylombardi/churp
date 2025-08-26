@@ -1,4 +1,6 @@
 # frozen_string_literal: true
 
-class Notifications::ActiveUnderlineComponent < ViewComponent::Base
+module Notifications
+  class ActiveUnderlineComponent < ViewComponent::Base
+  end
 end

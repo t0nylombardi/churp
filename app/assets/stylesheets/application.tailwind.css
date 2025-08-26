@@ -100,3 +100,12 @@
   @apply rotate-0 skew-x-0 skew-y-0 scale-x-100 scale-y-100 whitespace-nowrap text-xs font-bold rounded-[50%];
   @apply p-1 bg-vividSkyBlue text-gray-100 text-center;
 }
+
+.trending-topic {
+  @apply text-blue-400 text-sm font-normal p-3 border-b border-gray-200 dark:border-dim-200;
+  @apply hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out;
+}
+
+.num-of-churps{
+  @apply text-xs text-gray-400;
+}

@@ -2,7 +2,7 @@
 
 module ChurpExtractor
   class Extractor
-    require 'English'
+    require "English"
     attr_reader :text
 
     # Extracts a list of all usernames mentioned in the Tweet <tt>text</tt>. If the
@@ -66,6 +66,11 @@ module ChurpExtractor
         screen_name:,
         indices: [start_position, end_position]
       }
+    end
+
+    def sanitize(string)
+      sanitized_str = ActionView::Base.full_sanitizer.sanitize(string)
+      sanitized_str.strip
     end
   end
 end

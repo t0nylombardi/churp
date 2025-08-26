@@ -4,11 +4,11 @@ class SearchController < ApplicationController
   protect_from_forgery with: :null_session
 
   def index
-    if params[:q].start_with?('#')
-      query = params[:q].delete('#')
+    if params[:q].start_with?("#")
+      query = params[:q].delete("#")
       @churps = Churp.search_hashtags(query)
     else
-      @churps = Churp.with_all_rich_text.where('body like ?', "%#{params[:q]}%")
+      @churps = Churp.with_all_rich_text.where("body like ?", "%#{params[:q]}%")
     end
   end
 
@@ -18,9 +18,9 @@ class SearchController < ApplicationController
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream:
-          turbo_stream.update('search',
-                              partial: 'search/index',
-                              locals: { posts: @results })
+          turbo_stream.update("search",
+            partial: "search/index",
+            locals: { posts: @results })
       end
     end
   end
@@ -31,9 +31,9 @@ class SearchController < ApplicationController
     respond_to do |format|
       format.turbo_stream do
         render turbo_stream:
-          turbo_stream.update('suggestions',
-                              partial: 'search/suggestions',
-                              locals: { results: @results })
+          turbo_stream.update("suggestions",
+            partial: "search/suggestions",
+            locals: { results: @results })
       end
     end
   end
@@ -45,10 +45,10 @@ class SearchController < ApplicationController
       HashTag.all
     else
       results = HashTag.search(params[:query],
-                               fields: [:name],
-                               match: :word_start,
-                               boost_by_recency: { created_at: { scale: '7d', decay: 0.5 } },
-                               limit: 10)
+        fields: [:name],
+        match: :word_start,
+        boost_by_recency: { created_at: { scale: "7d", decay: 0.5 } },
+        limit: 10)
       results.uniq { |r| r[:name] }
     end
   end

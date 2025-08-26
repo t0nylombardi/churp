@@ -1,15 +1,28 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe TrendingTopicComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe "initialization" do
+    let(:hashtag_name) { "johnwick" }
+    let(:hashtag_content) { "I love #johnwick and his dog" }
 
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
+    let(:churp) { create(:churp, content: hashtag_content) }
+
+    let(:rendered_component) do
+      render_inline(described_class.new(hashtag: hashtag_name, num_of_churps: 1))
+    end
+
+    it "renders the trending topic container" do
+      expect(rendered_component.css(".trending-topic")).to be_present
+    end
+
+    it "displays the correct hashtag" do
+      expect(rendered_component.text).to include("#johnwick")
+    end
+
+    it "shows the correct number of churps" do
+      expect(rendered_component.css(".num-of-churps").text).to include("1")
+    end
+  end
 end

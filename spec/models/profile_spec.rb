@@ -24,135 +24,151 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-require 'rails_helper'
+
+require "rails_helper"
 
 RSpec.describe Profile do
   let(:user) { build(:user) }
 
-  describe '#create' do
-    context 'when field attrs are valid' do
-      it 'when first name is valid' do
-        create(:profile, first_name: 'Rick')
-
-        expect(described_class.last.first_name).to eq 'Rick'
+  describe "#create" do
+    context "when field attrs are valid" do
+      it "saves first_name correctly" do
+        create(:profile, first_name: "Rick")
+        expect(described_class.last.first_name).to eq "Rick"
       end
 
-      it 'when last name is valid' do
-        create(:profile, last_name: 'Sanchez')
-
-        expect(described_class.last.last_name).to eq 'Sanchez'
+      it "saves last_name correctly" do
+        create(:profile, last_name: "Sanchez")
+        expect(described_class.last.last_name).to eq "Sanchez"
       end
 
-      it 'when description is valid' do
-        create(:profile, description: 'I love tacos and tacos loves me')
-
-        expect(described_class.last.description).to eq 'I love tacos and tacos loves me'
+      it "saves description correctly" do
+        create(:profile, description: "I love tacos and tacos loves me")
+        expect(described_class.last.description).to eq "I love tacos and tacos loves me"
       end
 
-      it 'when website is valid' do
-        create(:profile, website: 'http://test.test.com')
-
-        expect(described_class.last.website).to eq 'http://test.test.com'
+      it "saves website correctly" do
+        create(:profile, website: "http://test.test.com")
+        expect(described_class.last.website).to eq "http://test.test.com"
       end
     end
 
-    it 'errors on description for too many characters' do
-      profile = build(:profile, description: Faker::Lorem.characters(number: 302), user:)
+    context "with invalid description" do
+      it "is not valid when too long" do
+        profile = build(:profile, description: Faker::Lorem.characters(number: 302), user:)
+        expect(profile).not_to be_valid
+      end
 
-      expect(profile).to_not be_valid
-      expect(profile.errors[:description]).to eq(['is too long (maximum is 300 characters)'])
+      it "adds length error to description" do
+        profile = build(:profile, description: Faker::Lorem.characters(number: 302), user:)
+        profile.valid?
+        expect(profile.errors[:description]).to eq(["is too long (maximum is 300 characters)"])
+      end
     end
 
-    it 'errors on webite for too many characters' do
-      profile = build(:profile, website: Faker::Lorem.characters(number: 256), user:)
+    context "with invalid website" do
+      it "is not valid when too long" do
+        profile = build(:profile, website: Faker::Lorem.characters(number: 256), user:)
+        expect(profile).not_to be_valid
+      end
 
-      expect(profile).to_not be_valid
-      expect(profile.errors[:website]).to eq(['is too long (maximum is 255 characters)'])
+      it "adds length error to website" do
+        profile = build(:profile, website: Faker::Lorem.characters(number: 256), user:)
+        profile.valid?
+        expect(profile.errors[:website]).to eq(["is too long (maximum is 255 characters)"])
+      end
     end
   end
 
-  describe 'Upload profile_bg' do
-    subject { create(:profile, user:).profile_bg }
+  describe "Upload profile_bg" do
+    subject(:attachment) { create(:profile, user:).profile_bg }
 
-    let(:image_path) { Rails.root.join('spec', 'fixtures', 'images') }
-    let(:image_params) { { content_type: 'image/jpeg' } }
+    let(:image_path) { Rails.root.join("spec/fixtures/images") }
+    let(:image_params) { { content_type: "image/jpeg" } }
     let(:profile) { create(:profile, user:) }
 
-    it { is_expected.to be_an_instance_of(ActiveStorage::Attached::One) }
+    it "is an ActiveStorage::Attached::One" do
+      expect(attachment).to be_an_instance_of(ActiveStorage::Attached::One)
+    end
 
-    it 'is attached' do
-      filename = 'stanley-roper-profile.png'
-      file = File.open(Rails.root.join(image_path, filename))
-
-      profile.profile_bg.attach(image_params.merge(io: file, filename:))
+    it "attaches profile_bg successfully" do
+      file = File.open(image_path.join("stanley-roper-profile.png"))
+      profile.profile_bg.attach(image_params.merge(io: file, filename: "stanley-roper-profile.png"))
       expect(profile.profile_bg).to be_attached
+    end
+
+    it "is valid after profile_bg is attached" do
+      file = File.open(image_path.join("stanley-roper-profile.png"))
+      profile.profile_bg.attach(image_params.merge(io: file, filename: "stanley-roper-profile.png"))
       expect(profile).to be_valid
     end
 
-    context 'with validations' do
-      it 'errors on exceeding the file size' do
-        filename = 'big_file.jpg'
-        file = File.open(Rails.root.join(image_path, filename))
-
-        profile.profile_bg.attach(image_params.merge(io: file, filename:))
-        expect(profile.errors[:profile_bg]).to eq(['File is too big'])
+    context "with validations" do
+      it "errors on file size too large" do
+        file = File.open(image_path.join("big_file.jpg"))
+        profile.profile_bg.attach(image_params.merge(io: file, filename: "big_file.jpg"))
+        expect(profile.errors[:profile_bg]).to eq(["File is too big"])
       end
 
-      it 'validates image type' do
-        filename = 'wrong_file.txt'
-        file = File.open(Rails.root.join(image_path, filename))
-
-        profile.profile_bg.attach(image_params.merge(io: file, filename:, content_type: 'application/txt'))
-        expect(profile.errors[:profile_bg]).to eq(['File must be a JPEG, JPG or PNG'])
+      it "errors on invalid file type" do
+        file = File.open(image_path.join("wrong_file.txt"))
+        profile.profile_bg.attach(image_params.merge(io: file, filename: "wrong_file.txt", content_type: "application/txt"))
+        expect(profile.errors[:profile_bg]).to eq(["File must be a JPEG, JPG or PNG"])
       end
     end
   end
 
-  describe 'Upload profile_pic' do
-    subject { create(:profile, user:).profile_pic }
+  describe "Upload profile_pic" do
+    subject(:attachment) { create(:profile, user:).profile_pic }
 
     let(:profile) { create(:profile, user:) }
+    let(:image_path) { Rails.root.join("spec/fixtures/images") }
     let(:params) do
       {
-        io: File.open(Rails.root.join('spec', 'fixtures', 'images', 'stanley-roper-profile.png')),
-        filename: 'stanley-roper-profile.png',
-        content_type: 'image/png'
+        io: File.open(image_path.join("stanley-roper-profile.png")),
+        filename: "stanley-roper-profile.png",
+        content_type: "image/png"
       }
     end
 
-    it { is_expected.to be_an_instance_of(ActiveStorage::Attached::One) }
+    it "is an ActiveStorage::Attached::One" do
+      expect(attachment).to be_an_instance_of(ActiveStorage::Attached::One)
+    end
 
-    it 'is attached' do
+    it "attaches profile_pic successfully" do
       profile.profile_pic.attach(params)
-
       expect(profile.profile_pic).to be_attached
+    end
+
+    it "is valid after profile_pic is attached" do
+      profile.profile_pic.attach(params)
       expect(profile).to be_valid
     end
 
-    context 'with validations' do
-      let(:image_path) { Rails.root.join('spec', 'fixtures', 'images') }
+    context "with validations" do
       let(:params) do
         {
-          filename: 'stanley-roper-profile.png',
-          content_type: 'image/png'
+          filename: "stanley-roper-profile.png",
+          content_type: "image/png"
         }
       end
 
-      it 'errors on exceeding the file size' do
-        filename = 'big_file.jpg'
-        file = File.open(Rails.root.join(image_path, filename))
-        profile.profile_pic.attach(params.merge(io: file, filename:))
-
-        expect(profile).to_not be_valid
-        expect(profile.errors[:profile_pic]).to eq(['File is too big'])
+      it "is not valid when file is too large" do
+        file = File.open(image_path.join("big_file.jpg"))
+        profile.profile_pic.attach(params.merge(io: file, filename: "big_file.jpg"))
+        expect(profile).not_to be_valid
       end
 
-      it 'validates image type' do
-        filename = 'wrong_file.txt'
-        file = File.open(Rails.root.join(image_path, filename))
-        profile.profile_pic.attach(params.merge(io: file, filename:, content_type: 'application/txt'))
+      it "adds error for file size" do
+        file = File.open(image_path.join("big_file.jpg"))
+        profile.profile_pic.attach(params.merge(io: file, filename: "big_file.jpg"))
+        expect(profile.errors[:profile_pic]).to eq(["File is too big"])
+      end
 
-        expect(profile.errors[:profile_pic]).to eq(['File must be a JPEG, JPG or PNG'])
+      it "adds error for invalid file type" do
+        file = File.open(image_path.join("wrong_file.txt"))
+        profile.profile_pic.attach(params.merge(io: file, filename: "wrong_file.txt", content_type: "application/txt"))
+        expect(profile.errors[:profile_pic]).to eq(["File must be a JPEG, JPG or PNG"])
       end
     end
   end

@@ -2,9 +2,9 @@
 
 class MentionsController < ApplicationController
   def index
-    render json: { error: 'query empty' }, status: 400 if params[:query].empty?
+    render json: { error: "query empty" }, status: 400 if params[:query].empty?
 
-    @mentions = User.where('username ILIKe ?', "%#{params[:query]}%").limit(5)
+    @mentions = User.where("username ILIKe ?", "%#{params[:query]}%").limit(5)
 
     respond_to(&:json)
   end

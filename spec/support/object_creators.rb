@@ -6,8 +6,8 @@ module ObjectCreators
     user = User.new(
       email: params[:name].present? ? "#{params[:name]}@test.com" : "testtest#{last_id + 1}@test.com",
       username: params[:name].present? ? params[:name].to_s : "testtest#{last_id + 1}",
-      password: 'testtest',
-      password_confirmation: 'testtest'
+      password: "testtest",
+      password_confirmation: "testtest"
     )
     user.skip_confirmation!
     user.save!

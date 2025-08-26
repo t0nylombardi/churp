@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative 'boot'
+require_relative "boot"
 
-require 'rails/all'
+require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require_relative '../lib/churp/version'
+require_relative "../lib/churp/version"
 
 module ChurpSocial
   class Application < Rails::Application
@@ -28,10 +28,10 @@ module ChurpSocial
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks middleware))
+    config.autoload_lib(ignore: %w[assets tasks middleware])
 
     # Autoload and also eager load lib.
-    config.autoload_paths << config.root.join('lib')
+    config.autoload_paths << config.root.join("lib")
     # config.eager_load_paths << config.root.join('lib')
 
     # Enable rails to serve my assets

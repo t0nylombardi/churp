@@ -20,7 +20,7 @@ class RelationshipsController < ApplicationController
   def update_follow_card
     render turbo_stream: turbo_stream.replace(
       "follow_card_#{@user.id}",
-      partial: 'users/follow',
+      partial: "users/follow",
       locals: { user: @user }
     )
   end
