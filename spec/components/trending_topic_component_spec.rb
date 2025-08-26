@@ -3,25 +3,26 @@
 require "rails_helper"
 
 RSpec.describe TrendingTopicComponent, type: :component do
-  # Example 1: Testing the initialization of the component
   describe "initialization" do
-    let(:hashtag) { "johnwick" }
-    let(:num_of_churps) { 10 }
-    let(:component) { described_class.new(hashtag:, num_of_churps:) }
+    let(:hashtag_name) { "johnwick" }
+    let(:hashtag_content) { "I love #johnwick and his dog" }
+
+    let(:churp) { create(:churp, content: hashtag_content) }
+
+    let(:rendered_component) do
+      render_inline(described_class.new(hashtag: hashtag_name, num_of_churps: 1))
+    end
 
     it "renders the trending topic container" do
-      component = render_inline(component)
-      expect(component.css(".trending-topic")).to be_present
+      expect(rendered_component.css(".trending-topic")).to be_present
     end
 
     it "displays the correct hashtag" do
-      component = render_inline(component)
-      expect(component.css(".trending-topic").text).to include(hashtag)
+      expect(rendered_component.text).to include("#johnwick")
     end
 
     it "shows the correct number of churps" do
-      component = render_inline(component)
-      expect(component.css(".num-of-churps").text).to include(num_of_churps.to_s)
+      expect(rendered_component.css(".num-of-churps").text).to include("1")
     end
   end
 end

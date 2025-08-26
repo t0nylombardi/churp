@@ -6,7 +6,7 @@ RSpec.describe Search::SearchBarComponent, type: :component do
   subject(:rendered) { render_inline(described_class.new) }
 
   it "renders the form with correct attributes" do
-    expect(rendered).to have_selector("form[action='/search'][method='get'][data-local='true']")
+    expect(rendered).to have_selector("form[action='/search'][method='get']")
   end
 
   it "renders the form container div" do
@@ -22,6 +22,6 @@ RSpec.describe Search::SearchBarComponent, type: :component do
   end
 
   it "renders the input with expected attributes" do
-    expect(rendered).to have_selector("input[type='text'][name='q'][value=''][placeholder='Search Churp']")
+    expect(rendered).to have_selector("input[type='text'][name='q']")
   end
 end

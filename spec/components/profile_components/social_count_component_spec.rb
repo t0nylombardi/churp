@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe ProfileComponents::Buttons::SocialCountComponent, type: :component do
+RSpec.describe ProfileComponents::SocialCountComponent, type: :component do
   let(:count) { 500 }
   let(:content) { "Following" }
 

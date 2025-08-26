@@ -14,7 +14,7 @@ class ApplicationService
   attr_reader :result, :success
   alias_method :success?, :success
 
-  d # Class method to create an instance of the service and call its `call` method.
+  # Class method to create an instance of the service and call its `call` method.
   #
   # @param args [Array] Arguments passed to the service's initializer.
   # @return [Utils::Result] The result of the service call.

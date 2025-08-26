@@ -65,6 +65,7 @@ group :development, :test do
   gem "pry"
   gem "pry-nav"
   gem "pry-stack_explorer"
+  gem "rspec-rails"
   gem "rails-controller-testing", "~> 1.0", ">= 1.0.5"
   gem "rblineprof", "~> 0.3.7"
   gem "rblineprof-report", "~> 0.0.4"
@@ -74,7 +75,7 @@ group :development, :test do
 end
 
 group :development do
-  gem "annotaterb"
+  gem "annotaterb", "~> 4.17"
   gem "brakeman", "~> 6.0", ">= 6.0.1"
   # Code linting CLI and plugins
   gem "rubocop", require: false
