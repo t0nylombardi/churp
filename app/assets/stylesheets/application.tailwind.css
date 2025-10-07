@@ -1,5 +1,5 @@
-@import 'actiontext.css';
-@import 'emoji.picker.css';
+@import "actiontext.css";
+@import "emoji.picker.css";
 
 @tailwind base;
 @tailwind components;
@@ -15,19 +15,19 @@
   /* Track */
   ::-webkit-scrollbar-track {
     border-radius: 100vh;
-    background: #FFF;
+    background: #fff;
   }
 
   /* Handle */
   ::-webkit-scrollbar-thumb {
-    background: #CCC;
+    background: #ccc;
     border-radius: 100vh;
-    border: 2px solid #FFF;
+    border: 2px solid #fff;
   }
 
   /* Handle on hover */
   ::-webkit-scrollbar-thumb:hover {
-    background: #AAA;
+    background: #aaa;
   }
 
   /* width */
@@ -60,8 +60,8 @@
 
   /* For IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
 
@@ -72,7 +72,7 @@
 }
 
 .primary {
-  @apply border-vividSkyBlue text-vividSkyBlue hover:border-cyan-600
+  @apply border-vividSkyBlue text-vividSkyBlue hover:border-cyan-600;
 }
 
 .error {
@@ -80,11 +80,11 @@
 }
 
 .newChurpText {
-  @apply dark:text-white text-gray-900 placeholder-gray-400 w-full bg-transparent border-0 focus:outline-none focus:ring-0 resize-none
+  @apply dark:text-white text-gray-900 placeholder-gray-400 w-full bg-transparent border-0 focus:outline-none focus:ring-0 resize-none;
 }
 
 .curpContent a {
-  @apply hover:underline
+  @apply hover:underline;
 }
 
 .newNotification {
@@ -103,9 +103,9 @@
 
 .trending-topic {
   @apply text-blue-400 text-sm font-normal p-3 border-b border-gray-200 dark:border-dim-200;
-  @apply hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out;
+  @apply hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-200 ease-in-out;
 }
 
-.num-of-churps{
+.num-of-churps {
   @apply text-xs text-gray-400;
 }
