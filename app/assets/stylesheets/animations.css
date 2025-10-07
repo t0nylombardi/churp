@@ -1,0 +1,26 @@
+@theme {
+  --animate-spin-fast: spin 0.7s linear infinite;
+  --animate-fade-in-up: fade-in-up 0.3s ease-in-out;
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Add more tweet-specific animations */
+@keyframes like-bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}

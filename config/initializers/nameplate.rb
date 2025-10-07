@@ -2,7 +2,7 @@
 
 NamePlate.setup do |config|
   config.fill_color = "rgba(255, 255, 255, 1)"
-  config.cache_base_path = "assets"
+  config.cache_base_path = "storage"
   config.colors_palette = :iwanthue
   config.weight = 600
   config.annotate_position = "-0+10"

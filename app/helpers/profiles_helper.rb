@@ -15,21 +15,25 @@ module ProfilesHelper
     profile_bg.url
   end
 
+  # TODO: Fix this method to properly show the user's profile picture or a generated avatar
+  # based on their name if no picture is attached.
   def avatar_pic(profile)
-    profile_pic = profile&.profile_pic
+    # profile_pic = profile&.profile_pic
 
-    if profile_pic&.attached?
-      url_for_attachment(profile)
-    elsif profile
-      letter_avatar(profile)
-    else
-      "stanley-roper-profile.png"
-    end
+    # if profile_pic&.attached?
+    #   url_for_attachment(profile)
+    # elsif profile
+    #   letter_avatar(profile)
+    # else
+    #   "stanley-roper-profile.png"
+    # end
+
+    "stanley-roper-profile.png"
   end
 
   def letter_avatar(profile)
     name = profile&.name || "Sage Doe"
-    NamePlate.generate(name, 400).delete_prefix("public/")
+    NamePlate.generate(name, 400)
   end
 
   def url_for_attachment(profile)

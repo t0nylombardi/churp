@@ -16,7 +16,10 @@ Rails.application.routes.draw do
   end
   resources :users, only: %i[index show] do
     member do
-      get :following, :followers, :verified_followers, :followers_you_know
+      get :following
+      get :followers
+      get :verified_followers
+      get :followers_you_know
     end
   end
 
@@ -35,7 +38,8 @@ Rails.application.routes.draw do
 
   resources :profiles do
     member do
-      post :follow, :unfollow
+      post :follow
+      post :unfollow
     end
   end
   resources :relationships, only: %i[create destroy]
