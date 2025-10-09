@@ -1,0 +1,21 @@
+@layer components {
+  /* Tweet Card */
+  .tweet-card {
+    @apply border-b border-dim-200 p-4 hover:bg-dim-800/50 transition-colors;
+  }
+
+  /* Sidebar Button */
+  .sidebar-btn {
+    @apply flex items-center gap-4 px-4 py-3 rounded-full hover:bg-dim-800 transition-colors;
+  }
+
+  /* Primary Action Button */
+  .btn-primary {
+    @apply px-6 py-3 bg-vivid-sky-blue text-white font-bold rounded-full hover:bg-vivid-sky-blue/90 transition-colors;
+  }
+
+  /* Avatar */
+  .avatar {
+    @apply rounded-full bg-dim-700 overflow-hidden;
+  }
+}

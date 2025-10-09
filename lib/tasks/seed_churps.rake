@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 namespace :seed do
-  def hash_tags # standard:disable Rake/MethodDefinitionInTask
+  def hash_tags
     %w[#train #transport #railway #bridge #metro #trains
       #trainspotting #trainphotography #ns #rail #freight #railroad
       #railwayphotography #railways_of_our_world #trainstation #railwaystation
@@ -27,7 +27,7 @@ namespace :seed do
       hash_tag = Array.new(5) { hash_tags.sample }.join(" ")
 
       churp = Churp.new(
-        content: sentence + " #{User.all.sample.username} " + hash_tag,
+        body: sentence + " #{User.all.sample.username} " + hash_tag,
         user_id: User.all.sample.id
       )
 
@@ -37,6 +37,7 @@ namespace :seed do
           user_id: User.all.sample.id
         )
       end
+
       if churp.valid?
         valid_churps << churp
       else

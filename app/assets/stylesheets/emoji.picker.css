@@ -1,5 +1,5 @@
 .emoji-picker {
-  --background-color:;
+  /* --background-color:;
   --accent-colo: ;
   --background-color: ;
   --border-color: ;
@@ -9,9 +9,9 @@
   --error-color-dark:;
   --focus-indicator-color:;
   --hover-background-color:;
-  --placeholder-background-color:;
+  --placeholder-background-color:; */
   --preview-background-color: #15202b;
-  --scrollbar-background-color:;
+  /* --scrollbar-background-color:;
   --scrollbar-color:;
   --search-background-color:;
   --search-focus-background-color:;
@@ -22,5 +22,5 @@
   --tag-background-color:;
   --text-color:;
   --ui-font:;
-  --variant-popup-background-color:;
+  --variant-popup-background-color:; */
 }

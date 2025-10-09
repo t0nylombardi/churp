@@ -49,4 +49,11 @@ class Profile < ApplicationRecord
   def reindex_profiles
     reindex
   end
+
+  before_commit :create_default_avatar, on: :create
+  def create_default_avatar
+    return if profile_pic.attached?
+
+    NamePlate.generate(name || "Sage Doe", 400).delete_prefix("public/")
+  end
 end

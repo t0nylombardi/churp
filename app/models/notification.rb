@@ -23,10 +23,10 @@ class Notification < ApplicationRecord
   belongs_to :recipient, polymorphic: true
 
   def unread_notifications
-    notifications.unread
+    # notifications.unread
   end
 
   def unread_notifications_count
-    unread_notifications.count
+    # unread_notifications.count
   end
 end
