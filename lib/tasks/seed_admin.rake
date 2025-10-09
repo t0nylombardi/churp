@@ -1,31 +1,21 @@
 # frozen_string_literal: true
 
 namespace :seed do
-  # Populates admin.
-  #   Api `rails 'db:create_admin'`
-  desc "seed admin and respective profiles"
+  desc "Seed admin user and profile"
   task create_admin: :environment do
-    user = User.create(
-      email: "admin@churp.com",
-      password: "Passw0rd1!",
-      password_confirmation: "Passw0rd1!",
-      username: "t0nylombardi",
-      role: "admin"
-    )
-    user.save!
-    Rake::Task["seed:create_admin_profile"].invoke(user:)
-  end
+    puts "🌱 Seeding admin account..."
 
-  desc "seed admin profile"
-  task :create_admin_profile, [:user] => :environment do |_t, args|
-    user = args[:user].values.first
-    user.build_profile(
-      first_name: "Anthony",
-      last_name: "Lombardi",
-      description: "I like Tacos and Tacos like me",
-      website: "t0nylombardi.dev",
-      birth_date: "1983-03-31".to_date
-    ).save!
-    puts "Created admin: #{user.email}"
+    seeder = Seed::AdminSeeder.new
+    result = seeder.call
+
+    if result.success?
+      puts "✅ Admin created: #{result.user.email}"
+      puts "🧑 Profile: #{result.user.profile.full_name}"
+    else
+      puts "❌ Failed to create admin: #{result.error_message}"
+    end
+  rescue => e
+    Rails.logger.error "[Seed::Admin] Fatal error: #{e.message}"
+    puts "💥 Seeding failed: #{e.message}"
   end
 end

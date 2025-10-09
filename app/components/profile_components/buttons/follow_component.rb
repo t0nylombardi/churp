@@ -4,7 +4,6 @@ module ProfileComponents
   module Buttons
     class FollowComponent < ViewComponent::Base
       def initialize(user:, profile:)
-        super
         @user = user
         @profile = profile
       end

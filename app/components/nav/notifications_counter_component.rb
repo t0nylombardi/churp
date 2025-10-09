@@ -3,7 +3,6 @@
 module Nav
   class NotificationsCounterComponent < ViewComponent::Base
     def initialize(user:, count:)
-      super
       @user = user
       @count = count
     end
