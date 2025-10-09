@@ -41,6 +41,6 @@ class BroadcastNotificationsService < ApplicationService
   end
 
   def text
-    churp.content.body.to_s
+    churp.body.body.to_s
   end
 end

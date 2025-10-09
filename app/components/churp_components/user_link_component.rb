@@ -5,7 +5,6 @@ module ChurpComponents
     attr_reader :churp
 
     def initialize(churp:)
-      super
       @churp = churp
     end
 

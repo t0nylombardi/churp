@@ -37,17 +37,18 @@ en:
       churp:
         attributes:
           content:
-            blank: 'too short'
+            blank: "too short"
             too_short: "Content is too short (minimum is 2 characters)"
             too_long: "Content is too long (maximum is 331 characters)"
       messages:
         content_type_invalid: "The image has an invalid content type"
         file_size_out_of_range: "size %{file_size} is not between required range"
   pundit:
-    default: 'You cannot perform this action.'
+    default: "You cannot perform this action."
     post_policy:
-      update?: 'You cannot edit this post!'
-      create?: 'You cannot create posts!'
+      update?: "You cannot edit this post!"
+      create?: "You cannot create posts!"
   churps:
     under_character_limit: content is too short (minimum is %{min} characters)
     over_character_limit: content is too long (maximum is %{max} characters)
+    cannot_be_empty: content cannot be empty (minimum is %{min} characters)

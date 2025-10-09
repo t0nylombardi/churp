@@ -1,42 +1,20 @@
 # frozen_string_literal: true
 
 namespace :seed do
-  # Populates users and profiles.
-  #   Api `rails 'db:create_users'`
-  desc "seed users and create respective profiles"
+  desc "Seed a given number of users with profiles"
   task :create_users, [:num_of_users] => :environment do |_t, args|
-    valid_users = []
-    invalid_users = []
-    0.upto(args[:num_of_users].to_i) do |i|
-      user = User.new(
-        email: "test@test#{i}.com",
-        password: "Passw0rd1!",
-        password_confirmation: "Passw0rd1!",
-        username: "#{Faker::Internet.username(specifier: 10).camelize}#{i}",
-        role: :basic
-      )
+    num = args[:num_of_users].to_i
+    raise ArgumentError, "Please provide a positive number of users." if num <= 0
 
-      user.build_profile(
-        first_name: Faker::Name.first_name,
-        last_name: Faker::Name.last_name,
-        description: Faker::Lorem.sentence(word_count: 20),
-        website: "https://#{Faker::Internet.domain_name}",
-        birth_date: Faker::Date.birthday(min_age: 18, max_age: 65)
-      )
+    puts "🌱 Seeding #{num} users with profiles..."
 
-      if user.valid?
-        valid_users << user
-      else
-        invalid_users << user
-      end
+    seeder = Seed::UserSeeder.new(num)
+    result = seeder.call
 
-      valid_users.each do |u|
-        u.run_callbacks(:save) { false }
-        u.run_callbacks(:create) { false }
-      end
-    end
-
-    User.import valid_users, recursive: true
-    puts "Created users"
+    puts "✅ Created #{result[:created]} users."
+    puts "⚠️ Skipped #{result[:failed]} invalid users."
+  rescue => e
+    Rails.logger.error "[Seed::UserSeeder] Fatal error: #{e.message}"
+    puts "💥 Seeding failed: #{e.message}"
   end
 end
