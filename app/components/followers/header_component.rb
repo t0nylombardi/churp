@@ -3,7 +3,6 @@
 module Followers
   class HeaderComponent < ViewComponent::Base
     def initialize(view: nil, followers: nil, following: nil)
-      super
       @view = view
       @followers = followers
       @following = following

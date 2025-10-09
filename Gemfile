@@ -63,6 +63,7 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
   gem "pry", "~> 0.15.2"
+  gem "pry-byebug"
   gem "rspec-rails"
   gem "shoulda-callback-matchers"
   gem "shoulda-matchers"

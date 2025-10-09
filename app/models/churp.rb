@@ -22,53 +22,50 @@
 #
 class Churp < ApplicationRecord
   belongs_to :user
-
-  belongs_to :churp, optional: true, dependent: :destroy
+  belongs_to :churp, optional: true
   has_many :likes, as: :likeable, dependent: :destroy
   has_many :comments, dependent: :destroy
-  # TODO: This is for the analytics feature on a churp.
-  #       The logic for this needs to be rewitten into a model
-  #       insead of a tracking pixel. (stupid idea)
-  # has_many :views
   has_many :churp_hash_tags, dependent: :destroy
-  has_many :hash_tags, through: :churp_hash_tags, dependent: :destroy
+  has_many :hash_tags, through: :churp_hash_tags
   has_many :notifications, as: :recipient, dependent: :destroy
 
-  has_rich_text :content
+  has_rich_text :body
   has_one_attached :churp_pic
 
   validates :churp_pic, acceptable_image: true
-  validates :content, presence: true
-  validates :content, churp_length: true
+  validates :body, presence: true, churp_length: true
 
-  after_create :create_hash_tags
-  after_create :broadcast_churp
+  after_commit :create_hash_tags
+  after_commit :broadcast_churp
   after_commit :broadcast_notifications
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
   def churp_type
-    if churp_id? && content?
-      "rechurp"
-    else
-      "churp"
-    end
+    churp_id.present? ? "rechurp" : "churp"
   end
 
   def create_hash_tags
+    return if extract_name_hash_tags.blank?
+
     extract_name_hash_tags.each do |name|
-      hash_tags.create(name:)
+      tag = HashTag.find_or_create_by(name:)
+      churp_hash_tags.find_or_create_by(hash_tag: tag)
     end
+  rescue => e
+    Rails.logger.error "[Churp##{id}] Failed to create hashtags: #{e.message}"
   end
 
   def extract_name_hash_tags
-    content.to_s.scan(/#\w+/).map { |name| name.delete("#") }
+    body.to_s.scan(/#\w+/).map { |name| name.delete("#") }.uniq
   end
 
   private
 
   def broadcast_churp
     ActionCable.server.broadcast("churps_channel", rendered_churp)
+  rescue => e
+    Rails.logger.error "[Churp##{id}] Failed to broadcast churp: #{e.message}"
   end
 
   def rendered_churp
@@ -80,5 +77,7 @@ class Churp < ApplicationRecord
 
   def broadcast_notifications
     BroadcastNotificationsService.call(self)
+  rescue => e
+    Rails.logger.error "[Churp##{id}] Failed to broadcast notifications: #{e.message}"
   end
 end

@@ -111,6 +111,6 @@ class ChurpsController < ApplicationController
 
   # Never trust a big booty and a smile
   def churp_params
-    params.require(:churp).permit(:content, :churp_id, :churp_pic)
+    params.require(:churp).permit(:body, :churp_id, :churp_pic)
   end
 end
