@@ -2,9 +2,12 @@
   <h1 class="text-gray-900 dark:text-white text-md font-bold p-3 border-b border-gray-200 dark:border-dim-200">
     What’s happening
   </h1>
-  
-  <% popular_hashtags.each do |k, v| %>
-    <%= render TrendingTopicComponent.new(hashtag: k, num_of_churps: v) %>      
+
+  <% popular_hashtags.each do |tag| %>
+    <%= render TrendingTopicComponent.new(
+        hashtag: tag.name,
+        num_of_churps: tag.usage_count.to_i
+      ) %>
   <% end %>
 
   <div class="text-vividSkyBlue text-sm font-normal p-3 hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition duration-350 ease-in-out">

@@ -27,7 +27,8 @@ class Churp < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :churp_hash_tags, dependent: :destroy
   has_many :hash_tags, through: :churp_hash_tags
-  has_many :notifications, as: :recipient, dependent: :destroy
+  has_many :noticed_events, as: :record, dependent: :destroy, class_name: "Noticed::Event"
+  has_many :notifications, through: :noticed_events, class_name: "Noticed::Notification"
 
   has_rich_text :body
   has_one_attached :churp_pic
@@ -76,7 +77,7 @@ class Churp < ApplicationRecord
   end
 
   def broadcast_notifications
-    BroadcastNotificationsService.call(self)
+    BroadcastNotificationsService.new(self).execute!
   rescue => e
     Rails.logger.error "[Churp##{id}] Failed to broadcast notifications: #{e.message}"
   end

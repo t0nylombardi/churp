@@ -3,16 +3,16 @@
 
   <%= render "shared/head" %>
 
-  <body class="bg-white dark:bg-dim-900">
+  <body class="bg-white dark:bg-dim-900 overflow-y-scroll overflow-auto hide-scrollbar!">
     <div class="container mx-auto h-screen">
       <div class="flex flex-row justify-center">
-        
+
         <%= render "shared/left_side" %>
 
         <%= content_for?(:content) ? yield(:content) : yield %>
 
         <%= render "shared/right_side" %>
-        
+
       </div>
     </div>
   </body>
