@@ -20,6 +20,7 @@ class BroadcastNotificationsService < ApplicationService
 
   def extract_usernames(text)
     usernames = ChurpExtractor::Extractor.new.extract_mentioned_screen_names(text)
+    Rails.logger.info "\n\nExtracted usernames: #{usernames.inspect}\n\n"
 
     usernames&.detect { |username| usernames.count(username) >= 1 }&.split
   end
@@ -27,7 +28,7 @@ class BroadcastNotificationsService < ApplicationService
   def send_notifications(usernames)
     usernames.each do |username|
       user = User.friendly.find(username)
-      MentionNotification.with(message: churp).deliver_later(user)
+      MentionNotifier.with(message: churp).deliver(user)
       broadcast(user)
     end
   end
