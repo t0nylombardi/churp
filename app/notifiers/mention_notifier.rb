@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # To deliver this notification:
 #
 # MentionNotifier.with(record: @post, message: "New post").deliver(User.all)
