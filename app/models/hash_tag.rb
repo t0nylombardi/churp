@@ -11,30 +11,37 @@
 #
 class HashTag < ApplicationRecord
   include ActionText::Attachable
-  # searchkick word_middle: [:name]
 
   has_many :churp_hash_tags, dependent: :restrict_with_exception
   has_many :churps, through: :churp_hash_tags
 
-  scope :group_hashes, lambda {
-    select(:name)
-      .group(:name)
-      .having("count(*) > 1").size
+  # -- Scopes -------------------------------------------------------------
+
+  scope :with_usage_counts, lambda {
+    select("hash_tags.*, COUNT(churp_hash_tags.id) AS usage_count")
+      .joins(:churp_hash_tags)
+      .group("hash_tags.id")
   }
 
+  scope :with_minimum_usage, ->(min_count = 2) {
+    with_usage_counts.having("COUNT(churp_hash_tags.id) >= ?", min_count)
+  }
+
+  # -- Class Methods ------------------------------------------------------
+
+  def self.most_popular(limit = nil)
+    query = with_usage_counts.order("usage_count DESC")
+    query = query.limit(limit) if limit
+    query
+  end
+
   def self.top_three
-    most_popular.to_h.sort_by { |_k, v| -v }[0..3]
+    most_popular(3)
   end
 
-  def self.most_popular
-    metrics ||= group_hashes
-    metrics.sort_by { |_key, value| value }.reverse.to_h
-  end
+  # -- Instance Methods ---------------------------------------------------
 
-  private
-
-  # after_commit :reindex_hashtags
-  def reindex_hashtags
-    # reindex
+  def usage_count
+    read_attribute(:usage_count).to_i
   end
 end

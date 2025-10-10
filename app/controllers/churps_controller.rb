@@ -111,6 +111,7 @@ class ChurpsController < ApplicationController
 
   # Never trust a big booty and a smile
   def churp_params
+    params[:churp].delete(:submit)
     params.require(:churp).permit(:body, :churp_id, :churp_pic)
   end
 end
