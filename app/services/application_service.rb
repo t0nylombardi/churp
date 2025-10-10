@@ -18,8 +18,8 @@ class ApplicationService
   #
   # @param args [Array] Arguments passed to the service's initializer.
   # @return [Utils::Result] The result of the service call.
-  def self.call(*, &)
-    new(*, &).call
+  def self.call(**args, &block)
+    new(**args, &block).call
   end
 
   # Class method to create an instance of the service, call its `call` method, and raise an exception if the service fails.
