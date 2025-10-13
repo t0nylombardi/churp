@@ -20,7 +20,7 @@ module Churps
       rescue ActiveRecord::RecordNotFound
         log_error("[NotifierService] Mentioned user not found: #{username}")
       rescue => e
-        log_error("[NotifierService] #{e.class}: #{e.message}")
+        log_error("\n\n[NotifierService] #{e.class}: #{e.message}\n\n")
         fail!
       end
     end

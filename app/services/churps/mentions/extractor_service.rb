@@ -9,18 +9,35 @@ module Churps
         @churp = churp
       end
 
-      ##
-      # Parses the churp body and returns a unique list of mentioned usernames.
-      #
-      # @return [Array<String>]
       def execute!
-        raw_text = churp.body.to_s
-        usernames = ChurpExtractor::Extractor.new.extract_mentioned_screen_names(raw_text)
-        @result = usernames.uniq.compact
+        raw_html = churp&.body&.to_s
+        raise "[Mentions::ExtractorService] churp body missing" if raw_html.blank?
+
+        text = sanitize_html(raw_html)
+        parsed = Churps::Extractor::MentionExtractorService.call(text:)
+
+        unless parsed.success?
+          log_error("[Mentions::ExtractorService] underlying extractor failed")
+          fail!
+        end
+        binding.pry
+        @result = parsed.result.uniq.compact
       rescue => e
-        log_error("[ExtractorService] #{e.class}: #{e.message}")
+        log_error(format_error(e))
         @result = []
         fail!
+      end
+
+      private
+
+      def sanitize_html(html)
+        # Removes ActionText comment tags and decodes entities
+        clean = ActionView::Base.full_sanitizer.sanitize(html)
+        clean.gsub(/\s+/, " ").strip
+      end
+
+      def format_error(error)
+        "[Mentions::ExtractorService] #{error.class}: #{error.message}\n#{error.backtrace&.first(3)&.join("\n")}"
       end
     end
   end

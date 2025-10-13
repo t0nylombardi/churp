@@ -6,9 +6,10 @@
               class: 'inline-block h-10 w-10 rounded-full') %>
       </div>
       <div class="text-editor w-full p-2">
+        <!--
         <div id="blank-toolbar" hidden></div>
-        <trix-editor toolbar="blank-toolbar" style=""></trix-editor>
-
+        <trix-editor toolbar="blank-toolbar" style="display: none;"></trix-editor>
+        -->
         <%= f.rich_text_area :body,
                              data: {
                                      controller: "mentions",

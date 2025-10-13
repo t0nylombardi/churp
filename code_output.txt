@@ -1,0 +1,669 @@
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/broadcast_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  class BroadcastService < ApplicationService
+    attr_reader :churp
+
+    def initialize(churp:)
+      @churp = churp
+    end
+
+    def execute!
+      ActionCable.server.broadcast("churps_channel", rendered_churp)
+      @result = :ok
+    rescue => e
+      log_error("[BroadcastService] Failed to broadcast churp #{churp.id}: #{e.message}")
+      fail!
+    end
+
+    private
+
+    def rendered_churp
+      ApplicationController.renderer.render(
+        partial: "churps/churp",
+        locals: { churp: }
+      )
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/create_service.rb ===
+# frozen_string_literal: true
+
+# == Churps::CreateService
+#
+# Service object responsible for orchestrating the full creation lifecycle of a {Churp}.
+# This includes:
+#
+# * Building and persisting a new {Churp} record for a given user.
+# * Extracting and associating hashtags via {Churps::HashtagsService}.
+# * Broadcasting the newly created churp over ActionCable using {Churps::BroadcastService}.
+# * Sending mention notifications to users referenced within the churp via {Churps::NotificationsService}.
+#
+# The service centralizes all post-creation side effects that would otherwise
+# live in model callbacks, following the Single Responsibility Principle (SRP)
+# and keeping the `Churp` model lean and persistence-focused.
+#
+# === Usage
+#
+#   result = Churps::CreateService.call(user: current_user, params: churp_params)
+#
+#   if result.success?
+#     puts "Churp created with ID: #{result.result.id}"
+#   else
+#     puts "Failed to create churp"
+#   end
+#
+# === Error Handling
+#
+# Any raised exceptions or validation failures will:
+# * Be logged via {ApplicationService#log_error}
+# * Trigger a call to {ApplicationService#fail!}
+# * Return a failed service response (`success? == false`)
+#
+# @see ApplicationService
+# @see Churps::HashtagsService
+# @see Churps::BroadcastService
+# @see Churps::NotificationsService
+#
+module Churps
+  class CreateService < ApplicationService
+    # @return [User] the user creating the churp
+    attr_reader :user
+
+    # @return [ActionController::Parameters, Hash] the attributes for the churp
+    attr_reader :params
+
+    # @return [Churp] the churp instance created by this service
+    attr_reader :churp
+
+    # Initializes the service with a user and churp parameters.
+    #
+    # @param user [User] the author of the churp
+    # @param params [ActionController::Parameters, Hash] permitted attributes for the churp
+    #
+    def initialize(user:, params:)
+      @user = user
+      @params = params
+    end
+
+    # Executes the churp creation workflow.
+    #
+    # Steps:
+    # 1. Builds a new churp for the provided user.
+    # 2. Attempts to save it.
+    # 3. If successful, invokes secondary services to handle hashtags,
+    #    broadcasting, and notifications.
+    #
+    # @return [void]
+    #
+    # @raise [ApplicationService::Failure] if validation or processing fails
+    #
+    def execute!
+      @churp = user.churps.build(params)
+
+      if churp.save
+        process_hashtags
+        broadcast_churp
+        broadcast_notifications
+        @result = churp
+      else
+        log_error("[CreateService] Validation failed: #{churp.errors.full_messages.join(", ")}")
+        fail!
+      end
+    rescue => e
+      log_error("[CreateService] #{e.class}: #{e.message}")
+      fail!
+    end
+
+    private
+
+    # Delegates hashtag extraction and association to {Churps::HashtagsService}.
+    #
+    # @return [void]
+    def process_hashtags
+      Churps::HashtagsService.call(churp:)
+    end
+
+    # Delegates broadcast rendering and publishing to {Churps::BroadcastService}.
+    #
+    # @return [void]
+    def broadcast_churp
+      Churps::BroadcastService.call(churp:)
+    end
+
+    # Delegates mention notification dispatch to {Churps::NotificationsService}.
+    #
+    # @return [void]
+    def broadcast_notifications
+      Churps::NotificationsService.call(churp:)
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/extractor/character_sets.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Extractor
+    ##
+    # == Churps::Extractor::CharacterSets
+    #
+    # Defines Unicode character sets and patterns used for mention extraction.
+    # Mirrors Mastodon’s approach for robust international text parsing.
+    #
+    # Isolated here to separate static data from regex logic.
+    #
+    module CharacterSets
+      UNICODE_SPACES = [
+        (0x0009..0x000D).to_a,
+        0x0020, 0x0085, 0x00A0, 0x1680, 0x180E,
+        (0x2000..0x200A).to_a, 0x2028, 0x2029,
+        0x202F, 0x205F, 0x3000
+      ].flatten.map { |c| [c].pack("U*") }.freeze
+
+      DIRECTIONAL_CHARACTERS = [
+        0x061C, 0x200E, 0x200F, 0x202A, 0x202B, 0x202C,
+        0x202D, 0x202E, 0x2066, 0x2067, 0x2068, 0x2069
+      ].map { |cp| [cp].pack("U") }.freeze
+
+      AT_SIGNS = /[@＠]/
+
+      private_constant :UNICODE_SPACES, :DIRECTIONAL_CHARACTERS, :AT_SIGNS
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/extractor/mention_extractor_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Extractor
+    ##
+    # == Churps::Extractor::MentionExtractorService
+    #
+    # Service responsible for parsing churp text and extracting all @mentions.
+    # Wraps regex extraction logic with consistent error handling and logging.
+    #
+    # === Responsibilities
+    # * Parse churp text for valid @mentions using Regex subsystem
+    # * Return unique, sanitized screen names
+    # * Handle and log all extraction errors gracefully
+    #
+    # === Usage
+    #   result = Churps::Extractor::MentionExtractorService.call(text: churp.body.to_s)
+    #   if result.success?
+    #     puts result.result # => ["t0nylombardi", "railsdev"]
+    #   else
+    #     puts "Extraction failed!"
+    #   end
+    #
+    class MentionExtractorService < ApplicationService
+      require "English"
+
+      attr_reader :text
+
+      def initialize(text:)
+        @text = text
+      end
+
+      ##
+      # Executes the mention extraction process.
+      #
+      # @return [Array<String>] unique list of mentioned usernames
+      #
+      def execute!
+        return [] if text.blank?
+
+        begin
+          screen_names = extract_with_indices.pluck(:screen_name).uniq.compact
+          @result = screen_names
+          @success = true
+          @result
+        rescue RegexpError => e
+          log_and_fail(e, "[MentionExtractorService] Invalid regex pattern")
+        rescue => e
+          log_and_fail(e, "[MentionExtractorService] Extraction error")
+        end
+      end
+
+      private
+
+      ##
+      # Extracts usernames along with their start and end indices.
+      #
+      # @return [Array<Hash>] list of { screen_name:, indices: [start, end] }
+      #
+      def extract_with_indices
+        return [] unless text.match?(Churps::Extractor::Regex[:at_signs])
+
+        entries = []
+
+        text.scan(Churps::Extractor::Regex[:valid_mention_or_list]) do |_before, _at, screen_name, list_slug|
+          match_data = $LAST_MATCH_INFO
+          after = ::Regexp.last_match.post_match
+          entry = build_entry(match_data, after, screen_name, list_slug)
+          entries << entry if entry
+        end
+
+        entries
+      end
+
+      def build_entry(match_data, after, screen_name, list_slug)
+        return unless after.match?(Churps::Extractor::Regex[:end_mention_match])
+
+        start_position = match_data.begin(3) - 1
+        end_position = match_data.end(list_slug.nil? ? 3 : 4)
+
+        { screen_name:, indices: [start_position, end_position] }
+      end
+
+      def log_and_fail(error, prefix)
+        log_error("#{prefix}: #{error.class} - #{error.message}")
+        @result = []
+        fail!
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/extractor/regex.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Extractor
+    ##
+    # == Churps::Extractor::Regex
+    #
+    # Public thread-safe singleton facade for accessing compiled regex patterns.
+    # Delegates to {Churps::Extractor::RegexBuilder} internally.
+    #
+    # @example
+    #   Churps::Extractor::Regex[:valid_mention_or_list]
+    #
+    class Regex
+      @mutex = Mutex.new
+
+      class << self
+        def [](key)
+          builder.pattern_for(key)
+        end
+
+        private
+
+        def builder
+          @mutex.synchronize do
+            @builder ||= RegexBuilder.new
+          end
+        end
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/extractor/regex_builder.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Extractor
+    ##
+    # == Churps::Extractor::RegexBuilder
+    #
+    # Builds and caches compiled regex patterns for extracting mentions.
+    # Provides high performance through lazy initialization and internal caching.
+    #
+    # @example
+    #   builder = Churps::Extractor::RegexBuilder.new
+    #   builder.pattern_for(:valid_mention_or_list)
+    #
+    class RegexBuilder
+      include CharacterSets
+
+      def initialize
+        @patterns = {}
+      end
+
+      def pattern_for(key)
+        @patterns[key] ||= build_pattern(key)
+      end
+
+      private
+
+      def build_pattern(key)
+        case key
+        when :spaces then /[#{UNICODE_SPACES.join}]/o
+        when :directional_characters then /[#{DIRECTIONAL_CHARACTERS.join}]/o
+        when :valid_mention_preceding_chars
+          /(?:[^a-z0-9_!#$%&*@＠]|^|(?:^|[^a-z0-9_+~.-])[rR][tT]:?)/io
+        when :at_signs then AT_SIGNS
+        when :valid_mention_or_list then build_mention_or_list_pattern
+        when :valid_reply then build_valid_reply_pattern
+        when :end_mention_match then %r{\A(?:#{AT_SIGNS}|://)}io
+        when :list_name then /[a-z][a-z0-9_\-\u0080-\u00ff]{0,24}/i
+        else
+          raise KeyError, "Unknown regex pattern key: #{key}"
+        end
+      end
+
+      def build_mention_or_list_pattern
+        mention_preceding = pattern_for(:valid_mention_preceding_chars)
+        at_sign = pattern_for(:at_signs)
+
+        %r{
+          (#{mention_preceding})
+          (#{at_sign})
+          ([a-z0-9_]{1,20})
+          (/[a-z][a-zA-Z0-9_-]{0,24})?
+        }iox
+      end
+
+      def build_valid_reply_pattern
+        at_sign = pattern_for(:at_signs)
+
+        /
+          ^
+          (?:
+            [#{UNICODE_SPACES.join}#{DIRECTIONAL_CHARACTERS.join}]
+          )*
+          #{at_sign}
+          ([a-z0-9_]{1,20})
+        /xio
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/hashtags_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  class HashtagsService < ApplicationService
+    attr_reader :churp
+
+    def initialize(churp:)
+      @churp = churp
+    end
+
+    def execute!
+      names = extract_hashtags
+      return if names.blank?
+
+      names.each do |name|
+        tag = HashTag.find_or_create_by(name:)
+        churp.churp_hash_tags.find_or_create_by(hash_tag: tag)
+      end
+    rescue => e
+      log_error("[HashtagsService] Failed to create hashtags for churp #{churp.id}: #{e.message}")
+      fail!
+    end
+
+    private
+
+    def extract_hashtags
+      churp.body.to_s.scan(/#\w+/).map { |n| n.delete("#") }.uniq
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/like_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  class LikeService < ApplicationService
+    attr_reader :user, :churp
+
+    def initialize(user:, churp:)
+      @user = user
+      @churp = churp
+    end
+
+    def execute!
+      user.likes.find_or_create_by!(likeable: churp)
+      @result = :ok
+    rescue => e
+      log_error("[LikeService] Failed to like churp #{churp.id}: #{e.message}")
+      fail!
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/mentions/broadcast_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Mentions
+    class BroadcastService < ApplicationService
+      attr_reader :username
+
+      def initialize(username:)
+        @username = username
+      end
+
+      ##
+      # Broadcasts updated unread notification count to the mentioned user.
+      #
+      # @return [void]
+      def execute!
+        user = User.friendly.find(username)
+        Turbo::StreamsChannel.broadcast_update_later_to(
+          "notifications_count_#{user.id}",
+          target: "notifications_count_#{user.id}",
+          partial: "mentions/notification_count",
+          locals: { user:, count: user.unread_notifications.count }
+        )
+      rescue ActiveRecord::RecordNotFound
+        log_error("[BroadcastService] Could not find user for broadcast: #{username}")
+      rescue => e
+        log_error("[BroadcastService] #{e.class}: #{e.message}")
+        fail!
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/mentions/extractor_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Mentions
+    ##
+    # == Churps::Mentions::ExtractorService
+    #
+    # High-level domain service responsible for extracting @mentions
+    # from a churp’s body content.
+    #
+    # This acts as a wrapper around {Churps::Extractor::MentionExtractorService},
+    # which handles the actual parsing logic.
+    #
+    # Responsibilities:
+    # * Orchestrate mention extraction for churp content
+    # * Provide logging and standardized error handling
+    #
+    # === Usage
+    #
+    #   result = Churps::Mentions::ExtractorService.call(churp: churp)
+    #
+    #   if result.success?
+    #     puts result.result # => ["t0nylombardi", "railsdev"]
+    #   end
+    #
+    class ExtractorService < ApplicationService
+      attr_reader :churp
+
+      def initialize(churp:)
+        @churp = churp
+      end
+
+      ##
+      # Parses the churp body and returns a unique list of mentioned usernames.
+      #
+      # @return [Array<String>]
+      #
+      def execute!
+        text = churp.body.to_s
+        extractor = Churps::Extractor::MentionExtractorService.call(text:)
+
+        unless extractor.success?
+          log_error("[ExtractorService] mention extraction failed")
+          fail!
+          raise "Unreachable"
+        end
+
+        binding.pry
+        @result = extractor.result.uniq.compact
+      rescue => e
+        log_error(format_error(e))
+        @result = [{ error: e.message }]
+        fail!
+      end
+
+      private
+
+      def format_error(error)
+        "[ExtractorService] #{error.class}: #{error.message}\n#{error.backtrace&.first(3)&.join("\n")}"
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/mentions/notifier_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  module Mentions
+    class NotifierService < ApplicationService
+      attr_reader :churp, :username
+
+      def initialize(churp:, username:)
+        @churp = churp
+        @username = username
+      end
+
+      ##
+      # Sends a mention notification to the specified user.
+      #
+      # @return [void]
+      def execute!
+        user = User.friendly.find(username)
+        MentionNotifier.with(message: churp).deliver(user)
+      rescue ActiveRecord::RecordNotFound
+        log_error("[NotifierService] Mentioned user not found: #{username}")
+      rescue => e
+        log_error("\n\n[NotifierService] #{e.class}: #{e.message}\n\n")
+        fail!
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/notifications_service.rb ===
+# frozen_string_literal: true
+
+# == Churps::NotificationsService
+#
+# Orchestrates the complete notification process for mentions inside a churp.
+#
+# === Responsibilities
+# * Delegates extraction of mentioned usernames to {Churps::Mentions::ExtractorService}
+# * Delegates notification delivery to {Churps::Mentions::NotifierService}
+# * Delegates broadcast updates to {Churps::Mentions::BroadcastService}
+#
+# === Example
+#   result = Churps::NotificationsService.call(churp: churp)
+#
+#   if result.success?
+#     puts "Notifications sent!"
+#   else
+#     puts "Something went wrong!"
+#   end
+#
+# === Benefits
+# * Keeps mention logic out of the model and controller layers
+# * Each step (extraction, delivery, broadcast) is independently testable
+# * Failures are logged and encapsulated in service error flow
+module Churps
+  class NotificationsService < ApplicationService
+    attr_reader :churp
+
+    def initialize(churp:)
+      @churp = churp
+    end
+
+    ##
+    # Executes the full mention notification workflow:
+    # 1. Extract usernames mentioned in the churp
+    # 2. Deliver mention notifications
+    # 3. Broadcast updated unread counts
+    #
+    # @return [void]
+    def execute!
+      usernames = Churps::Mentions::ExtractorService.call(churp:)
+      if usernames.result.empty?
+        log_error("[NotificationsService] No mentions found in churp #{churp.id}")
+        fail!
+      end
+
+      binding.pry
+      usernames.each do |username|
+        Churps::Mentions::NotifierService.call(churp:, username:)
+        Churps::Mentions::BroadcastService.call(username:)
+      end
+
+      @result = { status: :ok, message: "Notifications broadcasted successfully." }
+    rescue => e
+      log_error(format_error(e))
+      fail!
+    end
+
+    private
+
+    def format_error(error)
+      "[NotificationsService] #{error.class}: #{error.message}\n#{error.backtrace&.first(3)&.join("\n")}"
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp/app/services/churps/rechurp_service.rb ===
+# frozen_string_literal: true
+
+module Churps
+  class RechurpService < ApplicationService
+    attr_reader :user, :original_churp
+
+    def initialize(user:, original_churp:)
+      @user = user
+      @original_churp = original_churp
+    end
+
+    def execute!
+      rechurp = user.churps.new(
+        body: original_churp.body.to_plain_text,
+        churp_id: original_churp.id
+      )
+
+      if rechurp.save
+        original_churp.increment!(:rechurp_count)
+        @result = rechurp
+      else
+        fail!
+      end
+    rescue => e
+      log_error("[RechurpService] #{e.class}: #{e.message}")
+      fail!
+    end
+  end
+end
+

@@ -38,8 +38,8 @@ module Churps
     #
     # @return [void]
     def execute!
-      usernames = Churps::Mentions::ExtractorService.call(churp:)
-      if usernames.blank?
+      usernames = Churps::Mentions::ExtractorService.call(churp:).value
+      if usernames.empty?
         log_error("[NotificationsService] No mentions found in churp #{churp.id}")
         fail!
       end
