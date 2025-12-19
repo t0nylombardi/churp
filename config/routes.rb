@@ -67,6 +67,15 @@ Rails.application.routes.draw do
 
   get "/test", to: "static#test", as: :test
 
+  namespace :api do
+    namespace :v1 do
+      namespace :users do
+        post :sign_in, to: "sessions#create"
+        delete :sign_out, to: "sessions#destroy"
+      end
+    end
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up", to: "rails/health#show", as: :rails_health_check
