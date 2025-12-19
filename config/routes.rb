@@ -28,7 +28,7 @@ Rails.application.routes.draw do
         defaults: { format: :json },
         controllers: {
           sessions: "api/v1/users/sessions",
-          registrations: "api/v1/users/registration"
+          registrations: "api/v1/users/registrations"
         }
 
       namespace :users do

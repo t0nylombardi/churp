@@ -1,9 +1,9 @@
 module Api
   module V1
     module Users
-      class RegistrationController < Devise::RegistrationsController
+      class RegistrationsController < Devise::RegistrationsController
         respond_to :json
-        skip_before_action :verify_authenticity_token
+        protect_from_forgery with: :null_session
 
         private
 

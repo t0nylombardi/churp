@@ -5,7 +5,9 @@ module Api
     module Users
       class SessionsController < Devise::SessionsController
         respond_to :json
+        skip_before_action :verify_authenticity_token
         protect_from_forgery with: :null_session
+        before_action :debug_request
 
         private
 
@@ -28,6 +30,14 @@ module Api
               message: "Couldn't find an active session."
             }, status: :unauthorized
           end
+        end
+
+        def debug_request
+          Rails.logger.warn "=== AUTH DEBUG ==="
+          Rails.logger.warn "Request format: #{request.format}"
+          Rails.logger.warn "Accept header: #{request.headers["Accept"]}"
+          Rails.logger.warn "Content-Type: #{request.headers["Content-Type"]}"
+          Rails.logger.warn "Params: #{params.to_unsafe_h}"
         end
       end
     end
