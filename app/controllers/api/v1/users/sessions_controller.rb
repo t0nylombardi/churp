@@ -3,34 +3,31 @@
 module Api
   module V1
     module Users
-      class SessionsController < Api::V1::BaseController
-        skip_before_action :authenticate_user!, only: :create
-
-        def create
-          user = User.find_for_database_authentication(email: sign_in_params[:email])
-
-          return invalid_login unless user&.valid_password?(sign_in_params[:password])
-
-          sign_in(user)
-
-          render json: {
-            user: UserSerializer.new(user)
-          }, status: :ok
-        end
-
-        def destroy
-          sign_out(current_user)
-          head :no_content
-        end
+      class SessionsController < Devise::SessionsController
+        respond_to :json
+        protect_from_forgery with: :null_session
 
         private
 
-        def sign_in_params
-          params.require(:user).permit(:email, :password)
+        def respond_with(resource, _opts = {})
+          render json: {
+            status: {code: 200, message: "Logged in sucessfully."},
+            data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
+          }, status: :ok
         end
 
-        def invalid_login
-          render json: { error: "Invalid email or password" }, status: :unauthorized
+        def respond_to_on_destroy
+          if current_user
+            render json: {
+              status: 200,
+              message: "logged out successfully"
+            }, status: :ok
+          else
+            render json: {
+              status: 401,
+              message: "Couldn't find an active session."
+            }, status: :unauthorized
+          end
         end
       end
     end
