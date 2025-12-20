@@ -37,7 +37,7 @@ module Seed
         email: "test#{i}@churp.com",
         password: "Passw0rd1!",
         password_confirmation: "Passw0rd1!",
-        username: "#{Faker::Internet.username(specifier: 10).camelize}#{i}",
+        username: "@#{Faker::Internet.username(specifier: 10).camelize}#{i}",
         role: :basic,
         profile: build_profile
       )

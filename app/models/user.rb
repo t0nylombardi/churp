@@ -14,6 +14,7 @@
 #  email                  :string           default(""), not null
 #  encrypted_password     :string           default(""), not null
 #  failed_attempts        :integer          default(0), not null
+#  jti                    :string           not null
 #  last_sign_in_at        :datetime
 #  last_sign_in_ip        :string
 #  locked_at              :datetime
@@ -34,6 +35,7 @@
 #  index_users_on_confirmation_token    (confirmation_token) UNIQUE
 #  index_users_on_display_name          (display_name)
 #  index_users_on_email                 (email) UNIQUE
+#  index_users_on_jti                   (jti) UNIQUE
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_slug                  (slug) UNIQUE
 #  index_users_on_unlock_token          (unlock_token) UNIQUE
@@ -42,83 +44,129 @@
 class User < ApplicationRecord
   include ActionText::Attachable
   extend FriendlyId
+
   friendly_id :username, use: :slugged
   has_person_name
 
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
-  devise :database_authenticatable, :registerable,
-    :recoverable, :rememberable, :validatable
+  devise :database_authenticatable,
+    :registerable,
+    :recoverable,
+    :rememberable,
+    :validatable,
+    :jwt_authenticatable,
+    jwt_revocation_strategy: JwtDenylist
+
+  # @return [String] the login identifier (username or email)
+  attr_writer :login
+
+  def login
+    @login || username || email
+  end
+
+  # Find a user by username or email
+  #
+  # @param [Hash] warden_conditions conditions provided by Warden
+  # @return [User, nil] the found user or nil
+  def self.find_for_database_authentication(warden_conditions)
+    conditions = warden_conditions.dup
+    login = conditions.delete(:login)&.downcase
+
+    return super(conditions) unless login
+
+    where(conditions)
+      .where(
+        "LOWER(email) = :value OR LOWER(username) = :value",
+        value: normalize_login(login)
+      )
+      .first
+  end
+
+  def self.normalize_login(value)
+    return value if value.include?("@") && value.include?(".")
+
+    "@#{value}"
+  end
 
   has_many :churps, dependent: :destroy
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
-  has_many :notifications, as: :recipient, class_name: "Noticed::Notification", dependent: :destroy
+  has_many :notifications,
+    as: :recipient,
+    class_name: "Noticed::Notification",
+    dependent: :destroy
 
-  has_many :active_relationships, dependent: :destroy,
+  has_many :active_relationships,
     class_name: "Relationship",
-    foreign_key: "follower_id"
+    foreign_key: "follower_id",
+    dependent: :destroy
 
-  has_many :passive_relationships, dependent: :destroy,
+  has_many :passive_relationships,
     class_name: "Relationship",
-    foreign_key: "followed_id"
+    foreign_key: "followed_id",
+    dependent: :destroy
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
+
   has_one :profile, dependent: :destroy
 
   searchkick highlight: [:username], word_middle: [:username]
 
+  before_validation :ensure_jti, on: :create
+  before_validation :normalize_username, on: :create
+  after_commit :reindex_users
+
+  def reindex_users
+    reindex
+  end
+
   accepts_nested_attributes_for :profile
 
-  validates :username, :email, :password, presence: true
-  validates :username, uniqueness: true
-  validates :email, uniqueness: true
+  validates :username, :email, presence: true
+  validates :username, :email, uniqueness: true
   validate :password_complexity
 
-  before_commit on: :create do
-    self.username = "@#{username.downcase}" unless username.start_with?("@")
+  def ensure_jti
+    self.jti ||= SecureRandom.uuid
+  end
+
+  def normalize_username
+    return if username.blank?
+
+    self.username = username.downcase
+    self.username = "@#{username}" unless username.start_with?("@")
   end
 
   def normalize_friendly_id(value)
     value.to_s.downcase
   end
 
-  # Follows a user.
   def follow(other_user)
     active_relationships.create(followed_id: other_user.id)
   end
 
-  # Unfollows a user.
   def unfollow(other_user)
-    active_relationships.find_by(followed_id: other_user.id).destroy
+    active_relationships.find_by(followed_id: other_user.id)&.destroy
   end
 
-  # Returns true if the current user is following the other user.
   def following?(other_user)
-    following.include?(other_user)
+    following.exists?(other_user.id)
   end
 
   def unread_notifications
     notifications.unread
   end
 
-  private
-
-  after_commit :reindex_users
-  def reindex_users
-    reindex
-  end
-
   def password_complexity
-    message = <<-TEXT.gsub(/\s+/, " ").strip
-    Complexity requirement not met. Length should be 8-128 characters and
-    include: 1 uppercase, 1 lowercase, 1 digit and 1 special character
-    TEXT
+    return if password.blank?
 
-    # Regexp extracted from https://stackoverflow.com/questions/19605150/regex-for-password-must-contain-at-least-eight-characters-at-least-one-number-a
-    return if password.blank? || password =~ /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
+    regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
+    return if password.match?(regex)
 
-    errors.add :password, message
+    errors.add :password, <<~MSG.squish
+      Complexity requirement not met.
+      Password must be 8–70 characters and include
+      1 uppercase, 1 lowercase, 1 digit, and 1 special character.
+    MSG
   end
 end

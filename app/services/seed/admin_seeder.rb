@@ -27,7 +27,7 @@ module Seed
         email: "admin@churp.com",
         password: "Passw0rd1!",
         password_confirmation: "Passw0rd1!",
-        username: "t0nylombardi",
+        username: "@t0nylombardi",
         role: "admin"
       )
     end
