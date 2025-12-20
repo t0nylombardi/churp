@@ -4,9 +4,9 @@ module Api
   module V1
     module Users
       class SessionsController < Devise::SessionsController
+        include Devise::Controllers::Helpers
         respond_to :json
         skip_before_action :verify_authenticity_token
-        protect_from_forgery with: :null_session
         before_action :debug_request
 
         private

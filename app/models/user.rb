@@ -54,7 +54,7 @@ class User < ApplicationRecord
     :rememberable,
     :validatable,
     :jwt_authenticatable,
-    jwt_revocation_strategy: self
+    jwt_revocation_strategy: JwtDenylist
 
   # @return [String] the login identifier (username or email)
   attr_writer :login
@@ -82,7 +82,9 @@ class User < ApplicationRecord
   end
 
   def self.normalize_login(value)
-    value.start_with?("@") ? value : "@#{value}"
+    return value if value.include?("@") && value.include?(".")
+
+    "@#{value}"
   end
 
   has_many :churps, dependent: :destroy
@@ -110,6 +112,7 @@ class User < ApplicationRecord
 
   searchkick highlight: [:username], word_middle: [:username]
 
+  before_validation :ensure_jti, on: :create
   before_validation :normalize_username, on: :create
   after_commit :reindex_users
 
@@ -122,6 +125,10 @@ class User < ApplicationRecord
   validates :username, :email, presence: true
   validates :username, :email, uniqueness: true
   validate :password_complexity
+
+  def ensure_jti
+    self.jti ||= SecureRandom.uuid
+  end
 
   def normalize_username
     return if username.blank?
