@@ -7,7 +7,7 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-ruby "3.4.5"
+ruby "3.4.8"
 
 gem "jbuilder"
 gem "jsbundling-rails"
@@ -33,7 +33,6 @@ gem "friendly_id"
 gem "httparty"
 gem "liquid"
 gem "mini_magick"
-gem "nameplate", "~> 0.1.0"
 gem "name_of_person"
 gem "noticed", "~> 2.8"
 gem "pagy"
@@ -61,13 +60,17 @@ gem "dockerfile-rails", group: :development
 gem "sentry-rails"
 gem "sentry-ruby"
 
+gem "rswag-api"
+gem "rswag-ui"
+
 group :development, :test do
-  gem "debug", platforms: %i[mingw mswin x64_mingw jruby]
+  gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
   gem "faker"
   gem "pry", "~> 0.15.2"
   gem "pry-byebug"
   gem "rspec-rails"
+  gem "rswag-specs"
   gem "shoulda-callback-matchers"
   gem "shoulda-matchers"
   gem "ostruct", "~> 0.6.3"
