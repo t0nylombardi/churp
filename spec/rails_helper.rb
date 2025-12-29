@@ -26,10 +26,13 @@ require_relative "../config/environment"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
+
+require_relative "support/auth"
 require_relative "support/factory_bot"
 require_relative "support/chrome"
-require "devise"
+require_relative "support/devise"
 require_relative "support/controller_macros"
+
 require "view_component/test_helpers"
 require "capybara/rspec"
 
