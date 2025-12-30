@@ -52,8 +52,6 @@ class Profile < ApplicationRecord
 
   before_commit :create_default_avatar, on: :create
   def create_default_avatar
-    return if profile_pic.attached?
-
-    NamePlate.generate(name || "Sage Doe", 400).delete_prefix("public/")
+    nil if profile_pic.attached?
   end
 end
