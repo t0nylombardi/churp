@@ -48,14 +48,6 @@ class User < ApplicationRecord
   friendly_id :username, use: :slugged
   has_person_name
 
-  devise :database_authenticatable,
-    :registerable,
-    :recoverable,
-    :rememberable,
-    :validatable,
-    :jwt_authenticatable,
-    jwt_revocation_strategy: JwtDenylist
-
   # @return [String] the login identifier (username or email)
   attr_writer :login
 

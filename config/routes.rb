@@ -11,27 +11,9 @@ Rails.application.routes.draw do
   #   mount Sidekiq::Web => "/sidekiq"
   # end
 
-  devise_for :users
-
-  devise_scope :user do
-    authenticated :user do
-      root to: "churps#index", as: :authenticated_root
-    end
-
-    unauthenticated do
-      root to: "devise/registrations#new", as: :unauthenticated_root
-    end
-  end
 
   namespace :api do
     namespace :v1 do
-      devise_for :users,
-        path: "users",
-        defaults: { format: :json },
-        controllers: {
-          sessions: "api/v1/users/sessions",
-          registrations: "api/v1/users/registrations"
-        }
 
       namespace :users do
         get :me, to: "profiles#show"
