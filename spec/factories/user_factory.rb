@@ -43,10 +43,10 @@
 #
 FactoryBot.define do
   factory :user do
-    email { Faker::Internet.email }
+    email { Faker::Internet.unique.email }
     password { "Passw0rd1!" }
     password_confirmation { "Passw0rd1!" }
-    username { Faker::Internet.username(specifier: 10).camelize }
+    username { Faker::Internet.unique.username(specifier: 10) }
 
     factory :user_with_profile do
       after(:create) do |user|

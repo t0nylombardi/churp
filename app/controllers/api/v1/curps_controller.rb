@@ -1,0 +1,105 @@
+# frozen_string_literal: true
+
+module Api
+  module V1
+    class ChurpsController < ApiController
+      before_action :authenticate_user!
+      before_action :set_churp, only: %i[show update destroy like rechurp]
+
+      def index
+        pagy, churps = pagy(
+          Churp.order(created_at: :desc),
+          items: 15
+        )
+
+        render json: {
+          data: ChurpSerializer.new(churps).serializable_hash[:data],
+          meta: pagy_metadata(pagy)
+        }, status: :ok
+      end
+
+      def show
+        render json: {
+          data: ChurpSerializer.new(@churp).serializable_hash[:data]
+        }, status: :ok
+      end
+
+      def create
+        result = Churps::CreateService.call(
+          user: current_user,
+          params: churp_params
+        )
+
+        if result.success?
+          render json: {
+            status: { code: 201, message: "Churp created successfully." },
+            data: ChurpSerializer.new(result.churp).serializable_hash[:data]
+          }, status: :created
+        else
+          render json: {
+            status: { code: 422, message: result.error }
+          }, status: :unprocessable_entity
+        end
+      end
+
+      def update
+        if @churp.update(churp_params)
+          render json: {
+            status: { code: 200, message: "Churp updated successfully." },
+            data: ChurpSerializer.new(@churp).serializable_hash[:data]
+          }, status: :ok
+        else
+          render json: {
+            status: {
+              code: 422,
+              message: @churp.errors.full_messages.to_sentence
+            }
+          }, status: :unprocessable_entity
+        end
+      end
+
+      def destroy
+        @churp.destroy
+
+        render json: {
+          status: { code: 200, message: "Churp deleted successfully." }
+        }, status: :ok
+      end
+
+      def like
+        Churps::LikeService.call(user: current_user, churp: @churp)
+
+        render json: {
+          status: { code: 200, message: "Churp liked." }
+        }, status: :ok
+      end
+
+      def rechurp
+        result = Churps::RechurpService.call(
+          user: current_user,
+          original_churp: @churp
+        )
+
+        if result.success?
+          render json: {
+            status: { code: 201, message: "Rechurp successful." }
+          }, status: :created
+        else
+          render json: {
+            status: { code: 422, message: result.error }
+          }, status: :unprocessable_entity
+        end
+      end
+
+      private
+
+      def set_churp
+        @churp = Churp.find(params[:id])
+      end
+
+      def churp_params
+        params.require(:churp).permit(:body, :churp_id, :churp_pic)
+      end
+    end
+  end
+end

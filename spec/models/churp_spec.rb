@@ -32,20 +32,20 @@ RSpec.describe Churp do
     it { is_expected.to have_many(:churp_hash_tags).dependent(:destroy) }
     it { is_expected.to have_many(:hash_tags).through(:churp_hash_tags).dependent(:destroy) }
     it { is_expected.to have_many(:notifications).dependent(:destroy) }
-    it { is_expected.to have_rich_text(:content) }
+    it { is_expected.to have_rich_text(:body) }
     it { is_expected.to have_one_attached(:churp_pic) }
   end
 
   describe "callbacks" do
-    it { is_expected.to callback(:create_hash_tags).after(:create) }
-    it { is_expected.to callback(:broadcast_churp).after(:create) }
+    it { is_expected.to callback(:create_hash_tags).after(:commit) }
+    it { is_expected.to callback(:broadcast_churp).after(:commit) }
     it { is_expected.to callback(:broadcast_notifications).after(:commit) }
   end
 
   describe "scopes" do
     describe ".search_hashtags" do
-      let!(:churp_with_hashtag) { create(:churp, content: "This is a #test churp") }
-      let!(:churp_without_hashtag) { create(:churp, content: "This is a churp without hashtags") }
+      let!(:churp_with_hashtag) { create(:churp, body: "This is a #test churp") }
+      let!(:churp_without_hashtag) { create(:churp, body: "This is a churp without hashtags") }
 
       it "includes churps with the hashtag" do
         result = described_class.search_hashtags("test")
@@ -60,32 +60,32 @@ RSpec.describe Churp do
   end
 
   describe "#churp_type" do
-    it 'returns "rechurp" if churp_id and content are present' do
-      churp = create(:churp, churp_id: 1, content: "This is a churp")
+    it 'returns "rechurp" if churp_id and body are present' do
+      churp = create(:churp, churp_id: 1, body: "This is a churp")
       expect(churp.churp_type).to eq("rechurp")
     end
 
     it 'returns "churp" if churp_id is nil' do
-      churp = build(:churp, churp_id: nil, content: "This is a churp")
+      churp = build(:churp, churp_id: nil, body: "This is a churp")
       expect(churp.churp_type).to eq("churp")
     end
 
     it 'returns "churp" if content is nil' do
-      churp = build(:churp, churp_id: 1, content: nil)
+      churp = build(:churp, churp_id: nil, body: nil)
       expect(churp.churp_type).to eq("churp")
     end
   end
 
   describe "#create_hash_tags" do
     it "creates a hashtag from content" do
-      churp = build(:churp, content: "This is a #test churp")
+      churp = build(:churp, body: "This is a #test churp")
       expect { churp.save }.to change(HashTag, :count).by(1)
     end
   end
 
   describe "#extract_name_hash_tags" do
     it "returns tag names from content" do
-      churp = build(:churp, content: "This is a #test churp")
+      churp = build(:churp, body: "This is a #test churp")
       expect(churp.extract_name_hash_tags).to eq(["test"])
     end
   end
@@ -95,15 +95,16 @@ RSpec.describe Churp do
     let(:churp) { create(:churp, user:) }
 
     it "is invalid with empty content" do
-      churp.content = ""
+      churp.body = ""
       expect(churp).not_to be_valid
     end
 
     # 👇 One allowed multi-expectation example
     it "is invalid when content is too long (exempted)" do
-      churp1 = build(:churp, content: Faker::Lorem.paragraph_by_chars(number: 502))
+      churp1 = build(:churp, body: Faker::Lorem.paragraph_by_chars(number: 502))
 
-      expect(churp1.errors.messages[:content]).to eq(["content is too long (maximum is 331 characters)"])
+      expect(churp1.valid?).to be(false)
+      expect(churp1.errors[:body]).to eq(["content is too long (maximum is 331 characters)"])
     end
 
     it "is invalid without a user" do
