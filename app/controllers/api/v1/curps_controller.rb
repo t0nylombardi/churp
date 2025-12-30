@@ -3,7 +3,6 @@
 module Api
   module V1
     class ChurpsController < ApiController
-      before_action :authenticate_user!
       before_action :set_churp, only: %i[show update destroy like rechurp]
 
       def index
