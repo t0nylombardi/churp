@@ -44,11 +44,6 @@ gem "simple_form"
 gem "stripe"
 gem "view_component"
 
-# feature flags
-gem "flipper"
-gem "flipper-active_record"
-gem "flipper-ui"
-
 gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 
@@ -60,9 +55,6 @@ gem "dockerfile-rails", group: :development
 gem "sentry-rails"
 gem "sentry-ruby"
 
-gem "rswag-api"
-gem "rswag-ui"
-
 group :development, :test do
   gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
@@ -70,10 +62,8 @@ group :development, :test do
   gem "pry", "~> 0.15.2"
   gem "pry-byebug"
   gem "rspec-rails"
-  gem "rswag-specs"
   gem "shoulda-callback-matchers"
   gem "shoulda-matchers"
-  gem "ostruct", "~> 0.6.3"
 end
 
 group :development do

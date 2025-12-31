@@ -3,18 +3,14 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
   mount Flipper::UI.app(Flipper) => "/flipper"
 
   # authenticate :user, ->(u) { u.admin? } do
   #   mount Sidekiq::Web => "/sidekiq"
   # end
 
-
   namespace :api do
     namespace :v1 do
-
       namespace :users do
         get :me, to: "profiles#show"
       end
