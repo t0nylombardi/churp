@@ -4,14 +4,15 @@
 #
 # Table name: users
 #
-#  id           :bigint           not null, primary key
-#  display_name :string
-#  email        :string           default(""), not null
-#  role         :integer
-#  slug         :string
-#  username     :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id              :bigint           not null, primary key
+#  display_name    :string
+#  email           :string           default(""), not null
+#  password_digest :string
+#  role            :integer
+#  slug            :string
+#  username        :string
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
 #
 # Indexes
 #
@@ -95,6 +96,7 @@ class User < ApplicationRecord
 
   validates :username, :email, presence: true
   validates :username, :email, uniqueness: true
+  validates :password_digest, presence: true
   validate :password_complexity
 
   def ensure_jti
