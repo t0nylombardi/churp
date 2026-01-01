@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateChurpHashTags < ActiveRecord::Migration[7.0]
+class CreateChurpHashTags < ActiveRecord::Migration[8.1]
   def change
     create_table :churp_hash_tags do |t|
       t.belongs_to :churp, index: true

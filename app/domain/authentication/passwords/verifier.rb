@@ -2,7 +2,7 @@
 
 module Authentication
   module Passwords
-    class PasswordVerifier
+    class Verifier
       def self.verify(password, digest)
         BCrypt::Password.new(digest) == password
       end

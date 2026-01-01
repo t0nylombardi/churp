@@ -85,7 +85,6 @@ class User < ApplicationRecord
 
   searchkick highlight: [:username], word_middle: [:username]
 
-  before_validation :ensure_jti, on: :create
   before_validation :normalize_username, on: :create
   after_commit :reindex_users
 
@@ -95,14 +94,10 @@ class User < ApplicationRecord
 
   accepts_nested_attributes_for :profile
 
-  validates :username, :email, presence: true
-  validates :username, :email, uniqueness: true
+  validates :email, presence: true
+  validates :email, uniqueness: true
   validates :password_digest, presence: true
   validate :password_complexity
-
-  def ensure_jti
-    self.jti ||= SecureRandom.uuid
-  end
 
   def normalize_username
     return if username.blank?
@@ -132,10 +127,10 @@ class User < ApplicationRecord
   end
 
   def password_complexity
-    return if password.blank?
+    return if password_digest.blank?
 
     regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
-    return if password.match?(regex)
+    return if password_digest.match?(regex)
 
     errors.add :password, <<~MSG.squish
       Complexity requirement not met.

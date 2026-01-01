@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddNamedThemesToUser < ActiveRecord::Migration[7.0]
+class AddNamedThemesToUser < ActiveRecord::Migration[8.1]
   def change
     change_table :users, bulk: true do |t|
       t.string :username, unique: true

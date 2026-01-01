@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateViews < ActiveRecord::Migration[7.0]
+class CreateViews < ActiveRecord::Migration[8.1]
   def change
     create_table :views do |t|
       t.references :user, null: false, foreign_key: true

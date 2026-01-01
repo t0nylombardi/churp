@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateChurps < ActiveRecord::Migration[7.0]
+class CreateChurps < ActiveRecord::Migration[8.1]
   def change
     create_table :churps do |t|
       t.text :body

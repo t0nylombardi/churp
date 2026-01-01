@@ -7,14 +7,14 @@ module Authentication
         user = User.find_by(email: email)
         return nil unless user
 
-        valid = Passwords::PasswordVerifier.verify(
+        valid = Passwords::Verifier.verify(
           password,
           user.password_digest
         )
 
         return nil unless valid
 
-        Tokens::JwtEncoder.encode(user_id: user.id)
+        Tokens::JwtEncoder.encode({user_id: user.id})
       end
     end
   end

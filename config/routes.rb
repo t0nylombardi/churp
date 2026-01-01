@@ -3,14 +3,19 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
-  mount Flipper::UI.app(Flipper) => "/flipper"
-
   # authenticate :user, ->(u) { u.admin? } do
   #   mount Sidekiq::Web => "/sidekiq"
   # end
 
   namespace :api do
     namespace :v1 do
+      resource :authentication, controller: :authentication, only: [] do
+        post :register
+        post :login
+        # TODO post :logout
+        # TODO post :refresh
+      end
+
       namespace :users do
         get :me, to: "profiles#show"
       end

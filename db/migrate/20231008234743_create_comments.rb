@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateComments < ActiveRecord::Migration[7.0]
+class CreateComments < ActiveRecord::Migration[8.1]
   def change
     create_table :comments do |t|
       t.text :content, null: false

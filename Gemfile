@@ -35,6 +35,7 @@ gem "liquid"
 gem "mini_magick"
 gem "name_of_person"
 gem "noticed", "~> 2.8"
+gem "ostruct"
 gem "pagy"
 gem "pundit"
 gem "opensearch-ruby"
@@ -45,7 +46,7 @@ gem "stripe"
 gem "view_component"
 
 gem "bootsnap", require: false
-gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
+gem "tzinfo-data", platforms: %i[windows jruby]
 
 gem "image_processing"
 
@@ -56,6 +57,8 @@ gem "sentry-rails"
 gem "sentry-ruby"
 
 group :development, :test do
+  gem "brakeman", require: false
+  gem "bundler-audit", require: false
   gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
   gem "faker"

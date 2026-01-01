@@ -2,7 +2,7 @@
 
 module Authentication
   module Passwords
-    class PasswordHasher
+    class Hasher
       def self.hash(password)
         BCrypt::Password.create(password)
       end

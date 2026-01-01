@@ -6,7 +6,7 @@ module Authentication
       def self.call(email:, password:)
         User.create!(
           email: email,
-          password_digest: Passwords::PasswordHasher.hash(password)
+          password_digest: Passwords::Hasher.hash(password)
         )
       end
     end
