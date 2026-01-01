@@ -2,7 +2,7 @@
 
 class CreateHashTags < ActiveRecord::Migration[8.1]
   def change
-    create_table :hash_tags do |t|
+    create_table :hash_tags, id: :uuid do |t|
       t.string :name
 
       t.timestamps

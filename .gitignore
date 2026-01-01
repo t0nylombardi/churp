@@ -50,3 +50,6 @@
 Dockerfile.production
 
 coverage
+
+code_output.txt
+.ccignore

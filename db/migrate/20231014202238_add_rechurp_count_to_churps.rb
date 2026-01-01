@@ -2,6 +2,6 @@
 
 class AddRechurpCountToChurps < ActiveRecord::Migration[8.1]
   def change
-    add_column :churps, :rechurp_count, :integer, default: 0
+    add_column :churps, :rechurp_count, :uuid, default: 0
   end
 end

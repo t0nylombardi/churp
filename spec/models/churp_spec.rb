@@ -4,13 +4,13 @@
 #
 # Table name: churps
 #
-#  id            :bigint           not null, primary key
+#  id            :uuid             not null, primary key
 #  body          :text
-#  rechurp_count :integer          default(0)
+#  rechurp_count :uuid
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  churp_id      :integer
-#  user_id       :bigint           not null
+#  churp_id      :uuid             not null
+#  user_id       :uuid             not null
 #
 # Indexes
 #

@@ -4,23 +4,23 @@
 #
 # Table name: users
 #
-#  id                  :bigint           not null, primary key
-#  display_name        :string
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
 #  email               :string           default(""), not null
-#  password_changed_at :datetime
-#  password_digest     :string
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
 #  role                :integer
-#  slug                :string
-#  username            :string
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  uuid                :uuid             not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_display_name  (display_name)
-#  index_users_on_email         (email) UNIQUE
-#  index_users_on_slug          (slug) UNIQUE
-#  index_users_on_username      (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_username  (username) UNIQUE
+#  index_users_on_uuid      (uuid) UNIQUE
 #
 FactoryBot.define do
   factory :user do
