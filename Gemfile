@@ -8,7 +8,6 @@ git_source(:github) do |repo_name|
 end
 
 ruby "3.4.8"
-ruby "3.4.8"
 
 gem "jbuilder"
 gem "jsbundling-rails"
@@ -37,7 +36,7 @@ gem "mini_magick"
 gem "name_of_person"
 gem "noticed", "~> 2.8"
 gem "ostruct"
-gem "pagy"
+gem "pagy", "~> 43.2"
 gem "pundit"
 gem "opensearch-ruby"
 gem "searchkick"

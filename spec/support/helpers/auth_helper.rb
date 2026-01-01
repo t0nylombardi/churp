@@ -4,7 +4,7 @@ module ApiHelper
   end
 
   def auth_headers_for(user, headers: default_auth_headers)
-    Devise::JWT::TestHelpers.auth_headers(headers, user)
+    # TODO: Adjust according to your authentication mechanism
   end
 
   def auth_token_for(user)

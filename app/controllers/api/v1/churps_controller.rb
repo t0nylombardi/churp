@@ -2,93 +2,45 @@
 
 module Api
   module V1
-    class ChurpsController < ApiController
-      before_action :authenticate_user!
+    class ChurpsController < Api::V1::BaseController
+      before_action :authenticate_api_user!
       before_action :set_churp, only: %i[show update destroy like rechurp]
 
       def index
-        pagy, churps = pagy(
-          Churp.order(created_at: :desc),
-          items: 15
-        )
+        churps = Churp.order(created_at: :desc)
+        pagy, records = pagy(churps, items: 15)
 
         render json: {
-          data: ChurpSerializer.new(churps).serializable_hash[:data],
+          data: serialize(records),
           meta: pagy_metadata(pagy)
-        }, status: :ok
+        }
       end
 
       def show
-        render json: {
-          data: ChurpSerializer.new(@churp).serializable_hash[:data]
-        }, status: :ok
+        render json: serialize(@churp)
       end
 
       def create
-        result = Churps::CreateService.call(
-          user: current_user,
-          params: churp_params
-        )
+        churp = current_user.churps.new(churp_params)
 
-        if result.success?
-          render json: {
-            status: { code: 201, message: "Churp created successfully." },
-            data: ChurpSerializer.new(result.churp).serializable_hash[:data]
-          }, status: :created
+        if churp.save
+          render json: serialize(churp), status: :created
         else
-          render json: {
-            status: { code: 422, message: result.error }
-          }, status: :unprocessable_entity
+          render_error(churp)
         end
       end
 
       def update
         if @churp.update(churp_params)
-          render json: {
-            status: { code: 200, message: "Churp updated successfully." },
-            data: ChurpSerializer.new(@churp).serializable_hash[:data]
-          }, status: :ok
+          render json: serialize(@churp)
         else
-          render json: {
-            status: {
-              code: 422,
-              message: @churp.errors.full_messages.to_sentence
-            }
-          }, status: :unprocessable_entity
+          render_error(@churp)
         end
       end
 
       def destroy
-        @churp.destroy
-
-        render json: {
-          status: { code: 200, message: "Churp deleted successfully." }
-        }, status: :ok
-      end
-
-      def like
-        Churps::LikeService.call(user: current_user, churp: @churp)
-
-        render json: {
-          status: { code: 200, message: "Churp liked." }
-        }, status: :ok
-      end
-
-      def rechurp
-        result = Churps::RechurpService.call(
-          user: current_user,
-          original_churp: @churp
-        )
-
-        if result.success?
-          render json: {
-            status: { code: 201, message: "Rechurp successful." }
-          }, status: :created
-        else
-          render json: {
-            status: { code: 422, message: result.error }
-          }, status: :unprocessable_entity
-        end
+        @churp.destroy!
+        head :no_content
       end
 
       private
@@ -98,7 +50,11 @@ module Api
       end
 
       def churp_params
-        params.require(:churp).permit(:body, :churp_id, :churp_pic)
+        params.require(:churp).permit(:body)
+      end
+
+      def serialize(records)
+        ChurpSerializer.new(records).serializable_hash
       end
     end
   end

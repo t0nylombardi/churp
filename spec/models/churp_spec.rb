@@ -6,7 +6,7 @@
 #
 #  id            :uuid             not null, primary key
 #  body          :text
-#  rechurp_count :uuid
+#  rechurp_count :integer          default(0), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  churp_id      :uuid             not null

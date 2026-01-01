@@ -6,7 +6,7 @@
 #
 #  id            :uuid             not null, primary key
 #  body          :text
-#  rechurp_count :uuid
+#  rechurp_count :integer          default(0), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  churp_id      :uuid             not null
@@ -22,7 +22,14 @@
 #
 class Churp < ApplicationRecord
   belongs_to :user
-  belongs_to :churp, optional: true
+  belongs_to :original_churp,
+    class_name: "Churp",
+    foreign_key: :churp_id,
+    optional: true
+
+  has_many :rechurps,
+    class_name: "Churp",
+    dependent: :destroy
 
   has_many :likes, as: :likeable, dependent: :destroy
   has_many :comments, dependent: :destroy
@@ -39,7 +46,11 @@ class Churp < ApplicationRecord
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
+  def rechurp?
+    original_churp.present?
+  end
+
   def churp_type
-    churp_id.present? ? "rechurp" : "churp"
+    rechurp? ? "rechurp" : "churp"
   end
 end

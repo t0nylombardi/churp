@@ -7,6 +7,7 @@
 #  id                  :uuid             not null, primary key
 #  display_name        :string           default(""), not null
 #  email               :string           default(""), not null
+#  jti                 :string           not null
 #  password_changed_at :datetime         not null
 #  password_digest     :string           default(""), not null
 #  role                :integer
@@ -19,6 +20,7 @@
 # Indexes
 #
 #  index_users_on_email     (email) UNIQUE
+#  index_users_on_jti       (jti) UNIQUE
 #  index_users_on_username  (username) UNIQUE
 #  index_users_on_uuid      (uuid) UNIQUE
 #

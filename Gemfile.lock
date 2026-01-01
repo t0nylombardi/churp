@@ -554,7 +554,7 @@ DEPENDENCIES
   noticed (~> 2.8)
   opensearch-ruby
   ostruct
-  pagy
+  pagy (~> 43.2)
   pg
   pry (~> 0.15.2)
   pry-byebug
