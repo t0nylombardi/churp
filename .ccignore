@@ -1,7 +1,0 @@
-vendor/
-script/
-tmp/
-public/
-.*
-/*
-!*/

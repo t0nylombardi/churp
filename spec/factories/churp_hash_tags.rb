@@ -4,11 +4,11 @@
 #
 # Table name: churp_hash_tags
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  churp_id    :bigint
-#  hash_tag_id :bigint
+#  churp_id    :uuid
+#  hash_tag_id :uuid
 #
 # Indexes
 #

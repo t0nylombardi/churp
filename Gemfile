@@ -8,6 +8,7 @@ git_source(:github) do |repo_name|
 end
 
 ruby "3.4.8"
+ruby "3.4.8"
 
 gem "jbuilder"
 gem "jsbundling-rails"
@@ -24,17 +25,18 @@ gem "activerecord-import"
 gem "active_storage_validations"
 gem "addressable"
 gem "aws-sdk-s3"
+gem "bcrypt", "~> 3.1.20"
 gem "cssbundling-rails"
-gem "cors"
 gem "devise"
-gem "devise-jwt", "~> 0.12.1"
 gem "foreman"
 gem "friendly_id"
 gem "httparty"
+gem "jwt"
 gem "liquid"
 gem "mini_magick"
 gem "name_of_person"
-gem "noticed", "~> 2.9"
+gem "noticed", "~> 2.8"
+gem "ostruct"
 gem "pagy"
 gem "pundit"
 gem "opensearch-ruby"
@@ -44,13 +46,8 @@ gem "simple_form"
 gem "stripe"
 gem "view_component"
 
-# feature flags
-gem "flipper"
-gem "flipper-active_record"
-gem "flipper-ui"
-
 gem "bootsnap", require: false
-gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
+gem "tzinfo-data", platforms: %i[windows jruby]
 
 gem "image_processing"
 
@@ -64,6 +61,8 @@ gem "rswag-api"
 gem "rswag-ui"
 
 group :development, :test do
+  gem "brakeman", require: false
+  gem "bundler-audit", require: false
   gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
   gem "faker"
@@ -73,7 +72,6 @@ group :development, :test do
   gem "rswag-specs"
   gem "shoulda-callback-matchers"
   gem "shoulda-matchers"
-  gem "ostruct", "~> 0.6.3"
 end
 
 group :development do

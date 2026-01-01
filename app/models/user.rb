@@ -4,42 +4,23 @@
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  display_name           :string
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  failed_attempts        :integer          default(0), not null
-#  jti                    :string           not null
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  username               :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
+#  email               :string           default(""), not null
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
+#  role                :integer
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  uuid                :uuid             not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
-#  index_users_on_display_name          (display_name)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_jti                   (jti) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_slug                  (slug) UNIQUE
-#  index_users_on_unlock_token          (unlock_token) UNIQUE
-#  index_users_on_username              (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_username  (username) UNIQUE
+#  index_users_on_uuid      (uuid) UNIQUE
 #
 class User < ApplicationRecord
   include ActionText::Attachable
@@ -47,14 +28,6 @@ class User < ApplicationRecord
 
   friendly_id :username, use: :slugged
   has_person_name
-
-  devise :database_authenticatable,
-    :registerable,
-    :recoverable,
-    :rememberable,
-    :validatable,
-    :jwt_authenticatable,
-    jwt_revocation_strategy: JwtDenylist
 
   # @return [String] the login identifier (username or email)
   attr_writer :login
@@ -112,7 +85,6 @@ class User < ApplicationRecord
 
   searchkick highlight: [:username], word_middle: [:username]
 
-  before_validation :ensure_jti, on: :create
   before_validation :normalize_username, on: :create
   after_commit :reindex_users
 
@@ -122,13 +94,10 @@ class User < ApplicationRecord
 
   accepts_nested_attributes_for :profile
 
-  validates :username, :email, presence: true
-  validates :username, :email, uniqueness: true
+  validates :email, presence: true
+  validates :email, uniqueness: true
+  validates :password_digest, presence: true
   validate :password_complexity
-
-  def ensure_jti
-    self.jti ||= SecureRandom.uuid
-  end
 
   def normalize_username
     return if username.blank?
@@ -158,10 +127,10 @@ class User < ApplicationRecord
   end
 
   def password_complexity
-    return if password.blank?
+    return if password_digest.blank?
 
     regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
-    return if password.match?(regex)
+    return if password_digest.match?(regex)
 
     errors.add :password, <<~MSG.squish
       Complexity requirement not met.

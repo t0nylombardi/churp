@@ -9,7 +9,7 @@ module ChurpSocial
     end
 
     def minor
-      4
+      5
     end
 
     def patch
@@ -17,7 +17,7 @@ module ChurpSocial
     end
 
     def default_prerelease
-      "alpha.0"
+      "alpha.1"
     end
 
     def prerelease
