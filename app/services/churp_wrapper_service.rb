@@ -17,7 +17,6 @@ class ChurpWrapperService < ApplicationService
 
   def link_wrapper
     text = content_to_s(content)
-
     href_wrapper(hashtag_wrapper(text)).html_safe
   end
 
@@ -40,6 +39,10 @@ class ChurpWrapperService < ApplicationService
   end
 
   def content_to_s(content)
-    content.body.to_s
+    clean_html(content.body.to_s)
+  end
+
+  def clean_html(html)
+    html.gsub(/<!-- BEGIN .*?-->|<!-- END .*?-->/, "").strip
   end
 end

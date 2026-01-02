@@ -3,75 +3,101 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
+  mount Rswag::Ui::Engine => '/api-docs'
+  mount Rswag::Api::Engine => '/api-docs'
   mount Flipper::UI.app(Flipper) => "/flipper"
 
+  # authenticate :user, ->(u) { u.admin? } do
+  #   mount Sidekiq::Web => "/sidekiq"
+  # end
+
   devise_for :users
+
   devise_scope :user do
     authenticated :user do
-      root to: "churps#index"
+      root to: "churps#index", as: :authenticated_root
     end
-    unauthenticated :user do
+
+    unauthenticated do
       root to: "devise/registrations#new", as: :unauthenticated_root
     end
   end
+
+  namespace :api do
+    namespace :v1 do
+      devise_for :users,
+        path: "users",
+        defaults: { format: :json },
+        controllers: {
+          sessions: "api/v1/users/sessions",
+          registrations: "api/v1/users/registrations"
+        }
+
+      namespace :users do
+        get :me, to: "profiles#show"
+      end
+
+      resources :churps, only: %i[index show create destroy] do
+        member do
+          post :like
+          post :rechurp
+        end
+
+        resources :comments, only: %i[create destroy]
+      end
+    end
+  end
+
   resources :users, only: %i[index show] do
     member do
-      get :following, :followers, :verified_followers, :followers_you_know
+      get :following
+      get :followers
+      get :verified_followers
+      get :followers_you_know
     end
   end
 
-  # authenticate :user, ->(u) { u.admin? } do
-  #   mount Sidekiq::Web => '/sidekiq'
-  # end
-
-  get ":slug/status/:churp_id", to: "churps#show", as: "show_churp"
   resources :churps do
-    resources :comments, only: %i[create destroy]
     member do
+      post :like
       post :rechurp
     end
-    post "like", to: "churps#like" # /churps/:id/like
+
+    resources :comments, only: %i[create destroy]
   end
 
-  resources :profiles do
+  get ":slug/status/:churp_id", to: "churps#show", as: :show_churp
+
+  resources :profiles, only: %i[index show] do
     member do
-      post :follow, :unfollow
+      post :follow
+      post :unfollow
     end
   end
+
   resources :relationships, only: %i[create destroy]
+  resources :mentions, only: :index
+  resources :notifications, only: :index
 
-  resources :mentions, only: %i[index]
-  resources :notifications, only: %i[index]
-
-  get "search", to: "search#index"
-  get "search/hashtags", to: "search#search_hashtags"
-  post "search/suggestions", to: "search#suggestions", as: "search_suggestions"
-
-  get "/tos", to: "static#terms_of_service", as: :terms_of_service
-  get "/terms_of_service", to: redirect("/terms_of_service")
-
-  get "/privacy", to: "static#privacy_policy", as: :privacy_policy
-  get "/privacy-policy", to: redirect("/privacy-policy")
-
-  get "/cookies", to: "static#cookie_policy", as: :cookie_policy
-  get "/cookie_policy", to: redirect("/cookie-policy")
-
-  get "/ads", to: "static#ads_info", as: :ads_info
-  get "/ads_info", to: redirect("/ads-info")
+  resource :search, only: :show, controller: :search do
+    collection do
+      get :hashtags
+      post :suggestions
+    end
+  end
 
   get "/about", to: "static#about", as: :about
-
   get "/test", to: "static#test", as: :test
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  get "/tos", to: "static#terms_of_service", as: :terms_of_service
+  get "/privacy", to: "static#privacy_policy", as: :privacy_policy
+  get "/cookies", to: "static#cookie_policy", as: :cookie_policy
+  get "/ads", to: "static#ads_info", as: :ads_info
+
+  get "/terms_of_service", to: redirect("/tos")
+  get "/privacy-policy", to: redirect("/privacy")
+  get "/cookie-policy", to: redirect("/cookies")
+  get "/ads-info", to: redirect("/ads")
+
   get "up", to: "rails/health#show", as: :rails_health_check
-
-  # unless Rails.env.development?
-  #   get 'errors/not_found'
-  #   get 'errors/internal_server_error'
-
-  #   match '/404', to: 'errors#not_found', via: :all
-  #   match '/500', to: 'errors#internal_server_error', via: :all
-  # end
 end

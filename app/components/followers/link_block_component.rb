@@ -3,7 +3,6 @@
 module Followers
   class LinkBlockComponent < ViewComponent::Base
     def initialize(path:, name:)
-      super
       @path = path
       @name = name
     end

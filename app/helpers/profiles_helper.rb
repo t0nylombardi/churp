@@ -15,24 +15,29 @@ module ProfilesHelper
     profile_bg.url
   end
 
+  # TODO: Fix this method to properly show the user's profile picture or a generated avatar
+  # based on their name if no picture is attached.
   def avatar_pic(profile)
-    profile_pic = profile&.profile_pic
-    return url_for_attachment(profile) if profile_pic&.attached?
-    return letter_avatar(profile) unless profile_pic&.attached?
+    # profile_pic = profile&.profile_pic
+
+    # if profile_pic&.attached?
+    #   url_for_attachment(profile)
+    # elsif profile
+    #   letter_avatar(profile)
+    # else
+    #   "stanley-roper-profile.png"
+    # end
 
     "stanley-roper-profile.png"
   end
 
   def letter_avatar(profile)
     name = profile&.name || "Sage Doe"
-
-    LetterAvatar.generate(name, 400).sub("public/", "")
+    NamePlate.generate(name, 400)
   end
 
   def url_for_attachment(profile)
-    return Rails.application.routes.url_helpers.url_for profile.profile_pic if Rails.env.test?
-
-    profile.profile_pic.url
+    Rails.application.routes.url_helpers.url_for(profile.profile_pic)
   end
 
   def churp_root_url

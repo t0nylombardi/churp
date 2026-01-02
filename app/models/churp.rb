@@ -22,63 +22,24 @@
 #
 class Churp < ApplicationRecord
   belongs_to :user
+  belongs_to :churp, optional: true
 
-  belongs_to :churp, optional: true, dependent: :destroy
   has_many :likes, as: :likeable, dependent: :destroy
   has_many :comments, dependent: :destroy
-  # TODO: This is for the analytics feature on a churp.
-  #       The logic for this needs to be rewitten into a model
-  #       insead of a tracking pixel. (stupid idea)
-  # has_many :views
   has_many :churp_hash_tags, dependent: :destroy
   has_many :hash_tags, through: :churp_hash_tags, dependent: :destroy
-  has_many :notifications, as: :recipient, dependent: :destroy
+  has_many :noticed_events, as: :record, dependent: :destroy, class_name: "Noticed::Event"
+  has_many :notifications, through: :noticed_events, dependent: :destroy, class_name: "Noticed::Notification"
 
-  has_rich_text :content
+  has_rich_text :body
   has_one_attached :churp_pic
 
   validates :churp_pic, acceptable_image: true
-  validates :content, presence: true
-  validates :content, churp_length: true
-
-  after_create :create_hash_tags
-  after_create :broadcast_churp
-  after_commit :broadcast_notifications
+  validates :body, presence: true, churp_length: true
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
   def churp_type
-    if churp_id? && content?
-      "rechurp"
-    else
-      "churp"
-    end
-  end
-
-  def create_hash_tags
-    extract_name_hash_tags.each do |name|
-      hash_tags.create(name:)
-    end
-  end
-
-  def extract_name_hash_tags
-    content.to_s.scan(/#\w+/).map { |name| name.delete("#") }
-  end
-
-  private
-
-  def broadcast_churp
-    ActionCable.server.broadcast("churps_channel", rendered_churp)
-  end
-
-  def rendered_churp
-    ApplicationController.renderer.render(
-      partial: "churps/churp",
-      locals: { churp: self }
-    )
-  end
-
-  def broadcast_notifications
-    BroadcastNotificationsService.call(self)
+    churp_id.present? ? "rechurp" : "churp"
   end
 end

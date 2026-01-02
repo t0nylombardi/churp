@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./base.css";
+@import "./layout.css";
+@import "./theme.css";
+@import "./theme-dark.css";
+@import "./animations.css";
+@import "./components.css";
+@import "./trix-editor.css";
+@import "./emoji.picker.css";

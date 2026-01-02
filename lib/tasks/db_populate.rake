@@ -1,36 +1,20 @@
 # frozen_string_literal: true
 
 namespace :seed do
-  desc "Seeds database"
+  desc "Completely populate the database with seed data"
   task db_populate: :environment do
-    message "--------------------------------------------------------------\n"
-    message "STARTED - populating DB"
-    message "Have no fears. This process is idempotent.\n\n"
-
-    Rake::Task["seed:destroy_all_records"].execute
-    Rake::Task["seed:create_admin"].execute
-    Rake::Task["seed:create_users"].execute(num_of_users: 50)
-    Rake::Task["seed:create_churps"].execute(num_of_churps: 50)
-    Rake::Task["seed:create_follows"].execute
-
-    message "--------------------------------------------------------------"
-    message "SUCCESS - populated DB"
+    seeder = Seed::DatabaseSeeder.new
+    seeder.call
   end
 
-  desc "Destroys all data in the database"
+  desc "Destroy all records in the database"
   task destroy_all_records: :environment do
-    User.destroy_all
-    Churp.destroy_all
-    Profile.destroy_all
-    Like.destroy_all
-    HashTag.destroy_all
-    ChurpHashTag.destroy_all
-    View.destroy_all
+    puts "💣 Destroying all records..."
+    [View, ChurpHashTag, HashTag, Like, Profile, Churp, User].each do |model|
+      count = model.count
+      model.destroy_all
+      puts "🧹 Destroyed #{count} #{model.name.pluralize(count)}"
+    end
+    puts "✅ All records destroyed."
   end
-end
-
-def message(message, delay = 0)
-  puts message if Rails.env.development?
-
-  sleep(delay)
 end

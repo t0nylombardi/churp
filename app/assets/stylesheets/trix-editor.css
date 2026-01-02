@@ -1,0 +1,102 @@
+/* ===================================
+   Trix Rich Text Editor Overrides
+   =================================== */
+
+/*
+ * Import Trix base styles
+ * Note: Make sure trix.css is available in your build
+ */
+@import "trix";
+
+/* ===================================
+   Attachment Gallery Layout
+   =================================== */
+
+/* Default 3-column gallery */
+.trix-content .attachment-gallery > action-text-attachment,
+.trix-content .attachment-gallery > .attachment {
+  flex: 1 0 33%;
+  padding: 0 0.5em;
+  max-width: 33%;
+}
+
+/* 2 or 4 column galleries */
+.trix-content .attachment-gallery--2 > action-text-attachment,
+.trix-content .attachment-gallery--2 > .attachment,
+.trix-content .attachment-gallery--4 > action-text-attachment,
+.trix-content .attachment-gallery--4 > .attachment {
+  flex-basis: 50%;
+  max-width: 50%;
+}
+
+/* Reset attachment padding inside action-text-attachment wrapper */
+.trix-content action-text-attachment .attachment {
+  padding: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Inline attachments */
+figure.attachment[data-trix-content-type~="inline-element"] {
+  display: inline-block;
+  width: auto;
+  padding: 0;
+  margin: 0 !important;
+}
+
+/* ===================================
+   Hide Trix Toolbar & Dialogs
+   =================================== */
+
+trix-toolbar,
+#trix-toolbar-1,
+.trix-dialogs,
+.trix-input--dialog,
+.attachment__toolbar {
+  display: none !important;
+}
+
+/* ===================================
+   Content Styling
+   =================================== */
+
+.trix-content {
+  @apply text-white pb-4;
+}
+
+.trix-content pre {
+  @apply bg-[#282a36];
+}
+
+/* ===================================
+   Mentions/Autocomplete (Tribute.js)
+   =================================== */
+
+.tribute-container {
+  @apply absolute z-[99999] block h-[230px] bg-dim-700 shadow-[0_0_15px_rgba(255,255,255,0.2)];
+  /* Position will be dynamically set by Tribute.js */
+}
+
+.tribute-container ul li {
+  @apply px-8 py-2 text-white bg-dim-700 hover:bg-dim-800 transition-colors cursor-pointer;
+}
+
+.tribute-container ul li:first-of-type {
+  @apply bg-dim-800;
+}
+
+/* ===================================
+   Mentions List UI
+   =================================== */
+
+.mentions-list-container {
+  @apply text-vivid-sky-blue text-sm font-normal border-b border-gray-200 dark:border-dim-200;
+  @apply hover:bg-gray-100 dark:hover:bg-dim-300 cursor-pointer transition-all duration-300;
+}
+
+.mentions-list-centered {
+  @apply flex flex-row justify-between;
+}
+
+.mentions-list-header {
+  @apply text-gray-900 dark:text-white font-bold text-sm;
+}

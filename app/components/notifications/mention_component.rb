@@ -5,7 +5,6 @@ module Notifications
     attr_reader :user, :churp, :unread, :read_at
 
     def initialize(user:, churp:, unread:, read_at: nil)
-      super
       @user = user
       @churp = churp
       @unread = unread

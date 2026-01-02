@@ -2,7 +2,7 @@
 
 class ChurpsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_churp, only: %i[show edit update destroy like rechurp]
+  before_action :set_churp, only: %i[show update destroy like rechurp]
 
   def index
     @pagy, @churps = pagy(Churp.order(created_at: :desc), items: 15)
@@ -11,106 +11,75 @@ class ChurpsController < ApplicationController
     render "scrollable_list" if params[:page]
   end
 
-  # GET /churps/1
-  # GET /churps/1.json
   def show
     @user = User.friendly.find(params[:slug])
     @comment = current_user.comments.new
     @comments = @churp.comments.recent_comments
   end
 
-  # GET /churps/new
   def new
     @churp = current_user.churps.build
   end
 
-  # GET /churps/1/edit
-  def edit
-  end
-
-  # POST /churps
-  # POST /churps.json
   def create
-    @churp = Churp.new(churp_params.merge(user: current_user))
-    respond_to do |format|
-      if @churp.save
-        format.html { redirect_to root_path, notice: "churp was successfully created." }
-        format.json { render :show, status: 201, location: @churp }
-      else
-        format.html { redirect_back fallback_location: @churp, alert: "Could not churp" }
-        format.json { render json: @churp.errors, status: 422 }
-      end
+    service = Churps::CreateService.call(user: current_user, params: churp_params)
+
+    if service.success?
+      redirect_to(root_path, notice: t("churps.create.success", default: "Churp was successfully created."))
+    else
+      redirect_back(
+        fallback_location: root_path,
+        alert: t("churps.create.failure", default: "Could not churp.")
+      )
     end
   end
 
-  # PATCH/PUT /churps/1
-  # PATCH/PUT /churps/1.json
   def update
-    respond_to do |format|
-      if @churp.update(churp_params)
-        format.html { redirect_to @churp, notice: "churp was successfully updated." }
-        format.json { render :show, status: 200, location: @churp }
-      else
-        format.html { render :edit }
-        format.json { render json: @churp.errors, status: 422 }
-      end
+    if @churp.update(churp_params)
+      redirect_to @churp, notice: t("churps.update.success", default: "Churp updated successfully.")
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
-  # DELETE /churps/1
-  # DELETE /churps/1.json
   def destroy
     @churp.destroy
-    respond_to do |format|
-      format.html { redirect_to churps_url, notice: "churp was successfully destroyed." }
-      format.json { head 204 }
-    end
+    redirect_to churps_url, notice: t("churps.destroy.success", default: "Churp deleted.")
   end
 
   def like
-    create_like_for_churp
+    Churps::LikeService.call(user: current_user, churp: @churp)
 
     respond_to do |format|
-      format.turbo_stream { render_turbo_like_partial }
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "like_#{@churp.id}",
+          partial: "churps/shared/likes",
+          locals: { churp: @churp }
+        )
+      end
       format.html { redirect_to churps_path }
     end
   end
 
   def rechurp
-    @rechurp = current_user.churps.new(body: @churp.content, churp_id: @churp.id)
-    increment_count = @rechurp.rechurp_count + 1
-    @rechurp.update(rechurp_count: increment_count)
+    service = Churps::RechurpService.call(user: current_user, original_churp: @churp)
 
-    respond_to do |format|
-      if @rechurp.save
-        format.html { redirect_to churps_path, notice: "Rechurp was successful" }
-      else
-        format.html { redirect_to churps_path, notice: "Could not rechurp" }
-      end
+    if service.success?
+      redirect_to churps_path, notice: t("churps.rechurp.success", default: "Rechurp successful.")
+    else
+      redirect_to churps_path, alert: t("churps.rechurp.failure", default: "Could not rechurp.")
     end
   end
 
   private
 
-  def create_like_for_churp
-    current_user.likes.create(likeable: @churp)
-  end
-
-  def render_turbo_like_partial
-    render turbo_stream: turbo_stream.replace(
-      "like_#{@churp.id}",
-      partial: "churps/shared/likes",
-      locals: {churp: @churp}
-    )
-  end
-
-  # Use callbacks to share common setup or constraints between actions.
   def set_churp
-    @churp = Churp.find(params[:id] || params[:churp_id])
+    @churp = Churp.find(params[:id])
   end
 
-  # Never trust a big booty and a smile
   def churp_params
-    params.require(:churp).permit(:content, :churp_id, :churp_pic)
+    params[:churp]&.delete(:submit)
+    params.require(:churp).permit(:body, :churp_id, :churp_pic)
   end
 end

@@ -1,0 +1,13 @@
+@theme {
+  /* Dark Theme - Dim Scale */
+  --color-dim-50: #5f99f7;
+  --color-dim-100: #5f99f7;
+  --color-dim-200: #38444d;
+  --color-dim-300: #202e3a;
+  --color-dim-400: #253341;
+  --color-dim-500: #5f99f7;
+  --color-dim-600: #5f99f7;
+  --color-dim-700: #192734;
+  --color-dim-800: #162d40;
+  --color-dim-900: #15202b; /* Twitter dark background */
+}

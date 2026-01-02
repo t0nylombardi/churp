@@ -14,6 +14,7 @@
 #  email                  :string           default(""), not null
 #  encrypted_password     :string           default(""), not null
 #  failed_attempts        :integer          default(0), not null
+#  jti                    :string           not null
 #  last_sign_in_at        :datetime
 #  last_sign_in_ip        :string
 #  locked_at              :datetime
@@ -34,6 +35,7 @@
 #  index_users_on_confirmation_token    (confirmation_token) UNIQUE
 #  index_users_on_display_name          (display_name)
 #  index_users_on_email                 (email) UNIQUE
+#  index_users_on_jti                   (jti) UNIQUE
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #  index_users_on_slug                  (slug) UNIQUE
 #  index_users_on_unlock_token          (unlock_token) UNIQUE
@@ -41,10 +43,10 @@
 #
 FactoryBot.define do
   factory :user do
-    email { Faker::Internet.email }
+    email { Faker::Internet.unique.email }
     password { "Passw0rd1!" }
     password_confirmation { "Passw0rd1!" }
-    username { Faker::Internet.username(specifier: 10).camelize }
+    username { Faker::Internet.unique.username(specifier: 10) }
 
     factory :user_with_profile do
       after(:create) do |user|

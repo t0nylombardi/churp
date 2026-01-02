@@ -49,4 +49,9 @@ class Profile < ApplicationRecord
   def reindex_profiles
     reindex
   end
+
+  before_commit :create_default_avatar, on: :create
+  def create_default_avatar
+    nil if profile_pic.attached?
+  end
 end
