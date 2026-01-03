@@ -38,7 +38,6 @@ class Churp < ApplicationRecord
   has_many :noticed_events, as: :record, dependent: :destroy, class_name: "Noticed::Event"
   has_many :notifications, through: :noticed_events, dependent: :destroy, class_name: "Noticed::Notification"
 
-  has_rich_text :body
   has_one_attached :churp_pic
 
   validates :churp_pic, acceptable_image: true

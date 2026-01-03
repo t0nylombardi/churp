@@ -2,8 +2,8 @@
 
 module Api
   module V1
-    class AuthenticationController < ApiController
-      skip_before_action :authenticate_request!, only: %i[register login]
+    class AuthenticationController < BaseController
+      skip_before_action :authenticate_api_user!, only: %i[register login]
 
       def register
         user = Authentication::Commands::RegisterUser.call(

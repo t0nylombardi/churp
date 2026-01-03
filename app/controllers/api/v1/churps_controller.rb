@@ -4,7 +4,7 @@ module Api
   module V1
     class ChurpsController < Api::V1::BaseController
       before_action :authenticate_api_user!
-      before_action :set_churp, only: %i[show update destroy like rechurp]
+      before_action :set_churp, only: %i[show update destroy]
 
       def index
         churps = Churp.order(created_at: :desc)

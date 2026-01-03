@@ -12,7 +12,7 @@ class ChurpLengthValidator < ActiveModel::EachValidator
   private
 
   def extract_text(record)
-    ChurpExtractor::Extractor.new.sanitize(record.body.body.to_s)
+    ChurpExtractor::Extractor.new.sanitize(record.body.to_s)
   end
 
   def empty?(record)

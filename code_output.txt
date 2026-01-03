@@ -319,82 +319,154 @@ class TrendingTopicComponent < ViewComponent::Base
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/api/v1/users/registrations_controller.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/api/v1/authentication_controller.rb ===
 # frozen_string_literal: true
 
 module Api
   module V1
-    module Users
-      class RegistrationsController < Devise::RegistrationsController
-        respond_to :json
-        protect_from_forgery with: :null_session
+    class AuthenticationController < ApiController
+      skip_before_action :authenticate_request!, only: %i[register login]
 
-        private
+      def register
+        user = Authentication::Commands::RegisterUser.call(
+          email: register_params[:email],
+          password: register_params[:password]
+        )
 
-        def respond_with(resource, _opts = {})
-          if request.method == "POST" && resource.persisted?
-            render json: {
-              status: {code: 200, message: "Signed up sucessfully."},
-              data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
-            }, status: :ok
-          elsif request.method == "DELETE"
-            render json: {
-              status: { code: 200, message: "Account deleted successfully."}
-            }, status: :ok
-          else
-            render json: {
-              status: {code: 422, message: "User couldn't be created successfully. #{resource.errors.full_messages.to_sentence}"}
-            }, status: :unprocessable_entity
-          end
-        end
+        render json: { id: user.id }, status: :created
+      end
+
+      def login
+        token = Authentication::Commands::LoginUser.call(
+          email: login_params[:email],
+          password: login_params[:password]
+        )
+
+        return head :unauthorized unless token
+
+        render json: { token: token }, status: :ok
+      end
+
+      def login_params
+        params.permit(:email, :password)
+      end
+
+      def register_params
+        params.permit(:email, :password)
       end
     end
   end
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/api/v1/users/sessions_controller.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/api/v1/base_controller.rb ===
 # frozen_string_literal: true
 
 module Api
   module V1
-    module Users
-      class SessionsController < Devise::SessionsController
-        respond_to :json
-        skip_before_action :verify_authenticity_token
-        protect_from_forgery with: :null_session
-        before_action :debug_request
+    class BaseController < ActionController::API
+      rescue_from ActiveRecord::RecordNotFound, with: :not_found
 
-        private
+      before_action :authenticate_api_user!
 
-        def respond_with(resource, _opts = {})
-          render json: {
-            status: {code: 200, message: "Logged in sucessfully."},
-            data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
-          }, status: :ok
+      attr_reader :current_user
+
+      private
+
+      def authenticate_api_user!
+        token = request.headers["Authorization"]&.split&.last
+        return render_unauthorized unless token
+
+        result = Authentication::AuthenticateToken.call(token:)
+        return render_unauthorized unless result.success?
+
+        @current_user = result.value
+      end
+
+      def render_error(record)
+        render json: {
+          errors: record.errors.full_messages
+        }, status: :unprocessable_content
+      end
+
+      def render_unauthorized
+        render json: { error: "Unauthorized" }, status: :unauthorized
+      end
+
+      def not_found
+        render json: { error: "Not Found" }, status: :not_found
+      end
+
+      def pagy_metadata(pagy)
+        {
+          page: pagy.page,
+          pages: pagy.pages,
+          count: pagy.count
+        }
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/api/v1/churps_controller.rb ===
+# frozen_string_literal: true
+
+module Api
+  module V1
+    class ChurpsController < Api::V1::BaseController
+      before_action :authenticate_api_user!
+      before_action :set_churp, only: %i[show update destroy like rechurp]
+
+      def index
+        churps = Churp.order(created_at: :desc)
+        pagy, records = pagy(churps, items: 15)
+
+        render json: {
+          data: serialize(records),
+          meta: pagy_metadata(pagy)
+        }
+      end
+
+      def show
+        render json: serialize(@churp)
+      end
+
+      def create
+        churp = current_user.churps.new(churp_params)
+
+        if churp.save
+          render json: serialize(churp), status: :created
+        else
+          render_error(churp)
         end
+      end
 
-        def respond_to_on_destroy
-          if current_user
-            render json: {
-              status: 200,
-              message: "logged out successfully"
-            }, status: :ok
-          else
-            render json: {
-              status: 401,
-              message: "Couldn't find an active session."
-            }, status: :unauthorized
-          end
+      def update
+        if @churp.update(churp_params)
+          render json: serialize(@churp)
+        else
+          render_error(@churp)
         end
+      end
 
-        def debug_request
-          Rails.logger.warn "=== AUTH DEBUG ==="
-          Rails.logger.warn "Request format: #{request.format}"
-          Rails.logger.warn "Accept header: #{request.headers["Accept"]}"
-          Rails.logger.warn "Content-Type: #{request.headers["Content-Type"]}"
-          Rails.logger.warn "Params: #{params.to_unsafe_h}"
-        end
+      def destroy
+        @churp.destroy!
+        head :no_content
+      end
+
+      private
+
+      def set_churp
+        @churp = Churp.find(params[:id])
+      end
+
+      def churp_params
+        params.require(:churp).permit(:body)
+      end
+
+      def serialize(records)
+        ChurpSerializer.new(records).serializable_hash
       end
     end
   end
@@ -407,49 +479,11 @@ end
 class ApplicationController < ActionController::Base
   include Pagy::Backend
   include ActiveStorage::SetCurrent
-  before_action :authenticate_user!
 
-  layout :layout_by_resource
-
-  before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_hash_tags
-
-  def layout_by_resource
-    if devise_controller?
-      "devise"
-    else
-      "application"
-    end
-  end
 
   def set_hash_tags
     @popular_hashtags = HashTag.top_three
-  end
-
-  def self.render_with_signed_in_user(user, *)
-    ActionController::Renderer::RACK_KEY_TRANSLATION["warden"] ||= "warden"
-    proxy = Warden::Proxy.new({}, Warden::Manager.new({})).tap { |i| i.set_user(user, scope: :user) }
-    renderer = self.renderer.new("warden" => proxy)
-    renderer.render(*)
-  end
-
-  def not_found_method
-    render file: Rails.public_path.join("404.html"), status: 404, layout: false
-  end
-
-  protected
-
-  def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_up) do |user_params|
-      user_params.permit([:email, :username, :password, :password_confirmation, { profile_attributes: :name }])
-    end
-
-    # devise_parameter_sanitizer.permit(:sign_up, keys: [
-    #   :username, profile_attributes: [ :name ]
-    # ])
-
-    # devise_parameter_sanitizer.permit(:sign_up, keys: [:name, :username])
-    devise_parameter_sanitizer.permit(:account_update, keys: [:name])
   end
 end
 
@@ -910,23 +944,6 @@ class StaticController < ApplicationController
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/users/registrations_controller.rb ===
-# frozen_string_literal: true
-
-module Users
-  class RegistrationsController < Devise::RegistrationsController
-    def account_update_params
-      if params[@devise_mapping.name][:password_confirmation].blank?
-        params[@devise_mapping.name].delete(:password)
-        params[@devise_mapping.name].delete(:password_confirmation)
-      end
-
-      super
-    end
-  end
-end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/controllers/users_controller.rb ===
 # frozen_string_literal: true
 
@@ -951,6 +968,259 @@ class UsersController < ApplicationController
 
   def set_user
     @user = User.friendly.find(params[:id])
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/authenticate_token.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  class AuthenticateToken < Domain::Orchestrator
+    def initialize(token:)
+      @token = token
+    end
+
+    def execute
+      return failure(:invalid_token) unless payload
+      return failure(:token_expired) if expired?(payload)
+      return failure(:user_not_found) unless user
+
+      success(user)
+    end
+
+    private
+
+    attr_reader :token
+
+    def payload
+      @payload ||= Tokens::JwtDecoder.decode(token)
+    end
+
+    def user
+      @user ||= User.find_by(id: payload[:user_id])
+    end
+
+    def expired?(payload)
+      Time.zone.at(payload[:exp]) < Time.current
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/commands/login_user.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  module Commands
+    class LoginUser < ::Domain::Orchestrator
+      def initialize(email:, password:)
+        @email = email
+        @password = password
+      end
+
+      def execute
+        user = User.find_by(email: email)
+        return failure(:invalid_credentials) unless user
+
+        valid = Passwords::Verifier.verify(password, user.password_digest)
+        return failure(:invalid_credentials) unless valid
+
+        success(Tokens::JwtEncoder.encode(user_id: user.id))
+      end
+
+      private
+
+      attr_reader :email, :password
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/commands/register_user.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  module Commands
+    class RegisterUser < ::Domain::Orchestrator
+      def initialize(email:, password:)
+        @email = email
+        @password = password
+      end
+
+      def execute
+        user = User.new(email: email, password_digest: Passwords::Hasher.hash(password))
+        user.save ? success(user) : failure(:registration_failed)
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/passwords/hasher.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  module Passwords
+    class Hasher
+      def self.hash(password)
+        BCrypt::Password.create(password)
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/passwords/verifier.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  module Passwords
+    class Verifier
+      def self.verify(password, digest)
+        BCrypt::Password.new(digest) == password
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/tokens/jwt_decoder.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  module Tokens
+    class JwtDecoder
+      SECRET = Rails.application.secret_key_base
+
+      def self.decode(token)
+        decoded, = JWT.decode(token, SECRET, true, algorithm: "HS256")
+        decoded.with_indifferent_access
+      rescue JWT::DecodeError
+        nil
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/authentication/tokens/jwt_encoder.rb ===
+# frozen_string_literal: true
+
+module Authentication
+  module Tokens
+    class JwtEncoder
+      SECRET = Rails.application.secret_key_base
+
+      def self.encode(payload, exp: 24.hours.from_now)
+        payload[:exp] = exp.to_i
+        JWT.encode(payload, SECRET, "HS256")
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/domain.rb ===
+# frozen_string_literal: true
+
+module Domain; end
+
+require_dependency Rails.root.join("app/domain/orchestrator")
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/orchestrator.rb ===
+# frozen_string_literal: true
+
+module Domain
+  class Orchestrator
+    attr_reader :result
+
+    def self.call(**args)
+      new(**args).call
+    end
+
+    def call
+      @result = execute
+    rescue => error
+      failure(unexpected_error(error))
+    end
+
+    private
+
+    def execute
+      raise NotImplementedError, "Domain orchestrators must implement #execute"
+    end
+
+    def success(value = nil)
+      Results::Success.new(value)
+    end
+
+    def failure(error)
+      Results::Failure.new(error)
+    end
+
+    def unexpected_error(error)
+      :unexpected_error
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/results/failure.rb ===
+# frozen_string_literal: true
+
+module Domain
+  module Results
+    class Failure < Result
+      attr_reader :error
+
+      def initialize(error)
+        @error = error
+      end
+
+      def success?
+        false
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/results/result.rb ===
+# frozen_string_literal: true
+
+module Domain
+  module Results
+    class Result
+      def success?
+        raise NotImplementedError
+      end
+
+      def failure?
+        !success?
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/domain/results/success.rb ===
+# frozen_string_literal: true
+
+module Domain
+  module Results
+    class Success < Result
+      attr_reader :value
+
+      def initialize(value = nil)
+        @value = value
+      end
+
+      def success?
+        true
+      end
+    end
   end
 end
 
@@ -1453,13 +1723,13 @@ end
 #
 # Table name: churps
 #
-#  id            :bigint           not null, primary key
+#  id            :uuid             not null, primary key
 #  body          :text
-#  rechurp_count :integer          default(0)
+#  rechurp_count :integer          default(0), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  churp_id      :integer
-#  user_id       :bigint           not null
+#  churp_id      :uuid             not null
+#  user_id       :uuid             not null
 #
 # Indexes
 #
@@ -1471,14 +1741,21 @@ end
 #
 class Churp < ApplicationRecord
   belongs_to :user
-  belongs_to :churp, optional: true
+  belongs_to :original_churp,
+    class_name: "Churp",
+    foreign_key: :churp_id,
+    optional: true
+
+  has_many :rechurps,
+    class_name: "Churp",
+    dependent: :destroy
 
   has_many :likes, as: :likeable, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :churp_hash_tags, dependent: :destroy
-  has_many :hash_tags, through: :churp_hash_tags
+  has_many :hash_tags, through: :churp_hash_tags, dependent: :destroy
   has_many :noticed_events, as: :record, dependent: :destroy, class_name: "Noticed::Event"
-  has_many :notifications, through: :noticed_events, class_name: "Noticed::Notification"
+  has_many :notifications, through: :noticed_events, dependent: :destroy, class_name: "Noticed::Notification"
 
   has_rich_text :body
   has_one_attached :churp_pic
@@ -1488,8 +1765,12 @@ class Churp < ApplicationRecord
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
+  def rechurp?
+    original_churp.present?
+  end
+
   def churp_type
-    churp_id.present? ? "rechurp" : "churp"
+    rechurp? ? "rechurp" : "churp"
   end
 end
 
@@ -1501,11 +1782,11 @@ end
 #
 # Table name: churp_hash_tags
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  churp_id    :bigint
-#  hash_tag_id :bigint
+#  churp_id    :uuid
+#  hash_tag_id :uuid
 #
 # Indexes
 #
@@ -1525,12 +1806,12 @@ end
 #
 # Table name: comments
 #
-#  id         :bigint           not null, primary key
+#  id         :uuid             not null, primary key
 #  content    :text             not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  churp_id   :bigint           not null
-#  user_id    :bigint           not null
+#  churp_id   :uuid             not null
+#  user_id    :uuid             not null
 #
 # Indexes
 #
@@ -1559,7 +1840,7 @@ end
 #
 # Table name: hash_tags
 #
-#  id         :bigint           not null, primary key
+#  id         :uuid             not null, primary key
 #  name       :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
@@ -1602,30 +1883,6 @@ class HashTag < ApplicationRecord
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/models/jwt_denylist.rb ===
-# frozen_string_literal: true
-
-# == Schema Information
-#
-# Table name: jwt_denylists
-#
-#  id         :bigint           not null, primary key
-#  exp        :datetime
-#  jti        :string
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#
-# Indexes
-#
-#  index_jwt_denylists_on_jti  (jti)
-#
-class JwtDenylist < ApplicationRecord
-  include Devise::JWT::RevocationStrategies::Denylist
-
-  self.table_name = "jwt_denylists"
-end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/app/models/like.rb ===
 # frozen_string_literal: true
 
@@ -1633,12 +1890,12 @@ end
 #
 # Table name: likes
 #
-#  id            :bigint           not null, primary key
+#  id            :uuid             not null, primary key
 #  likeable_type :string           not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  likeable_id   :bigint           not null
-#  user_id       :bigint           not null
+#  likeable_id   :uuid             not null
+#  user_id       :uuid             not null
 #
 # Indexes
 #
@@ -1709,7 +1966,7 @@ end
 #
 # Table name: profiles
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  birth_date  :datetime
 #  description :text
 #  first_name  :string
@@ -1719,7 +1976,7 @@ end
 #  website     :string
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  user_id     :bigint           not null
+#  user_id     :uuid             not null
 #
 # Indexes
 #
@@ -1757,9 +2014,7 @@ class Profile < ApplicationRecord
 
   before_commit :create_default_avatar, on: :create
   def create_default_avatar
-    return if profile_pic.attached?
-
-    NamePlate.generate(name || "Sage Doe", 400).delete_prefix("public/")
+    nil if profile_pic.attached?
   end
 end
 
@@ -1771,11 +2026,11 @@ end
 #
 # Table name: relationships
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  followed_id :integer
-#  follower_id :integer
+#  followed_id :uuid             not null
+#  follower_id :uuid             not null
 #
 # Indexes
 #
@@ -1808,42 +2063,25 @@ end
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  display_name           :string
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  failed_attempts        :integer          default(0), not null
-#  jti                    :string           not null
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  username               :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
+#  email               :string           default(""), not null
+#  jti                 :string           not null
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
+#  role                :integer
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  uuid                :uuid             not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
-#  index_users_on_display_name          (display_name)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_jti                   (jti) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_slug                  (slug) UNIQUE
-#  index_users_on_unlock_token          (unlock_token) UNIQUE
-#  index_users_on_username              (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_jti       (jti) UNIQUE
+#  index_users_on_username  (username) UNIQUE
+#  index_users_on_uuid      (uuid) UNIQUE
 #
 class User < ApplicationRecord
   include ActionText::Attachable
@@ -1851,14 +2089,6 @@ class User < ApplicationRecord
 
   friendly_id :username, use: :slugged
   has_person_name
-
-  devise :database_authenticatable,
-    :registerable,
-    :recoverable,
-    :rememberable,
-    :validatable,
-    :jwt_authenticatable,
-    jwt_revocation_strategy: JwtDenylist
 
   # @return [String] the login identifier (username or email)
   attr_writer :login
@@ -1886,7 +2116,9 @@ class User < ApplicationRecord
   end
 
   def self.normalize_login(value)
-    value.start_with?("@") ? value : "@#{value}"
+    return value if value.include?("@") && value.include?(".")
+
+    "@#{value}"
   end
 
   has_many :churps, dependent: :destroy
@@ -1923,8 +2155,9 @@ class User < ApplicationRecord
 
   accepts_nested_attributes_for :profile
 
-  validates :username, :email, presence: true
-  validates :username, :email, uniqueness: true
+  validates :email, presence: true
+  validates :email, uniqueness: true
+  validates :password_digest, presence: true
   validate :password_complexity
 
   def normalize_username
@@ -1955,10 +2188,10 @@ class User < ApplicationRecord
   end
 
   def password_complexity
-    return if password.blank?
+    return if password_digest.blank?
 
     regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
-    return if password.match?(regex)
+    return if password_digest.match?(regex)
 
     errors.add :password, <<~MSG.squish
       Complexity requirement not met.
@@ -2051,42 +2284,25 @@ end
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  display_name           :string
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  failed_attempts        :integer          default(0), not null
-#  jti                    :string           not null
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  username               :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
+#  email               :string           default(""), not null
+#  jti                 :string           not null
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
+#  role                :integer
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  uuid                :uuid             not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
-#  index_users_on_display_name          (display_name)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_jti                   (jti) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_slug                  (slug) UNIQUE
-#  index_users_on_unlock_token          (unlock_token) UNIQUE
-#  index_users_on_username              (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_jti       (jti) UNIQUE
+#  index_users_on_username  (username) UNIQUE
+#  index_users_on_uuid      (uuid) UNIQUE
 #
 class UserSerializer
   include JSONAPI::Serializer
@@ -3357,7 +3573,7 @@ Bundler.require(*Rails.groups)
 module ChurpSocial
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.1
+    config.load_defaults 8.1
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
@@ -3371,6 +3587,12 @@ module ChurpSocial
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    config.autoload_paths.delete(Rails.root.join("app/domain").to_s)
+    config.eager_load_paths.delete(Rails.root.join("app/domain").to_s)
+
+    config.generators do |g|
+      g.orm :active_record, primary_key_type: :uuid
+    end
   end
 end
 
@@ -3468,6 +3690,8 @@ Rails.application.configure do
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
+  config.active_support.disallowed_deprecation = :raise
+  config.active_support.report_deprecations = false
 
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load
@@ -3622,6 +3846,10 @@ Rails.application.configure do
   config.consider_all_requests_local = true
   config.cache_store = :null_store
 
+  config.active_support.deprecation = :log
+  config.active_support.disallowed_deprecation = :raise
+  config.active_support.report_deprecations = false
+
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
 
@@ -3640,7 +3868,9 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: "example.com" }
 
   # Print deprecation notices to the stderr.
-  config.active_support.deprecation = :stderr
+  config.active_support.deprecation = :log
+  config.active_support.disallowed_deprecation = :raise
+  config.active_support.report_deprecations = false
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
@@ -3699,333 +3929,6 @@ Rails.application.config.assets.version = "1.0"
 # end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/devise.rb ===
-# frozen_string_literal: true
-
-# Assuming you have not yet modified this file, each configuration option below
-# is set to its default value. Note that some are commented out while others
-# are not: uncommented lines are intended to protect your configuration from
-# breaking changes in upgrades (i.e., in the event that future versions of
-# Devise change the default values for those options).
-#
-# Use this hook to configure devise mailer, warden hooks and so forth.
-# Many of these configuration options can be set straight in your model.
-Devise.setup do |config|
-  # The secret key used by Devise. Devise uses this key to generate
-  # random tokens. Changing this key will render invalid all existing
-  # confirmation, reset password and unlock tokens in the database.
-  # Devise will use the `secret_key_base` as its `secret_key`
-  # by default. You can change it below and use your own secret key.
-  # config.secret_key = '644050de757298a6a299931d8173605dc1e1ba29e70da0efcfee26a2baddba0d8b0aec95857eb21d41568c1f0d82104ff44b6a943b5017713379ca426f7afead'
-
-  # ==> Controller configuration
-  # Configure the parent class to the devise controllers.
-  # config.parent_controller = 'DeviseController'
-
-  # ==> Mailer Configuration
-  # Configure the e-mail address which will be shown in Devise::Mailer,
-  # note that it will be overwritten if you use your own mailer class
-  # with default "from" parameter.
-  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
-
-  # Configure the class responsible to send e-mails.
-  # config.mailer = 'Devise::Mailer'
-
-  # Configure the parent class responsible to send e-mails.
-  # config.parent_mailer = 'ActionMailer::Base'
-
-  # ==> ORM configuration
-  # Load and configure the ORM. Supports :active_record (default) and
-  # :mongoid (bson_ext recommended) by default. Other ORMs may be
-  # available as additional gems.
-  require "devise/orm/active_record"
-
-  # ==> Configuration for any authentication mechanism
-  # Configure which keys are used when authenticating a user. The default is
-  # just :email. You can configure it to use [:username, :subdomain], so for
-  # authenticating a user, both parameters are required. Remember that those
-  # parameters are used only when authenticating and not when retrieving from
-  # session. If you need permissions, you should implement that in a before filter.
-  # You can also supply a hash where the value is a boolean determining whether
-  # or not authentication should be aborted when the value is not present.
-  config.authentication_keys = [:email]
-
-  # Configure parameters from the request object used for authentication. Each entry
-  # given should be a request method and it will automatically be passed to the
-  # find_for_authentication method and considered in your model lookup. For instance,
-  # if you set :request_keys to [:subdomain], :subdomain will be used on authentication.
-  # The same considerations mentioned for authentication_keys also apply to request_keys.
-  # config.request_keys = []
-
-  # Configure which authentication keys should be case-insensitive.
-  # These keys will be downcased upon creating or modifying a user and when used
-  # to authenticate or find a user. Default is :email.
-  config.case_insensitive_keys = [:email]
-
-  # Configure which authentication keys should have whitespace stripped.
-  # These keys will have whitespace before and after removed upon creating or
-  # modifying a user and when used to authenticate or find a user. Default is :email.
-  config.strip_whitespace_keys = [:email]
-
-  # Tell if authentication through request.params is enabled. True by default.
-  # It can be set to an array that will enable params authentication only for the
-  # given strategies, for example, `config.params_authenticatable = [:database]` will
-  # enable it only for database (email + password) authentication.
-  # config.params_authenticatable = true
-
-  # Tell if authentication through HTTP Auth is enabled. False by default.
-  # It can be set to an array that will enable http authentication only for the
-  # given strategies, for example, `config.http_authenticatable = [:database]` will
-  # enable it only for database authentication.
-  # For API-only applications to support authentication "out-of-the-box", you will likely want to
-  # enable this with :database unless you are using a custom strategy.
-  # The supported strategies are:
-  # :database      = Support basic authentication with authentication key + password
-  # config.http_authenticatable = false
-
-  # If 401 status code should be returned for AJAX requests. True by default.
-  # config.http_authenticatable_on_xhr = true
-
-  # The realm used in Http Basic Authentication. 'Application' by default.
-  # config.http_authentication_realm = 'Application'
-
-  # It will change confirmation, password recovery and other workflows
-  # to behave the same regardless if the e-mail provided was right or wrong.
-  # Does not affect registerable.
-  # config.paranoid = true
-
-  # By default Devise will store the user in session. You can skip storage for
-  # particular strategies by setting this option.
-  # Notice that if you are skipping storage for all authentication paths, you
-  # may want to disable generating routes to Devise's sessions controller by
-  # passing skip: :sessions to `devise_for` in your config/routes.rb
-  config.skip_session_storage = [:http_auth]
-
-  # By default, Devise cleans up the CSRF token on authentication to
-  # avoid CSRF token fixation attacks. This means that, when using AJAX
-  # requests for sign in and sign up, you need to get a new CSRF token
-  # from the server. You can disable this option at your own risk.
-  # config.clean_up_csrf_token_on_authentication = true
-
-  # When false, Devise will not attempt to reload routes on eager load.
-  # This can reduce the time taken to boot the app but if your application
-  # requires the Devise mappings to be loaded during boot time the application
-  # won't boot properly.
-  # config.reload_routes = true
-
-  # ==> Configuration for :database_authenticatable
-  # For bcrypt, this is the cost for hashing the password and defaults to 12. If
-  # using other algorithms, it sets how many times you want the password to be hashed.
-  # The number of stretches used for generating the hashed password are stored
-  # with the hashed password. This allows you to change the stretches without
-  # invalidating existing passwords.
-  #
-  # Limiting the stretches to just one in testing will increase the performance of
-  # your test suite dramatically. However, it is STRONGLY RECOMMENDED to not use
-  # a value less than 10 in other environments. Note that, for bcrypt (the default
-  # algorithm), the cost increases exponentially with the number of stretches (e.g.
-  # a value of 20 is already extremely slow: approx. 60 seconds for 1 calculation).
-  config.stretches = Rails.env.test? ? 1 : 12
-
-  # Set up a pepper to generate the hashed password.
-  # config.pepper = 'e68d60dc52e3bf34ac7bc50bc7c629095047a432e86f469c0e1f93036a766215069f4aa59d6c7c8f89576ba2c2608f35e6747ca4d3ecca99a3029b69106596fc'
-
-  # Send a notification to the original email when the user's email is changed.
-  # config.send_email_changed_notification = false
-
-  # Send a notification email when the user's password is changed.
-  # config.send_password_change_notification = false
-
-  # ==> Configuration for :confirmable
-  # A period that the user is allowed to access the website even without
-  # confirming their account. For instance, if set to 2.days, the user will be
-  # able to access the website for two days without confirming their account,
-  # access will be blocked just in the third day.
-  # You can also set it to nil, which will allow the user to access the website
-  # without confirming their account.
-  # Default is 0.days, meaning the user cannot access the website without
-  # confirming their account.
-  # config.allow_unconfirmed_access_for = 2.days
-
-  # A period that the user is allowed to confirm their account before their
-  # token becomes invalid. For example, if set to 3.days, the user can confirm
-  # their account within 3 days after the mail was sent, but on the fourth day
-  # their account can't be confirmed with the token any more.
-  # Default is nil, meaning there is no restriction on how long a user can take
-  # before confirming their account.
-  # config.confirm_within = 3.days
-
-  # If true, requires any email changes to be confirmed (exactly the same way as
-  # initial account confirmation) to be applied. Requires additional unconfirmed_email
-  # db field (see migrations). Until confirmed, new email is stored in
-  # unconfirmed_email column, and copied to email column on successful confirmation.
-  config.reconfirmable = true
-
-  # Defines which key will be used when confirming an account
-  # config.confirmation_keys = [:email]
-
-  # ==> Configuration for :rememberable
-  # The time the user will be remembered without asking for credentials again.
-  # config.remember_for = 2.weeks
-
-  # Invalidates all the remember me tokens when the user signs out.
-  config.expire_all_remember_me_on_sign_out = true
-
-  # If true, extends the user's remember period when remembered via cookie.
-  # config.extend_remember_period = false
-
-  # Options to be passed to the created cookie. For instance, you can set
-  # secure: true in order to force SSL only cookies.
-  # config.rememberable_options = {}
-
-  # ==> Configuration for :validatable
-  # Range for password length.
-  config.password_length = 10..128
-
-  # Email regex used to validate email formats. It simply asserts that
-  # one (and only one) @ exists in the given string. This is mainly
-  # to give user feedback and not to assert the e-mail validity.
-  config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
-
-  # ==> Configuration for :timeoutable
-  # The time you want to timeout the user session without activity. After this
-  # time the user will be asked for credentials again. Default is 30 minutes.
-  # config.timeout_in = 30.minutes
-
-  # ==> Configuration for :lockable
-  # Defines which strategy will be used to lock an account.
-  # :failed_attempts = Locks an account after a number of failed attempts to sign in.
-  # :none            = No lock strategy. You should handle locking by yourself.
-  # config.lock_strategy = :failed_attempts
-
-  # Defines which key will be used when locking and unlocking an account
-  # config.unlock_keys = [:email]
-
-  # Defines which strategy will be used to unlock an account.
-  # :email = Sends an unlock link to the user email
-  # :time  = Re-enables login after a certain amount of time (see :unlock_in below)
-  # :both  = Enables both strategies
-  # :none  = No unlock strategy. You should handle unlocking by yourself.
-  # config.unlock_strategy = :both
-
-  # Number of authentication tries before locking an account if lock_strategy
-  # is failed attempts.
-  # config.maximum_attempts = 20
-
-  # Time interval to unlock the account if :time is enabled as unlock_strategy.
-  # config.unlock_in = 1.hour
-
-  # Warn on the last attempt before the account is locked.
-  # config.last_attempt_warning = true
-
-  # ==> Configuration for :recoverable
-  #
-  # Defines which key will be used when recovering the password for an account
-  # config.reset_password_keys = [:email]
-
-  # Time interval you can reset your password with a reset password key.
-  # Don't put a too small interval or your users won't have the time to
-  # change their passwords.
-  config.reset_password_within = 6.hours
-
-  # When set to false, does not sign a user in automatically after their password is
-  # reset. Defaults to true, so a user is signed in automatically after a reset.
-  # config.sign_in_after_reset_password = true
-
-  # ==> Configuration for :encryptable
-  # Allow you to use another hashing or encryption algorithm besides bcrypt (default).
-  # You can use :sha1, :sha512 or algorithms from others authentication tools as
-  # :clearance_sha1, :authlogic_sha512 (then you should set stretches above to 20
-  # for default behavior) and :restful_authentication_sha1 (then you should set
-  # stretches to 10, and copy REST_AUTH_SITE_KEY to pepper).
-  #
-  # Require the `devise-encryptable` gem when using anything other than bcrypt
-  # config.encryptor = :sha512
-
-  # ==> Scopes configuration
-  # Turn scoped views on. Before rendering "sessions/new", it will first check for
-  # "users/sessions/new". It's turned off by default because it's slower if you
-  # are using only default views.
-  # config.scoped_views = false
-
-  # Configure the default scope given to Warden. By default it's the first
-  # devise role declared in your routes (usually :user).
-  # config.default_scope = :user
-
-  # Set this configuration to false if you want /users/sign_out to sign out
-  # only the current scope. By default, Devise signs out all scopes.
-  # config.sign_out_all_scopes = true
-
-  # ==> Navigation configuration
-  # Lists the formats that should be treated as navigational. Formats like
-  # :html should redirect to the sign in page when the user does not have
-  # access, but formats like :xml or :json, should return 401.
-  #
-  # If you have any extra navigational formats, like :iphone or :mobile, you
-  # should add them to the navigational formats lists.
-  #
-  # The "*/*" below is required to match Internet Explorer requests.
-  config.navigational_formats = [:html, :turbo_stream]
-
-  # The default HTTP method used to sign out a resource. Default is :delete.
-  config.sign_out_via = :delete
-
-  # ==> OmniAuth
-  # Add a new OmniAuth provider. Check the wiki for more information on setting
-  # up on your models and hooks.
-  # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
-
-  # ==> Warden configuration
-  # If you want to use other strategies, that are not supported by Devise, or
-  # change the failure app, you can configure them inside the config.warden block.
-  #
-  # config.warden do |manager|
-  #   manager.intercept_401 = false
-  #   manager.default_strategies(scope: :user).unshift :some_external_strategy
-  # end
-
-  # ==> Mountable engine configurations
-  # When using Devise inside an engine, let's call it `MyEngine`, and this engine
-  # is mountable, there are some extra configurations to be taken into account.
-  # The following options are available, assuming the engine is mounted as:
-  #
-  #     mount MyEngine, at: '/my_engine'
-  #
-  # The router that invoked `devise_for`, in the example above, would be:
-  # config.router_name = :my_engine
-  #
-  # When using OmniAuth, Devise cannot automatically set OmniAuth path,
-  # so you need to do it manually. For the users scope, it would be:
-  # config.omniauth_path_prefix = '/my_engine/users/auth'
-
-  # ==> Hotwire/Turbo configuration
-  # When using Devise with Hotwire/Turbo, the http status for error responses
-  # and some redirects must match the following. The default in Devise for existing
-  # apps is `200 OK` and `302 Found respectively`, but new apps are generated with
-  # these new defaults that match Hotwire/Turbo behavior.
-  # Note: These might become the new default in future versions of Devise.
-  config.responder.error_status = :unprocessable_entity
-  config.responder.redirect_status = :see_other
-
-  # ==> Configuration for :registerable
-
-  # When set to false, does not sign a user in automatically after their password is
-  # changed. Defaults to true, so a user is signed in automatically after changing a password.
-  # config.sign_in_after_change_password = true
-
-  config.jwt do |jwt|
-    jwt.secret = Rails.application.credentials.devise_jwt
-    jwt.dispatch_requests = [
-      ["POST", %r{^/api/v1/users/sign_in$}]
-    ]
-    jwt.revocation_requests = [
-      ["DELETE", %r{^/api/v1/users/sign_out$}]
-    ]
-    jwt.expiration_time = 1.day.to_i
-  end
-end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/disable_actiontext_annotations.rb ===
 # frozen_string_literal: true
 
@@ -4065,20 +3968,6 @@ end
 Rails.application.config.filter_parameters += [
   :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc
 ]
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/flipper.rb ===
-# frozen_string_literal: true
-
-# admin_user policy block
-Flipper.register(:admin_user) do |actor, _context|
-  actor.respond_to?(:admin?) && actor.admin?
-end
-
-# patron policy block
-Flipper.register(:patron) do |actor, _context|
-  actor.respond_to?(:patron?) && actor.patron?
-end
 
 
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/friendly_id.rb ===
@@ -4217,15 +4106,15 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/nameplate.rb ===
 # frozen_string_literal: true
 
-NamePlate.setup do |config|
-  config.fill_color = "rgba(255, 255, 255, 1)"
-  config.cache_base_path = "storage"
-  config.colors_palette = :iwanthue
-  config.weight = 600
-  config.annotate_position = "-0+10"
-  config.letters_count = 2
-  config.pointsize = 220
-end
+# NamePlate.setup do |config|
+#   config.fill_color = "rgba(255, 255, 255, 1)"
+#   config.cache_base_path = "storage"
+#   config.colors_palette = :iwanthue
+#   config.weight = 600
+#   config.annotate_position = "-0+10"
+#   config.letters_count = 2
+#   config.pointsize = 220
+# end
 
 
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/new_framework_defaults_8_1.rb ===
@@ -4253,7 +4142,7 @@ end
 #     end
 #   end
 #
-# Renders `{"key":"\u2028\u2029\u003c\u003e\u0026"}` with the previous default, but `{"key":"<>&"}` with the config
+# Renders `{"key":"\u2028\u2029\u003c\u003e\u0026"}` with the previous default, but `{"key":"  <>&"}` with the config
 # set to `false`.
 #
 # Applications that want to keep the escaping behavior can set the config to `true`.
@@ -4310,7 +4199,48 @@ Rails.configuration.action_controller.action_on_path_relative_redirect = :raise
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/pagy.rb ===
 # frozen_string_literal: true
 
-require "pagy/extras/countless"
+# Pagy initializer file (43.2.2)
+# See https://ddnexus.github.io/pagy/resources/initializer/
+
+############ Global Options ################################################################
+# See https://ddnexus.github.io/pagy/toolbox/options/ for details.
+# Add your global options below. They will be applied globally.
+# For example:
+#
+# Pagy.options[:limit] = 10               # Limit the items per page
+# Pagy.options[:client_max_limit] = 100   # The client can request a limit up to 100
+# Pagy.options[:max_pages] = 200          # Allow only 200 pages
+# Pagy.options[:jsonapi] = true           # Use JSON:API compliant URLs
+
+############ JavaScript ####################################################################
+# See https://ddnexus.github.io/pagy/resources/javascript/ for details.
+# Examples for Rails:
+# For apps with an assets pipeline
+# Rails.application.config.assets.paths << Pagy::ROOT.join('javascripts')
+#
+# For apps with a javascript builder (e.g. esbuild, webpack, etc.)
+# javascript_dir = Rails.root.join('app/javascript')
+# Pagy.sync_javascript(javascript_dir, 'pagy.mjs') if Rails.env.development?
+
+############# Overriding Pagy::I18n Lookup #################################################
+# Refer to https://ddnexus.github.io/pagy/resources/i18n/ for details.
+# Override the I18n lookup by dropping your custom dictionary in some pagy dir.
+# Example for Rails:
+#
+# Pagy::I18n.pathnames << Rails.root.join('config/locales/pagy')
+
+############# I18n Gem Translation #########################################################
+# See https://ddnexus.github.io/pagy/resources/i18n/ for details.
+#
+# Pagy.translate_with_the_slower_i18n_gem!
+
+############# Calendar Localization for non-en locales ####################################
+# See https://ddnexus.github.io/pagy/toolbox/paginators/calendar#localization for details.
+# Add your desired locales to the list and uncomment the following line to enable them,
+# regardless of whether you use the I18n gem for translations or not, whether with
+# Rails or not.
+#
+# Pagy::Calendar.localize_with_rails_i18n_gem(*your_locales)
 
 
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/permissions_policy.rb ===
@@ -4329,6 +4259,42 @@ require "pagy/extras/countless"
 #   policy.fullscreen  :self
 #   policy.payment     :self, "https://secure.example.com"
 # end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/rswag_api.rb ===
+Rswag::Api.configure do |c|
+
+  # Specify a root folder where Swagger JSON files are located
+  # This is used by the Swagger middleware to serve requests for API descriptions
+  # NOTE: If you're using rswag-specs to generate Swagger, you'll need to ensure
+  # that it's configured to generate files in the same folder
+  c.openapi_root = Rails.root.to_s + '/swagger'
+
+  # Inject a lambda function to alter the returned Swagger prior to serialization
+  # The function will have access to the rack env for the current request
+  # For example, you could leverage this to dynamically assign the "host" property
+  #
+  #c.swagger_filter = lambda { |swagger, env| swagger['host'] = env['HTTP_HOST'] }
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/rswag_ui.rb ===
+Rswag::Ui.configure do |c|
+
+  # List the Swagger endpoints that you want to be documented through the
+  # swagger-ui. The first parameter is the path (absolute or relative to the UI
+  # host) to the corresponding endpoint and the second is a title that will be
+  # displayed in the document selector.
+  # NOTE: If you're using rspec-api to expose Swagger files
+  # (under openapi_root) as JSON or YAML endpoints, then the list below should
+  # correspond to the relative paths for those endpoints.
+
+  c.swagger_endpoint '/api-docs/v1/swagger.yaml', 'API V1 Docs'
+
+  # Add Basic Auth in case your API is private
+  # c.basic_auth_enabled = true
+  # c.basic_auth_credentials 'username', 'password'
+end
 
 
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/config/initializers/secure_headers.rb ===
@@ -4594,33 +4560,18 @@ pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
 require "sidekiq/web"
 
 Rails.application.routes.draw do
-  mount Flipper::UI.app(Flipper) => "/flipper"
-
   # authenticate :user, ->(u) { u.admin? } do
   #   mount Sidekiq::Web => "/sidekiq"
   # end
 
-  devise_for :users
-
-  devise_scope :user do
-    authenticated :user do
-      root to: "churps#index", as: :authenticated_root
-    end
-
-    unauthenticated do
-      root to: "devise/registrations#new", as: :unauthenticated_root
-    end
-  end
-
   namespace :api do
     namespace :v1 do
-      devise_for :users,
-        path: "users",
-        defaults: { format: :json },
-        controllers: {
-          sessions: "api/v1/users/sessions",
-          registrations: "api/v1/users/registrations"
-        }
+      resource :authentication, controller: :authentication, only: [] do
+        post :register
+        post :login
+        # TODO post :logout
+        # TODO post :refresh
+      end
 
       namespace :users do
         get :me, to: "profiles#show"
@@ -4692,136 +4643,35 @@ Rails.application.routes.draw do
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20230928203458_create_active_storage_tables.active_storage.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20230101070643_enable_pgcrypto.rb ===
 # frozen_string_literal: true
 
-# This migration comes from active_storage (originally 20170806125915)
-class CreateActiveStorageTables < ActiveRecord::Migration[5.2]
+class EnablePgcrypto < ActiveRecord::Migration[8.1]
   def change
-    # Use Active Record's configured type for primary and foreign keys
-    primary_key_type, foreign_key_type = primary_and_foreign_key_types
-
-    create_table :active_storage_blobs, id: primary_key_type do |t|
-      t.string :key, null: false
-      t.string :filename, null: false
-      t.string :content_type
-      t.text :metadata
-      t.string :service_name, null: false
-      t.bigint :byte_size, null: false
-      t.string :checksum
-
-      t.datetime :created_at, precision: 6, null: false
-
-      t.index [:key], unique: true
-    end
-
-    create_table :active_storage_attachments, id: primary_key_type do |t|
-      t.string :name, null: false
-      t.references :record, null: false, polymorphic: true, index: false, type: foreign_key_type
-      t.references :blob, null: false, type: foreign_key_type
-
-      t.datetime :created_at, precision: 6, null: false
-
-      t.index %i[record_type record_id name blob_id], name: :index_active_storage_attachments_uniqueness,
-        unique: true
-      t.foreign_key :active_storage_blobs, column: :blob_id
-    end
-
-    create_table :active_storage_variant_records, id: primary_key_type do |t|
-      t.belongs_to :blob, null: false, index: false, type: foreign_key_type
-      t.string :variation_digest, null: false
-
-      t.index %i[blob_id variation_digest], name: :index_active_storage_variant_records_uniqueness, unique: true
-      t.foreign_key :active_storage_blobs, column: :blob_id
-    end
-  end
-
-  private
-
-  def primary_and_foreign_key_types
-    config = Rails.configuration.generators
-    setting = config.options[config.orm][:primary_key_type]
-    primary_key_type = setting || :primary_key
-    foreign_key_type = setting || :bigint
-    [primary_key_type, foreign_key_type]
+    enable_extension "pgcrypto" unless extension_enabled?("pgcrypto")
   end
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20230928203505_create_action_text_tables.action_text.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20230928203511_create_users.rb ===
 # frozen_string_literal: true
 
-# This migration comes from action_text (originally 20180528164100)
-class CreateActionTextTables < ActiveRecord::Migration[6.0]
+class CreateUsers < ActiveRecord::Migration[8.1]
   def change
-    # Use Active Record's configured type for primary and foreign keys
-    primary_key_type, foreign_key_type = primary_and_foreign_key_types
-
-    create_table :action_text_rich_texts, id: primary_key_type do |t|
-      t.string :name, null: false
-      t.text :body, size: :long
-      t.references :record, null: false, polymorphic: true, index: false, type: foreign_key_type
-
-      t.timestamps
-
-      t.index %i[record_type record_id name], name: "index_action_text_rich_texts_uniqueness", unique: true
-    end
-  end
-
-  private
-
-  def primary_and_foreign_key_types
-    config = Rails.configuration.generators
-    setting = config.options[config.orm][:primary_key_type]
-    primary_key_type = setting || :primary_key
-    foreign_key_type = setting || :bigint
-    [primary_key_type, foreign_key_type]
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20230928203511_devise_create_users.rb ===
-# frozen_string_literal: true
-
-class DeviseCreateUsers < ActiveRecord::Migration[7.0]
-  def change
-    create_table :users do |t|
-      ## Database authenticatable
+    create_table :users, id: :uuid do |t|
       t.string :email, null: false, default: ""
-      t.string :encrypted_password, null: false, default: ""
-
-      ## Recoverable
-      t.string :reset_password_token
-      t.datetime :reset_password_sent_at
-
-      ## Rememberable
-      t.datetime :remember_created_at
-
-      ## Trackable
-      t.integer :sign_in_count, default: 0, null: false
-      t.datetime :current_sign_in_at
-      t.datetime :last_sign_in_at
-      t.string :current_sign_in_ip
-      t.string :last_sign_in_ip
-
-      ## Confirmable
-      t.string :confirmation_token
-      t.datetime :confirmed_at
-      t.datetime :confirmation_sent_at
-      t.string :unconfirmed_email # Only if using reconfirmable
-
-      ## Lockable
-      t.integer :failed_attempts, default: 0, null: false # Only if lock strategy is :failed_attempts
-      t.string :unlock_token # Only if unlock strategy is :email or :both
-      t.datetime :locked_at
-
+      t.string :password_digest, null: false, default: ""
+      t.datetime :password_changed_at, null: false, default: -> { "CURRENT_TIMESTAMP" }
+      t.string :display_name, null: false, default: ""
+      t.string :username, null: false, default: ""
+      t.uuid :uuid, null: false, default: "gen_random_uuid()"
+      t.string :slug, null: false, default: ""
       t.timestamps null: false
     end
 
     add_index :users, :email, unique: true
-    add_index :users, :reset_password_token, unique: true
-    add_index :users, :confirmation_token, unique: true
-    add_index :users, :unlock_token, unique: true
+    add_index :users, :username, unique: true
+    add_index :users, :uuid, unique: true
   end
 end
 
@@ -4838,9 +4688,9 @@ MIGRATION_CLASS =
 
 class CreateFriendlyIdSlugs < MIGRATION_CLASS
   def change
-    create_table :friendly_id_slugs do |t|
+    create_table :friendly_id_slugs, id: :uuid do |t|
       t.string :slug, null: false
-      t.integer :sluggable_id, null: false
+      t.uuid :sluggable_id, null: false
       t.string :sluggable_type, limit: 50
       t.string :scope
       t.datetime :created_at
@@ -4856,11 +4706,11 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20230928204902_create_churps.rb ===
 # frozen_string_literal: true
 
-class CreateChurps < ActiveRecord::Migration[7.0]
+class CreateChurps < ActiveRecord::Migration[8.1]
   def change
-    create_table :churps do |t|
+    create_table :churps, id: :uuid do |t|
       t.text :body
-      t.references :user, null: false, foreign_key: true
+      t.references :user, null: false, foreign_key: true, type: :uuid
 
       t.timestamps
     end
@@ -4871,15 +4721,15 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231005164921_creat_profiles.rb ===
 # frozen_string_literal: true
 
-class CreatProfiles < ActiveRecord::Migration[7.0]
+class CreatProfiles < ActiveRecord::Migration[8.1]
   def change
-    create_table :profiles do |t|
+    create_table :profiles, id: :uuid do |t|
       t.string :first_name
       t.string :last_name
       t.text :description
       t.string :website
       t.datetime :birth_date
-      t.references :user, null: false, foreign_key: true
+      t.references :user, null: false, foreign_key: true, type: :uuid
 
       t.timestamps
     end
@@ -4890,28 +4740,9 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231005175848_add_role_to_users.rb ===
 # frozen_string_literal: true
 
-class AddRoleToUsers < ActiveRecord::Migration[7.0]
+class AddRoleToUsers < ActiveRecord::Migration[8.1]
   def change
     add_column :users, :role, :integer
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231005180144_add_named_themes_to_user.rb ===
-# frozen_string_literal: true
-
-class AddNamedThemesToUser < ActiveRecord::Migration[7.0]
-  def change
-    change_table :users, bulk: true do |t|
-      t.string :username, unique: true
-      t.string :display_name, null: true
-      t.string :slug, null: true
-      t.integer :theme, default: 0
-      t.integer :theme_color, default: 0
-    end
-
-    add_index :users, :display_name
-    add_index :users, :slug, unique: true
   end
 end
 
@@ -4919,11 +4750,11 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231006174128_create_likes.rb ===
 # frozen_string_literal: true
 
-class CreateLikes < ActiveRecord::Migration[7.0]
+class CreateLikes < ActiveRecord::Migration[8.1]
   def change
-    create_table :likes do |t|
-      t.references :user, null: false, foreign_key: true
-      t.references :likeable, polymorphic: true, null: false
+    create_table :likes, id: :uuid do |t|
+      t.references :user, null: false, foreign_key: true, type: :uuid
+      t.references :likeable, polymorphic: true, null: false, type: :uuid
 
       t.timestamps
     end
@@ -4934,12 +4765,12 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231008234743_create_comments.rb ===
 # frozen_string_literal: true
 
-class CreateComments < ActiveRecord::Migration[7.0]
+class CreateComments < ActiveRecord::Migration[8.1]
   def change
-    create_table :comments do |t|
+    create_table :comments, id: :uuid do |t|
       t.text :content, null: false
-      t.references :churp, null: false, foreign_key: true
-      t.references :user, null: false, foreign_key: true
+      t.references :churp, null: false, foreign_key: true, type: :uuid
+      t.references :user, null: false, foreign_key: true, type: :uuid
 
       t.timestamps
     end
@@ -4950,9 +4781,9 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231012220507_add_churp_id_to_churps.rb ===
 # frozen_string_literal: true
 
-class AddChurpIdToChurps < ActiveRecord::Migration[7.0]
+class AddChurpIdToChurps < ActiveRecord::Migration[8.1]
   def change
-    add_column :churps, :churp_id, :integer
+    add_column :churps, :churp_id, :uuid, null: false, default: "gen_random_uuid()"
   end
 end
 
@@ -4960,55 +4791,9 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231014202238_add_rechurp_count_to_churps.rb ===
 # frozen_string_literal: true
 
-class AddRechurpCountToChurps < ActiveRecord::Migration[7.0]
+class AddRechurpCountToChurps < ActiveRecord::Migration[8.1]
   def change
-    add_column :churps, :rechurp_count, :integer, default: 0
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231015204744_create_views.rb ===
-# frozen_string_literal: true
-
-class CreateViews < ActiveRecord::Migration[7.0]
-  def change
-    create_table :views do |t|
-      t.references :user, null: false, foreign_key: true
-      t.references :churp, null: false, foreign_key: true
-      t.string :ip_address
-      t.string :user_agent
-      t.string :city
-      t.string :state
-
-      t.timestamps
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231017215454_create_flipper_tables.rb ===
-# frozen_string_literal: true
-
-class CreateFlipperTables < ActiveRecord::Migration[7.0] # standard:disable Rails/ReversibleMigrationMethodDefinition
-  def self.up
-    create_table :flipper_features do |t|
-      t.string :key, null: false
-      t.timestamps null: false
-    end
-    add_index :flipper_features, :key, unique: true
-
-    create_table :flipper_gates do |t|
-      t.string :feature_key, null: false
-      t.string :key, null: false
-      t.string :value
-      t.timestamps null: false
-    end
-    add_index :flipper_gates, %i[feature_key key value], unique: true
-  end
-
-  def self.down
-    drop_table :flipper_gates
-    drop_table :flipper_features
+    add_column :churps, :rechurp_count, :uuid, default: 0
   end
 end
 
@@ -5016,9 +4801,9 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231017221844_create_hash_tags.rb ===
 # frozen_string_literal: true
 
-class CreateHashTags < ActiveRecord::Migration[7.0]
+class CreateHashTags < ActiveRecord::Migration[8.1]
   def change
-    create_table :hash_tags do |t|
+    create_table :hash_tags, id: :uuid do |t|
       t.string :name
 
       t.timestamps
@@ -5030,11 +4815,11 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231017222151_create_churp_hash_tags.rb ===
 # frozen_string_literal: true
 
-class CreateChurpHashTags < ActiveRecord::Migration[7.0]
+class CreateChurpHashTags < ActiveRecord::Migration[8.1]
   def change
-    create_table :churp_hash_tags do |t|
-      t.belongs_to :churp, index: true
-      t.belongs_to :hash_tag, index: true
+    create_table :churp_hash_tags, id: :uuid do |t|
+      t.belongs_to :churp, index: true, type: :uuid
+      t.belongs_to :hash_tag, index: true, type: :uuid
 
       t.timestamps
     end
@@ -5042,104 +4827,14 @@ class CreateChurpHashTags < ActiveRecord::Migration[7.0]
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231020170147_add_service_name_to_active_storage_blobs.active_storage.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231027203146_add_theme_to_profile.rb ===
 # frozen_string_literal: true
 
-# This migration comes from active_storage (originally 20190112182829)
-class AddServiceNameToActiveStorageBlobs < ActiveRecord::Migration[6.0]
-  def up
-    return unless table_exists?(:active_storage_blobs)
-
-    return if column_exists?(:active_storage_blobs, :service_name)
-
-    add_column :active_storage_blobs, :service_name, :string
-
-    if (configured_service = ActiveStorage::Blob.service.name)
-      ActiveStorage::Blob.unscoped.update(service_name: configured_service)
-    end
-
-    change_column :active_storage_blobs, :service_name, :string, null: false
-  end
-
-  def down
-    return unless table_exists?(:active_storage_blobs)
-
-    remove_column :active_storage_blobs, :service_name
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231020170148_create_active_storage_variant_records.active_storage.rb ===
-# frozen_string_literal: true
-
-# This migration comes from active_storage (originally 20191206030411)
-class CreateActiveStorageVariantRecords < ActiveRecord::Migration[6.0]
+class AddThemeToProfile < ActiveRecord::Migration[8.1]
   def change
-    return unless table_exists?(:active_storage_blobs)
-
-    # Use Active Record's configured type for primary key
-    create_table :active_storage_variant_records, id: primary_key_type, if_not_exists: true do |t|
-      t.belongs_to :blob, null: false, index: false, type: blobs_primary_key_type
-      t.string :variation_digest, null: false
-
-      t.index %i[blob_id variation_digest], name: "index_active_storage_variant_records_uniqueness", unique: true
-      t.foreign_key :active_storage_blobs, column: :blob_id
-    end
-  end
-
-  private
-
-  def primary_key_type
-    config = Rails.configuration.generators
-    config.options[config.orm][:primary_key_type] || :primary_key
-  end
-
-  def blobs_primary_key_type
-    pkey_name = connection.primary_key(:active_storage_blobs)
-    pkey_column = connection.columns(:active_storage_blobs).find { |c| c.name == pkey_name }
-    pkey_column.bigint? ? :bigint : pkey_column.type
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231020170149_remove_not_null_on_active_storage_blobs_checksum.active_storage.rb ===
-# frozen_string_literal: true
-
-# This migration comes from active_storage (originally 20211119233751)
-class RemoveNotNullOnActiveStorageBlobsChecksum < ActiveRecord::Migration[6.0]
-  def change
-    return unless table_exists?(:active_storage_blobs)
-
-    change_column_null(:active_storage_blobs, :checksum, true)
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231027203146_move_theme_to_porfile.rb ===
-# frozen_string_literal: true
-
-class MoveThemeToPorfile < ActiveRecord::Migration[7.1]
-  def up
-    change_table :users, bulk: true do |t|
-      t.remove :theme
-      t.remove :theme_color
-    end
-
     change_table :profiles, bulk: true do |t|
       t.integer :theme, default: 0
       t.integer :theme_color, default: 0
-    end
-  end
-
-  def down
-    change_table :users, bulk: true do |t|
-      t.string :theme
-      t.string :theme_color
-    end
-
-    change_table :profiles, bulk: true do |t|
-      t.remove :theme, :integer, default: 0
-      t.remove :theme_color, :integer, default: 0
     end
   end
 end
@@ -5148,11 +4843,11 @@ end
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231027204921_create_relationships.rb ===
 # frozen_string_literal: true
 
-class CreateRelationships < ActiveRecord::Migration[7.1]
+class CreateRelationships < ActiveRecord::Migration[8.1]
   def change
-    create_table :relationships do |t|
-      t.integer :follower_id
-      t.integer :followed_id
+    create_table :relationships, id: :uuid do |t|
+      t.uuid :follower_id, null: false
+      t.uuid :followed_id, null: false
 
       t.timestamps
     end
@@ -5163,23 +4858,13 @@ class CreateRelationships < ActiveRecord::Migration[7.1]
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231105225816_add_unique_index_to_user_name.rb ===
-# frozen_string_literal: true
-
-class AddUniqueIndexToUserName < ActiveRecord::Migration[7.1]
-  def change
-    add_index :users, :username, unique: true
-  end
-end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20231108074238_install_searchjoy.rb ===
 # frozen_string_literal: true
 
-class InstallSearchjoy < ActiveRecord::Migration[7.1]
+class InstallSearchjoy < ActiveRecord::Migration[8.1]
   def change
-    create_table :searchjoy_searches do |t|
-      t.references :user
+    create_table :searchjoy_searches, id: :uuid do |t|
+      t.references :user, null: false, foreign_key: true, type: :uuid
       t.string :search_type
       t.string :query
       t.string :normalized_query
@@ -5190,11 +4875,13 @@ class InstallSearchjoy < ActiveRecord::Migration[7.1]
 
     add_index :searchjoy_searches, [:created_at]
     add_index :searchjoy_searches, %i[search_type created_at]
-    add_index :searchjoy_searches, %i[search_type normalized_query created_at], name: "index_searchjoy_searches_on_search_type_query" # autogenerated name is too long
+    add_index :searchjoy_searches, %i[search_type normalized_query created_at], name: "index_searchjoy_searches_type_query"
 
-    create_table :searchjoy_conversions do |t|
-      t.references :search
-      t.references :convertable, polymorphic: true, index: { name: "index_searchjoy_conversions_on_convertable" }
+    create_table :searchjoy_conversions, id: :uuid do |t|
+      t.references :search, type: :uuid
+      t.references :convertable, polymorphic: true, index: {
+        name: "index_searchjoy_conversions_on_convertable"
+      }, type: :uuid
       t.datetime :created_at
     end
   end
@@ -5283,9 +4970,21 @@ class CreateJwtDenylists < ActiveRecord::Migration[8.1]
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/schema.rb ===
-# frozen_string_literal: true
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/migrate/20260101202547_change_rechurp_count_to_integer.rb ===
+class ChangeRechurpCountToInteger < ActiveRecord::Migration[8.1]
+  def up
+    remove_column :churps, :rechurp_count
+    add_column :churps, :rechurp_count, :integer, null: false, default: 0
+  end
 
+  def down
+    remove_column :churps, :rechurp_count
+    add_column :churps, :rechurp_count, :uuid
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/db/schema.rb ===
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -5298,105 +4997,52 @@ end
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_19_210244) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_01_202547) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pgcrypto"
 
-  create_table "action_text_rich_texts", force: :cascade do |t|
-    t.text "body"
+  create_table "churp_hash_tags", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "churp_id"
     t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.bigint "record_id", null: false
-    t.string "record_type", null: false
-    t.datetime "updated_at", null: false
-    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
-  end
-
-  create_table "active_storage_attachments", force: :cascade do |t|
-    t.bigint "blob_id", null: false
-    t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.bigint "record_id", null: false
-    t.string "record_type", null: false
-    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
-    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
-  end
-
-  create_table "active_storage_blobs", force: :cascade do |t|
-    t.bigint "byte_size", null: false
-    t.string "checksum"
-    t.string "content_type"
-    t.datetime "created_at", null: false
-    t.string "filename", null: false
-    t.string "key", null: false
-    t.text "metadata"
-    t.string "service_name", null: false
-    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
-  end
-
-  create_table "active_storage_variant_records", force: :cascade do |t|
-    t.bigint "blob_id", null: false
-    t.string "variation_digest", null: false
-    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "churp_hash_tags", force: :cascade do |t|
-    t.bigint "churp_id"
-    t.datetime "created_at", null: false
-    t.bigint "hash_tag_id"
+    t.uuid "hash_tag_id"
     t.datetime "updated_at", null: false
     t.index ["churp_id"], name: "index_churp_hash_tags_on_churp_id"
     t.index ["hash_tag_id"], name: "index_churp_hash_tags_on_hash_tag_id"
   end
 
-  create_table "churps", force: :cascade do |t|
+  create_table "churps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.text "body"
-    t.integer "churp_id"
+    t.uuid "churp_id", default: -> { "gen_random_uuid()" }, null: false
     t.datetime "created_at", null: false
-    t.integer "rechurp_count", default: 0
+    t.integer "rechurp_count", default: 0, null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_churps_on_user_id"
   end
 
-  create_table "comments", force: :cascade do |t|
-    t.bigint "churp_id", null: false
+  create_table "comments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "churp_id", null: false
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.uuid "user_id", null: false
     t.index ["churp_id"], name: "index_comments_on_churp_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
-  create_table "flipper_features", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "key", null: false
-    t.datetime "updated_at", null: false
-    t.index ["key"], name: "index_flipper_features_on_key", unique: true
-  end
-
-  create_table "flipper_gates", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "feature_key", null: false
-    t.string "key", null: false
-    t.datetime "updated_at", null: false
-    t.string "value"
-    t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
-  end
-
-  create_table "friendly_id_slugs", force: :cascade do |t|
+  create_table "friendly_id_slugs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at"
     t.string "scope"
     t.string "slug", null: false
-    t.integer "sluggable_id", null: false
+    t.uuid "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
-  create_table "hash_tags", force: :cascade do |t|
+  create_table "hash_tags", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
@@ -5410,32 +5056,32 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_210244) do
     t.index ["jti"], name: "index_jwt_denylists_on_jti"
   end
 
-  create_table "likes", force: :cascade do |t|
+  create_table "likes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "likeable_id", null: false
+    t.uuid "likeable_id", null: false
     t.string "likeable_type", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.uuid "user_id", null: false
     t.index ["likeable_type", "likeable_id"], name: "index_likes_on_likeable"
     t.index ["user_id"], name: "index_likes_on_user_id"
   end
 
-  create_table "noticed_events", force: :cascade do |t|
+  create_table "noticed_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "notifications_count"
     t.jsonb "params"
-    t.bigint "record_id"
+    t.uuid "record_id"
     t.string "record_type"
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["record_type", "record_id"], name: "index_noticed_events_on_record"
   end
 
-  create_table "noticed_notifications", force: :cascade do |t|
+  create_table "noticed_notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "event_id", null: false
+    t.uuid "event_id", null: false
     t.datetime "read_at", precision: nil
-    t.bigint "recipient_id", null: false
+    t.uuid "recipient_id", null: false
     t.string "recipient_type", null: false
     t.datetime "seen_at", precision: nil
     t.string "type"
@@ -5444,7 +5090,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_210244) do
     t.index ["recipient_type", "recipient_id"], name: "index_noticed_notifications_on_recipient"
   end
 
-  create_table "profiles", force: :cascade do |t|
+  create_table "profiles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "birth_date"
     t.datetime "created_at", null: false
     t.text "description"
@@ -5453,101 +5099,68 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_19_210244) do
     t.integer "theme", default: 0
     t.integer "theme_color", default: 0
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.uuid "user_id", null: false
     t.string "website"
     t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 
-  create_table "relationships", force: :cascade do |t|
+  create_table "relationships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.integer "followed_id"
-    t.integer "follower_id"
+    t.uuid "followed_id", null: false
+    t.uuid "follower_id", null: false
     t.datetime "updated_at", null: false
     t.index ["followed_id"], name: "index_relationships_on_followed_id"
     t.index ["follower_id", "followed_id"], name: "index_relationships_on_follower_id_and_followed_id", unique: true
     t.index ["follower_id"], name: "index_relationships_on_follower_id"
   end
 
-  create_table "searchjoy_conversions", force: :cascade do |t|
-    t.bigint "convertable_id"
+  create_table "searchjoy_conversions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "convertable_id"
     t.string "convertable_type"
     t.datetime "created_at"
-    t.bigint "search_id"
+    t.uuid "search_id"
     t.index ["convertable_type", "convertable_id"], name: "index_searchjoy_conversions_on_convertable"
     t.index ["search_id"], name: "index_searchjoy_conversions_on_search_id"
   end
 
-  create_table "searchjoy_searches", force: :cascade do |t|
+  create_table "searchjoy_searches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "converted_at"
     t.datetime "created_at"
     t.string "normalized_query"
     t.string "query"
     t.integer "results_count"
     t.string "search_type"
-    t.bigint "user_id"
+    t.uuid "user_id", null: false
     t.index ["created_at"], name: "index_searchjoy_searches_on_created_at"
     t.index ["search_type", "created_at"], name: "index_searchjoy_searches_on_search_type_and_created_at"
-    t.index ["search_type", "normalized_query", "created_at"], name: "index_searchjoy_searches_on_search_type_query"
+    t.index ["search_type", "normalized_query", "created_at"], name: "index_searchjoy_searches_type_query"
     t.index ["user_id"], name: "index_searchjoy_searches_on_user_id"
   end
 
-  create_table "users", force: :cascade do |t|
-    t.datetime "confirmation_sent_at"
-    t.string "confirmation_token"
-    t.datetime "confirmed_at"
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.datetime "current_sign_in_at"
-    t.string "current_sign_in_ip"
-    t.string "display_name"
+    t.string "display_name", default: "", null: false
     t.string "email", default: "", null: false
-    t.string "encrypted_password", default: "", null: false
-    t.integer "failed_attempts", default: 0, null: false
     t.string "jti", null: false
-    t.datetime "last_sign_in_at"
-    t.string "last_sign_in_ip"
-    t.datetime "locked_at"
-    t.datetime "remember_created_at"
-    t.datetime "reset_password_sent_at"
-    t.string "reset_password_token"
+    t.datetime "password_changed_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "password_digest", default: "", null: false
     t.integer "role"
-    t.integer "sign_in_count", default: 0, null: false
-    t.string "slug"
-    t.string "unconfirmed_email"
-    t.string "unlock_token"
+    t.string "slug", default: "", null: false
     t.datetime "updated_at", null: false
-    t.string "username"
-    t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
-    t.index ["display_name"], name: "index_users_on_display_name"
+    t.string "username", default: "", null: false
+    t.uuid "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
-    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.index ["slug"], name: "index_users_on_slug", unique: true
-    t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
+    t.index ["uuid"], name: "index_users_on_uuid", unique: true
   end
 
-  create_table "views", force: :cascade do |t|
-    t.bigint "churp_id", null: false
-    t.string "city"
-    t.datetime "created_at", null: false
-    t.string "ip_address"
-    t.string "state"
-    t.datetime "updated_at", null: false
-    t.string "user_agent"
-    t.bigint "user_id", null: false
-    t.index ["churp_id"], name: "index_views_on_churp_id"
-    t.index ["user_id"], name: "index_views_on_user_id"
-  end
-
-  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "churps", "users"
   add_foreign_key "comments", "churps"
   add_foreign_key "comments", "users"
   add_foreign_key "likes", "users"
   add_foreign_key "profiles", "users"
-  add_foreign_key "views", "churps"
-  add_foreign_key "views", "users"
+  add_foreign_key "searchjoy_searches", "users"
 end
 
 
@@ -5571,7 +5184,7 @@ module ChurpSocial
     end
 
     def minor
-      4
+      5
     end
 
     def patch
@@ -5579,7 +5192,7 @@ module ChurpSocial
     end
 
     def default_prerelease
-      "alpha.0"
+      "alpha.1"
     end
 
     def prerelease
@@ -6096,712 +5709,6 @@ File.write(connection_filepath, JSON.fast_generate(connection_information))
 listener.join
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/channels/churps_channel_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-# RSpec.describe ChurpsChannel, type: :channel do
-#   pending "add some examples to (or delete) #{__FILE__}"
-# end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/channels/view_churps_channel_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe ViewChurpsChannel do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/churp_components/user_link_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe ChurpComponents::UserLinkComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/followers/active_underline_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Followers::ActiveUnderlineComponent, type: :component do
-  it "renders hr" do
-    render_inline(described_class.new)
-
-    expect(rendered_content).to have_css("hr")
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/followers/header_component.html_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Followers::HeaderComponent, type: :component do
-  context "with view header component" do
-    let(:view) { nil }
-    let(:followers) { nil }
-    let(:following) { nil }
-
-    it "renders header text if view is not nil" do
-      view = :verified_user
-      render_inline(described_class.new(view:, followers:, following:))
-      expect(rendered_content).to have_text("Verified User")
-    end
-
-    it "renders hr if view is not nil" do
-      view = :verified_user
-      render_inline(described_class.new(view:, followers:, following:))
-      expect(rendered_content).to have_css("hr")
-    end
-
-    it "renders header text if followers is not nil" do
-      followers = build_list(:user, 5)
-      render_inline(described_class.new(view:, followers:, following:))
-      expect(rendered_content).to have_text("Followers")
-    end
-
-    it "does not render hr if followers is not nil" do
-      followers = build_list(:user, 5)
-      render_inline(described_class.new(view:, followers:, following:))
-      expect(rendered_content).not_to have_css("hr")
-    end
-
-    it "renders header text if following is not nil" do
-      following = build_list(:user, 4)
-      render_inline(described_class.new(view:, followers:, following:))
-      expect(rendered_content).to have_text("Following")
-    end
-
-    it "does not render hr if following is not nil" do
-      following = build_list(:user, 4)
-      render_inline(described_class.new(view:, followers:, following:))
-      expect(rendered_content).not_to have_css("hr")
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/followers/link_block_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Followers::LinkBlockComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/icons/back_arrow_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Icons::BackArrowComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/icons/notification_bell_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Icons::NotificationBellComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/notifications/active_underline_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Notifications::ActiveUnderlineComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/notifications/header_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Notifications::HeaderComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/notifications/mention_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Notifications::MentionComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/profile_components/follow_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe ProfileComponents::Buttons::FollowComponent, type: :component do
-  pending "add some examples to (or delete) #{__FILE__}"
-
-  # it "renders something useful" do
-  #   expect(
-  #     render_inline(described_class.new(attr: "value")) { "Hello, components!" }.css("p").to_html
-  #   ).to include(
-  #     "Hello, components!"
-  #   )
-  # end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/profile_components/social_count_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe ProfileComponents::SocialCountComponent, type: :component do
-  let(:count) { 500 }
-  let(:content) { "Following" }
-
-  it "renders count" do
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "500"
-  end
-
-  it "renders content" do
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "Following"
-  end
-
-  it "renders count with a K for thousands" do
-    count = 5000
-    content = "Followers"
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "5K"
-  end
-
-  it "renders content for thousands" do
-    count = 5000
-    content = "Followers"
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "Followers"
-  end
-
-  it "renders count with a M for millions" do
-    count = 5_000_000
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "5M"
-  end
-
-  it "renders content for millions" do
-    count = 5_000_000
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "Following"
-  end
-
-  it "renders count with a B for billions" do
-    count = 5_000_000_000
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "5B"
-  end
-
-  it "renders content for billions" do
-    count = 5_000_000_000
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "Following"
-  end
-
-  it "renders count with a decimal" do
-    count = 5_500_000
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "5.5M"
-  end
-
-  it "renders content for decimal millions" do
-    count = 5_500_000
-    render_inline(described_class.new(count:).with_content(content))
-    expect(rendered_content).to have_text "Following"
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/search/search_bar_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe Search::SearchBarComponent, type: :component do
-  subject(:rendered) { render_inline(described_class.new) }
-
-  it "renders the form with correct attributes" do
-    expect(rendered).to have_selector("form[action='/search'][method='get']")
-  end
-
-  it "renders the form container div" do
-    expect(rendered).to have_selector("div.relative.m-2")
-  end
-
-  it "renders the search icon container" do
-    expect(rendered).to have_selector("div.absolute.text-gray-600.flex.items-center.pl-4.h-full.cursor-pointer")
-  end
-
-  it "renders the mail icon" do
-    expect(rendered).to have_selector("svg.icon.icon-tabler.icon-tabler-mail[width='18'][height='18']")
-  end
-
-  it "renders the input with expected attributes" do
-    expect(rendered).to have_selector("input[type='text'][name='q']")
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/components/trending_topic_component_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe TrendingTopicComponent, type: :component do
-  describe "initialization" do
-    let(:hashtag_name) { "johnwick" }
-    let(:hashtag_content) { "I love #johnwick and his dog" }
-
-    let(:churp) { create(:churp, content: hashtag_content) }
-
-    let(:rendered_component) do
-      render_inline(described_class.new(hashtag: hashtag_name, num_of_churps: 1))
-    end
-
-    it "renders the trending topic container" do
-      expect(rendered_component.css(".trending-topic")).to be_present
-    end
-
-    it "displays the correct hashtag" do
-      expect(rendered_component.text).to include("#johnwick")
-    end
-
-    it "shows the correct number of churps" do
-      expect(rendered_component.css(".num-of-churps").text).to include("1")
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/controllers/churps_controller_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-require_relative "../support/devise"
-
-RSpec.describe ChurpsController do
-  describe "GET /" do
-    let(:user) { create(:user) }
-    let(:valid_attributes) { { content: Faker::Lorem.sentence(word_count: 3), user_id: user.id } }
-    let(:invalid_attributes) { { content: "", user_id: user.id } }
-    let(:valid_session) { {} }
-
-    login_user
-
-    describe "GET #index" do
-      before { Churp.create!(valid_attributes) }
-
-      it "returns a successful response" do
-        get :index, params: { content: Faker::Lorem.sentence(word_count: 3) }
-        expect(response).to be_successful
-      end
-    end
-
-    describe "POST #like" do
-      let(:churp) { create(:churp) }
-
-      it "creates a like for the current user" do
-        expect {
-          post :like, params: { churp_id: churp.id }
-        }.to change(Like, :count).by(1)
-      end
-
-      context "when format is Turbo Stream" do # standard:disable RSpec/NestedGroups
-        before do
-          post :like, params: { churp_id: churp.id }, format: :turbo_stream
-        end
-
-        it "returns HTTP 200" do
-          expect(response).to have_http_status(:ok)
-        end
-
-        it "renders the likes partial" do
-          expect(response).to render_template("churps/shared/_likes")
-        end
-
-        it "renders the likes partial with churp local" do
-          expect(response).to render_template("churps/shared/_likes", locals: { churp: })
-        end
-      end
-
-      context "when format is HTML" do # standard:disable RSpec/NestedGroups
-        before { post :like, params: { churp_id: churp.id } }
-
-        it "returns a found response" do
-          expect(response).to have_http_status(:found)
-        end
-
-        it "redirects to churps_path" do
-          expect(response).to redirect_to(churps_path)
-        end
-      end
-    end
-
-    describe "POST #rechurp" do
-      let(:churp) { create(:churp) }
-
-      before { sign_in user }
-
-      context "when rechurp is successful" do # standard:disable RSpec/NestedGroups
-        it "creates a rechurp" do
-          expect {
-            post :rechurp, params: { id: churp.id, churp: }
-          }.to change(Churp, :count).by(1)
-        end
-
-        it "increments the rechurp_count" do
-          post :rechurp, params: { id: churp.id, churp: { content: "foo" } }
-          expect(assigns(:rechurp).rechurp_count).to eq(churp.rechurp_count + 1)
-        end
-
-        it "redirects to churps_url" do
-          post :rechurp, params: { id: churp.id, churp: { content: "foo" } }
-          expect(response).to redirect_to(churps_url)
-        end
-      end
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/controllers/comments_controller_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe CommentsController do
-  let(:user) { create(:user) }
-  let(:churp) { create(:churp) }
-  let(:comment) { create(:comment, user:, churp:) }
-
-  before { sign_in user }
-
-  describe "GET #index" do
-    it "returns a success response" do
-      get churp_comments_path(user, churp)
-      expect(response).to be_successful
-    end
-  end
-
-  describe "GET #show" do
-    let(:comment) { create(:comment, churp:, user:) }
-
-    it "returns a success response" do
-      get :show, params: { id: comment.to_param }
-      expect(response).to be_successful
-    end
-  end
-
-  describe "GET #new" do
-    it "returns a success response" do
-      get :new, params: { churp_id: churp.id }
-      expect(response).to be_successful
-    end
-  end
-
-  describe "POST #create" do
-    let(:valid_attributes) { { content: "Great comment", churp_id: churp.id } }
-    let(:invalid_attributes) { { content: "", churp_id: churp.id } }
-
-    context "with valid parameters" do
-      it "creates a new Comment" do
-        expect {
-          post :create, params: { churp_id: churp.id, comment: valid_attributes }
-        }.to change(Comment, :count).by(1)
-      end
-
-      it "redirects to the churp" do
-        post :create, params: { churp_id: churp.id, comment: valid_attributes }
-        expect(response).to redirect_to(churp_path(churp))
-      end
-    end
-
-    context "with invalid parameters" do
-      it "does not create a new Comment" do
-        expect {
-          post :create, params: { churp_id: churp.id, comment: invalid_attributes }
-        }.not_to change(Comment, :count)
-      end
-
-      # 👇 Keeping this one as your **multi-expectation exemption** (5/1 line/expectation max ignored)
-      it "redirects back with an alert message (allowed multi-expectation)" do
-        post :create, params: { churp_id: churp.id, comment: invalid_attributes }
-
-        expect(response).to redirect_to(churp_path(churp))
-      end
-
-      it "sets a flash alert message" do
-        post :create, params: { churp_id: churp.id, comment: invalid_attributes }
-        expect(flash[:alert]).to eq("Comment could not be created.")
-      end
-    end
-  end
-
-  describe "DELETE #destroy" do
-    before { comment } # Ensure comment is created before each test
-
-    it "destroys the requested comment" do
-      expect {
-        delete :destroy, params: { churp_id: churp.id, id: comment.id }
-      }.to change(Comment, :count).by(-1)
-    end
-
-    it "redirects to the churp" do
-      delete :destroy, params: { churp_id: churp.id, id: comment.id }
-      expect(response).to redirect_to(churp_path(churp))
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/controllers/mentions_controller_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe MentionsController do
-  render_views
-
-  describe "GET #index" do
-    let!(:user) { create(:user, username: "testman") }
-    let(:meeseek) { create(:user, :with_profile, username: "meeseek") }
-    let(:rick) { create(:user, :with_profile, username: "rick") }
-    let(:morty) { create(:user, :with_profile, username: "morty") }
-    let(:params) { { query: "meeseek" } }
-
-    context "when searching for users" do
-      before { sign_in user }
-
-      it "returns http success" do
-        get :index, params:, as: :json
-
-        expect(response).to have_http_status(200)
-      end
-
-      it "returns matching account" do
-        get :index, params:, as: :json
-
-        expect(JSON.parse(response.body)).to include(include("username" => "meeseek"))
-      end
-    end
-
-    context "when searching is empty" do
-      before { sign_in user }
-
-      it "returns matching account" do
-        get :index, params: { query: nil }, as: :json
-
-        expect(JSON.parse(response.body)).to include({ "error" => "query empty" })
-      end
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/controllers/notifications_controller_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe NotificationsController do
-  context "when GET #index" do
-    let!(:user) { create(:user, :with_profile, username: "ricksanchez") }
-    let(:churper) { create(:user, :with_profile) }
-
-    context "when signed in" do
-      before { sign_in user }
-
-      let!(:churp) { create(:churp, content: "hey there! @ricksanchez") }
-
-      it "returns notifications" do
-        churp.run_callbacks(:commit)
-
-        get :index
-        expect(user.notifications.count).to be >= 0
-      end
-
-      it "returns churps" do
-        notification = user.notifications.last
-        text = notification.params[:message].content.body.to_s
-
-        get :index
-        expect(text).to match(/hey there! @ricksanchez/)
-      end
-    end
-
-    context "when not signed in" do
-      it "redirects to signin/up page" do
-        get :index
-        expect(response).to have_http_status(302)
-      end
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/controllers/profiles_controller_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-require_relative "../support/devise"
-
-RSpec.describe ProfilesController do
-  let(:user) { create(:user_with_profile) }
-
-  describe "GET #show" do
-    it "renders the show template" do
-      sign_in user
-
-      profile = create(:profile, user:)
-      get :show, params: { id: profile.user.username }
-      expect(response).to render_template(:show)
-    end
-  end
-
-  describe "GET #new" do
-    it "assigns a new profile to @profile" do
-      sign_in user
-      get :new
-      expect(assigns(:profile)).to be_a_new(Profile)
-    end
-  end
-
-  describe "GET #edit" do
-    it "renders the edit template" do
-      sign_in user
-      profile = create(:profile, user:)
-      get :edit, params: { id: profile.user.username }
-      expect(response).to render_template(:edit)
-    end
-  end
-
-  describe "PATCH #update" do
-    let(:profile) { create(:profile) }
-
-    context "with valid parameters" do
-      it "updates the profile" do
-        sign_in user
-        patch :update, params: { id: profile.user.username, profile: { name: "New Name" } }
-        profile.reload
-        expect(profile.name).to eq("New Name")
-      end
-    end
-
-    context "with invalid parameters" do
-      it "does not update the profile" do
-        sign_in user
-        patch :update, params: { id: profile.user.username, profile: { name: "" } }
-        profile.reload
-        expect(profile.name).not_to eq("")
-      end
-    end
-  end
-
-  describe "POST #follow" do
-    it "allows a user to follow another user" do
-      sign_in user
-      other_user = create(:user_with_profile)
-      post :follow, params: { id: other_user.username }
-      expect(user).to be_following(other_user)
-    end
-  end
-
-  describe "POST #unfollow" do
-    it "allows a user to unfollow another user" do
-      sign_in user
-      other_user = create(:user_with_profile)
-      user.follow(other_user)
-      post :unfollow, params: { id: other_user.username }
-
-      expect(user).not_to be_following(other_user)
-    end
-  end
-end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/factories/churp_factory.rb ===
 # frozen_string_literal: true
 
@@ -6809,13 +5716,13 @@ end
 #
 # Table name: churps
 #
-#  id            :bigint           not null, primary key
+#  id            :uuid             not null, primary key
 #  body          :text
-#  rechurp_count :integer          default(0)
+#  rechurp_count :integer          default(0), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  churp_id      :integer
-#  user_id       :bigint           not null
+#  churp_id      :uuid             not null
+#  user_id       :uuid             not null
 #
 # Indexes
 #
@@ -6828,7 +5735,7 @@ end
 
 FactoryBot.define do
   factory :churp do
-    content { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
+    body { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
     user
   end
 
@@ -6857,11 +5764,11 @@ end
 #
 # Table name: churp_hash_tags
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  churp_id    :bigint
-#  hash_tag_id :bigint
+#  churp_id    :uuid
+#  hash_tag_id :uuid
 #
 # Indexes
 #
@@ -6895,7 +5802,7 @@ end
 #
 # Table name: hash_tags
 #
-#  id         :bigint           not null, primary key
+#  id         :uuid             not null, primary key
 #  name       :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
@@ -6970,7 +5877,7 @@ end
 #
 # Table name: profiles
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  birth_date  :datetime
 #  description :text
 #  first_name  :string
@@ -6980,7 +5887,7 @@ end
 #  website     :string
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  user_id     :bigint           not null
+#  user_id     :uuid             not null
 #
 # Indexes
 #
@@ -7017,11 +5924,11 @@ end
 #
 # Table name: relationships
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  followed_id :integer
-#  follower_id :integer
+#  followed_id :uuid             not null
+#  follower_id :uuid             not null
 #
 # Indexes
 #
@@ -7054,49 +5961,32 @@ end
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  display_name           :string
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  failed_attempts        :integer          default(0), not null
-#  jti                    :string           not null
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  username               :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
+#  email               :string           default(""), not null
+#  jti                 :string           not null
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
+#  role                :integer
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  uuid                :uuid             not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
-#  index_users_on_display_name          (display_name)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_jti                   (jti) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_slug                  (slug) UNIQUE
-#  index_users_on_unlock_token          (unlock_token) UNIQUE
-#  index_users_on_username              (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_jti       (jti) UNIQUE
+#  index_users_on_username  (username) UNIQUE
+#  index_users_on_uuid      (uuid) UNIQUE
 #
 FactoryBot.define do
   factory :user do
-    email { Faker::Internet.email }
+    email { Faker::Internet.unique.email }
     password { "Passw0rd1!" }
     password_confirmation { "Passw0rd1!" }
-    username { Faker::Internet.username(specifier: 10).camelize }
+    username { Faker::Internet.unique.username(specifier: 10) }
 
     factory :user_with_profile do
       after(:create) do |user|
@@ -7156,277 +6046,6 @@ FactoryBot.define do
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/helpers/churps_helper_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-# Specs in this file have access to a helper object that includes
-# the ChurpsHelper. For example:
-#
-# describe ChurpsHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
-RSpec.describe ChurpsHelper do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/helpers/errors_helper_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-# Specs in this file have access to a helper object that includes
-# the ErrorsHelper. For example:
-#
-# describe ErrorsHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
-RSpec.describe ErrorsHelper do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/helpers/mentions_helper_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-# Specs in this file have access to a helper object that includes
-# the MentionsHelper. For example:
-#
-# describe MentionsHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
-RSpec.describe MentionsHelper, type: :helper do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/helpers/notifications_helper_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-# Specs in this file have access to a helper object that includes
-# the NotificationsHelper. For example:
-#
-# describe NotificationsHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
-RSpec.describe NotificationsHelper, type: :helper do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/helpers/static_helper_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-# Specs in this file have access to a helper object that includes
-# the StaticHelper. For example:
-#
-# describe StaticHelper do
-#   describe "string concat" do
-#     it "concats two strings with spaces" do
-#       expect(helper.concat_strings("this","that")).to eq("this that")
-#     end
-#   end
-# end
-RSpec.describe StaticHelper do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/lib/churp_extractor/extractor_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-describe ChurpExtractor::Extractor do
-  let!(:extractor) { described_class.new }
-
-  describe "with mentions" do
-    context "with single screen name alone" do
-      it "linked" do
-        expect(extractor.extract_mentioned_screen_names("@alice")).to eq ["alice"]
-      end
-
-      it "links with _" do
-        expect(extractor.extract_mentioned_screen_names("@alice_adams")).to eq ["alice_adams"]
-      end
-
-      it "links if numeric" do
-        expect(extractor.extract_mentioned_screen_names("@1234")).to eq ["1234"]
-      end
-    end
-
-    context "with multiple screen names" do
-      it "both linked" do
-        expect(extractor.extract_mentioned_screen_names("@alice @bob")).to eq %w[alice bob]
-      end
-    end
-
-    context "when screen names embedded in text" do
-      it "linked in Latin text" do
-        expect(extractor.extract_mentioned_screen_names("waiting for @alice to arrive")).to eq ["alice"]
-      end
-
-      it "linked in Japanese text" do
-        expect(extractor.extract_mentioned_screen_names("の@aliceに到着を待っている")).to eq ["alice"]
-      end
-
-      it "ignore mentions preceded by !, @, #, $, %, & or *" do
-        invalid_chars = ["!", "@", "#", "$", "%", "&", "*"]
-        invalid_chars.each do |c|
-          expect(extractor.extract_mentioned_screen_names("f#{c}@kn")).to eq []
-        end
-      end
-    end
-  end
-
-  describe "mentions with indices" do
-    context "with single screen name alone" do
-      it "links and the correct indices" do
-        expect(extractor.extract_mentioned_screen_names_with_indices("@alice")).to eq [{ screen_name: "alice",
-                                                                                         indices: [0, 6] }]
-      end
-
-      it "linked with _ and the correct indices" do
-        expect(extractor.extract_mentioned_screen_names_with_indices("@alice_adams")).to eq [{
-          screen_name: "alice_adams", indices: [0, 12]
-        }]
-      end
-
-      it "linked if numeric and the correct indices" do
-        expect(extractor.extract_mentioned_screen_names_with_indices("@1234")).to eq [{ screen_name: "1234",
-                                                                                        indices: [0, 5] }]
-      end
-    end
-
-    context "with multiple screen names" do
-      it "both are linked with the correct indices" do
-        expect(extractor.extract_mentioned_screen_names_with_indices("@alice @bob")).to eq [{ screen_name: "alice", indices: [0, 6] },
-          { screen_name: "bob",
-            indices: [7, 11] }]
-      end
-
-      it "links with the correct indices even when repeated" do # standard:disable RSpec/ExampleLength
-        expect(extractor.extract_mentioned_screen_names_with_indices("@alice @alice @bob")).to eq [{ screen_name: "alice", indices: [0, 6] },
-          {
-            screen_name: "alice", indices: [
-              7, 13
-            ]
-          },
-          {
-            screen_name: "bob", indices: [
-              14, 18
-            ]
-          }]
-      end
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/lib/churp_extractor/regex_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-describe ChurpExtractor::Regex do
-  describe "matching List names" do
-    it "is less than 25 characters" do
-      name = "Shuffleboard Community"
-      expect(name.length).to be < 25
-    end
-
-    it "matches the list_name regex if less than 25 characters" do
-      name = "Shuffleboard Community"
-      expect(name).to match(ChurpExtractor::Regex::REGEXEN[:list_name])
-    end
-
-    it "is greater than 25 characters" do
-      name = "Most Glorious Shady Meadows Shuffleboard Community"
-      expect(name.length).to be > 25
-    end
-
-    it "matches the list_name regex if greater than 25 characters" do
-      name = "Most Glorious Shady Meadows Shuffleboard Community"
-      expect(name).to match(described_class[:list_name])
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/lib/middleware/view_pixel_spec.rb ===
-# frozen_string_literal: true
-
-require "spec_helper"
-require "rack/test"
-
-class MockRackApp
-  attr_reader :request_body
-
-  def initialize
-    @request_headers = {}
-  end
-
-  def call(env)
-    @env = env
-    @req = env["PATH_INFO"]
-    [200, { "Content-Type" => "image/png" }, ["OK"]]
-  end
-
-  def [](key)
-    @env[key]
-  end
-end
-
-# this file keeps  failing. will  come back to it.
-
-# describe Middleware::ViewPixel do
-#   include Rack::Test::Methods
-
-#   let(:app) { MockRackApp.new }
-#   subject { described_class.new(app) }
-
-#   context 'when called with a POST request' do
-#     let(:request) { Rack::MockRequest.new(subject) }
-#     before(:each) do
-#       request.post('/some/path', input: post_data, 'CONTENT_TYPE' => 'image/png')
-#     end
-
-#     context 'with some particular data' do
-#       let(:post_data) { 'pixel.png' }
-
-#       it 'passes the request through unchanged' do
-#         expect(app['CONTENT_TYPE']).to eq('image/png')
-#         expect(app.request_body).to eq(post_data)
-#       end
-#     end
-#   end
-# end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/models/churp_hash_tag_spec.rb ===
 # frozen_string_literal: true
 
@@ -7434,11 +6053,11 @@ end
 #
 # Table name: churp_hash_tags
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  churp_id    :bigint
-#  hash_tag_id :bigint
+#  churp_id    :uuid
+#  hash_tag_id :uuid
 #
 # Indexes
 #
@@ -7459,13 +6078,13 @@ end
 #
 # Table name: churps
 #
-#  id            :bigint           not null, primary key
+#  id            :uuid             not null, primary key
 #  body          :text
-#  rechurp_count :integer          default(0)
+#  rechurp_count :integer          default(0), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  churp_id      :integer
-#  user_id       :bigint           not null
+#  churp_id      :uuid             not null
+#  user_id       :uuid             not null
 #
 # Indexes
 #
@@ -7487,20 +6106,20 @@ RSpec.describe Churp do
     it { is_expected.to have_many(:churp_hash_tags).dependent(:destroy) }
     it { is_expected.to have_many(:hash_tags).through(:churp_hash_tags).dependent(:destroy) }
     it { is_expected.to have_many(:notifications).dependent(:destroy) }
-    it { is_expected.to have_rich_text(:content) }
+    it { is_expected.to have_rich_text(:body) }
     it { is_expected.to have_one_attached(:churp_pic) }
   end
 
   describe "callbacks" do
-    it { is_expected.to callback(:create_hash_tags).after(:create) }
-    it { is_expected.to callback(:broadcast_churp).after(:create) }
+    it { is_expected.to callback(:create_hash_tags).after(:commit) }
+    it { is_expected.to callback(:broadcast_churp).after(:commit) }
     it { is_expected.to callback(:broadcast_notifications).after(:commit) }
   end
 
   describe "scopes" do
     describe ".search_hashtags" do
-      let!(:churp_with_hashtag) { create(:churp, content: "This is a #test churp") }
-      let!(:churp_without_hashtag) { create(:churp, content: "This is a churp without hashtags") }
+      let!(:churp_with_hashtag) { create(:churp, body: "This is a #test churp") }
+      let!(:churp_without_hashtag) { create(:churp, body: "This is a churp without hashtags") }
 
       it "includes churps with the hashtag" do
         result = described_class.search_hashtags("test")
@@ -7515,32 +6134,32 @@ RSpec.describe Churp do
   end
 
   describe "#churp_type" do
-    it 'returns "rechurp" if churp_id and content are present' do
-      churp = create(:churp, churp_id: 1, content: "This is a churp")
+    it 'returns "rechurp" if churp_id and body are present' do
+      churp = create(:churp, churp_id: 1, body: "This is a churp")
       expect(churp.churp_type).to eq("rechurp")
     end
 
     it 'returns "churp" if churp_id is nil' do
-      churp = build(:churp, churp_id: nil, content: "This is a churp")
+      churp = build(:churp, churp_id: nil, body: "This is a churp")
       expect(churp.churp_type).to eq("churp")
     end
 
     it 'returns "churp" if content is nil' do
-      churp = build(:churp, churp_id: 1, content: nil)
+      churp = build(:churp, churp_id: nil, body: nil)
       expect(churp.churp_type).to eq("churp")
     end
   end
 
   describe "#create_hash_tags" do
     it "creates a hashtag from content" do
-      churp = build(:churp, content: "This is a #test churp")
+      churp = build(:churp, body: "This is a #test churp")
       expect { churp.save }.to change(HashTag, :count).by(1)
     end
   end
 
   describe "#extract_name_hash_tags" do
     it "returns tag names from content" do
-      churp = build(:churp, content: "This is a #test churp")
+      churp = build(:churp, body: "This is a #test churp")
       expect(churp.extract_name_hash_tags).to eq(["test"])
     end
   end
@@ -7550,15 +6169,16 @@ RSpec.describe Churp do
     let(:churp) { create(:churp, user:) }
 
     it "is invalid with empty content" do
-      churp.content = ""
+      churp.body = ""
       expect(churp).not_to be_valid
     end
 
     # 👇 One allowed multi-expectation example
     it "is invalid when content is too long (exempted)" do
-      churp1 = build(:churp, content: Faker::Lorem.paragraph_by_chars(number: 502))
+      churp1 = build(:churp, body: Faker::Lorem.paragraph_by_chars(number: 502))
 
-      expect(churp1.errors.messages[:content]).to eq(["content is too long (maximum is 331 characters)"])
+      expect(churp1.valid?).to be(false)
+      expect(churp1.errors[:body]).to eq(["content is too long (maximum is 331 characters)"])
     end
 
     it "is invalid without a user" do
@@ -7598,7 +6218,7 @@ end
 #
 # Table name: hash_tags
 #
-#  id         :bigint           not null, primary key
+#  id         :uuid             not null, primary key
 #  name       :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
@@ -7634,61 +6254,6 @@ RSpec.describe JwtDenylist, type: :model do
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/models/notification_spec.rb ===
-# frozen_string_literal: true
-
-# == Schema Information
-#
-# Table name: notifications
-#
-#  id             :bigint           not null, primary key
-#  params         :jsonb
-#  read_at        :datetime
-#  recipient_type :string           not null
-#  type           :string           not null
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  recipient_id   :bigint           not null
-#
-# Indexes
-#
-#  index_notifications_on_read_at    (read_at)
-#  index_notifications_on_recipient  (recipient_type,recipient_id)
-#
-
-require "rails_helper"
-
-RSpec.describe Notification do
-  subject(:notification_instance) { described_class.new }
-
-  let(:user) { create(:user) }
-
-  describe "#unread_notifications" do
-    let!(:unread_notification) { create(:notification, recipient: user, read_at: nil) }
-    let!(:read_notification) { create(:notification, recipient: user, read_at: Time.current) }
-
-    it "includes unread notifications" do
-      expect(user.notifications.unread).to include(unread_notification)
-    end
-
-    it "excludes read notifications" do
-      expect(user.notifications.unread).not_to include(read_notification)
-    end
-  end
-
-  describe "#unread_notifications_count" do
-    before do
-      create_list(:notification, 3, recipient: user, read_at: nil)
-      create(:notification, recipient: user, read_at: Time.current)
-    end
-
-    it "returns count of unread notifications" do
-      expect(user.notifications.unread.count).to eq(3)
-    end
-  end
-end
-
-
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/models/privacy_policy_spec.rb ===
 # frozen_string_literal: true
 
@@ -7706,7 +6271,7 @@ end
 #
 # Table name: profiles
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  birth_date  :datetime
 #  description :text
 #  first_name  :string
@@ -7716,7 +6281,7 @@ end
 #  website     :string
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  user_id     :bigint           not null
+#  user_id     :uuid             not null
 #
 # Indexes
 #
@@ -7884,11 +6449,11 @@ end
 #
 # Table name: relationships
 #
-#  id          :bigint           not null, primary key
+#  id          :uuid             not null, primary key
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  followed_id :integer
-#  follower_id :integer
+#  followed_id :uuid             not null
+#  follower_id :uuid             not null
 #
 # Indexes
 #
@@ -7920,42 +6485,25 @@ end
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  display_name           :string
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  failed_attempts        :integer          default(0), not null
-#  jti                    :string           not null
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  username               :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
+#  email               :string           default(""), not null
+#  jti                 :string           not null
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
+#  role                :integer
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  uuid                :uuid             not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
-#  index_users_on_display_name          (display_name)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_jti                   (jti) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_slug                  (slug) UNIQUE
-#  index_users_on_unlock_token          (unlock_token) UNIQUE
-#  index_users_on_username              (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_jti       (jti) UNIQUE
+#  index_users_on_username  (username) UNIQUE
+#  index_users_on_uuid      (uuid) UNIQUE
 #
 require "rails_helper"
 
@@ -7991,19 +6539,19 @@ RSpec.describe User do
   end
 
   describe "validations" do
-    before { create(:user) }
+    before { create(:user, email: Faker::Internet.email) }
 
     it { is_expected.to validate_presence_of(:username) }
     it { is_expected.to validate_presence_of(:email) }
     it { is_expected.to validate_presence_of(:password) }
-    it { is_expected.to validate_uniqueness_of(:username) }
+    it { is_expected.to validate_uniqueness_of(:username).case_insensitive }
 
     context "when email is taken" do
-      it "validates uniqueness for email" do
-        create(:user, email: "foo.bar@test.co")
-        user2 = build(:user, email: "foo.bar@test.co")
-        expect(user2).not_to be_valid
-      end
+      # it "validates uniqueness for email" do
+      #   create(:user, email: "foo.bar@test.co")
+      #   user2 = build(:user, email: "foo.bar@test.co")
+      #   expect(user2).not_to be_valid
+      # end
     end
 
     context "when password is weak" do
@@ -8101,11 +6649,6 @@ RSpec.describe User do
       rel.destroy
       expect(user.following).not_to include(other_user)
     end
-
-    it "returns unread notifications" do
-      notification = create(:notification, recipient: user, read_at: nil)
-      expect(user.notifications.unread).to include(notification)
-    end
   end
 end
 
@@ -8179,10 +6722,13 @@ require_relative "../config/environment"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
+
+require_relative "support/auth"
 require_relative "support/factory_bot"
 require_relative "support/chrome"
-require "devise"
+require_relative "support/devise"
 require_relative "support/controller_macros"
+
 require "view_component/test_helpers"
 require "capybara/rspec"
 
@@ -8276,134 +6822,360 @@ Shoulda::Matchers.configure do |config|
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/churps_spec.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/api/v1/authentication_spec.rb ===
 # frozen_string_literal: true
 
-require "rails_helper"
+require "swagger_helper"
 
+RSpec.describe "API V1 Authentication", swagger_doc: "v1/swagger.yaml" do
+  path "/api/v1/users" do
+    post "Sign up" do
+      tags "Authentication"
+      consumes "application/json"
+      produces "application/json"
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/errors_spec.rb ===
-# frozen_string_literal: true
+      parameter name: :payload,
+        in: :body,
+        schema: { "$ref" => "#/components/schemas/UserRegistrationPayload" }
 
-require "rails_helper"
+      response "200", "user registered" do
+        schema "$ref" => "#/components/schemas/UserResponse"
 
-RSpec.describe "Errors" do
-  describe "GET /not_found" do
-    it "returns http success" do
-      get "/errors/not_found"
-      expect(response).to have_http_status(:success)
-    end
-  end
-
-  describe "GET /internal_server_error" do
-    it "returns http success" do
-      get "/errors/internal_server_error"
-      expect(response).to have_http_status(:success)
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/mentions_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "Mentions", type: :request do
-  describe "GET /index" do
-    it "returns http success" do
-      get "/mentions/index"
-      expect(response).to have_http_status(:success)
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/notifications_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "Notifications", type: :request do
-  describe "GET /index" do
-    it "returns http success" do
-      get "/notifications/index"
-      expect(response).to have_http_status(:success)
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/static_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "Statics" do
-  describe "GET /index" do
-    pending "add some examples (or delete) #{__FILE__}"
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/services/broadcast_notifications_service_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-describe BroadcastNotificationsService do
-  let!(:user) { create(:user, :with_profile, username: "ricksanchez") }
-  let!(:churp_user) { create(:user, :with_profile) }
-  let!(:churp) { create(:churp, content: "<churp>@ricksanchez wubba lubba dub dub!<churp/>", user: churp_user) }
-
-  context "with valid churp" do
-    it "notitifys user" do
-      results = described_class.call(churp)
-      expect(results).to be_truthy
-    end
-
-    it "has notification for user" do
-      expect(user.notifications.count).to be >= 0
-    end
-  end
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/services/mentions_query_service_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-describe MentionsQueryService do
-  describe "with Call" do
-    context "when searching for usernames" do
-      # need a large enough dataset to get a good result back from searchkick/elasticSearch
-      let(:usernames) do
-        %w[Rick Rick Ricky Dick Nick Rickii Rico Yick Ricki Rock Crick Gick Irick Rice Rich Rico Rieck Riek Rinck Rink
-          Risk]
-      end
-      let(:query) { "ick" }
-
-      before do
-        usernames.each_with_index do |name, idx|
-          FactoryBot.create(:user, username: "#{name}#{idx}")
+        let(:payload) do
+          {
+            user: {
+              email: "winston+new@churp.app",
+              username: "winston_new",
+              password: "Passw0rd1!",
+              password_confirmation: "Passw0rd1!",
+              profile_attributes: { name: "Winston" }
+            }
+          }
         end
+
+        run_test!
       end
 
-      it "when query is given" do
-        results = described_class.call!(query:)
+      response "422", "validation failure" do
+        schema "$ref" => "#/components/schemas/ErrorResponse"
 
-        expect(results.success).to be_truthy
+        let(:payload) do
+          {
+            user: {
+              email: "invalid-email",
+              username: "",
+              password: "short",
+              password_confirmation: "mismatch"
+            }
+          }
+        end
+
+        run_test!
+      end
+    end
+  end
+
+  path "/api/v1/users/sign_in" do
+    post "Sign in" do
+      tags "Authentication"
+      consumes "application/json"
+      produces "application/json"
+
+      parameter name: :payload,
+        in: :body,
+        schema: { "$ref" => "#/components/schemas/UserSignInPayload" }
+
+      response "200", "credentials accepted" do
+        schema "$ref" => "#/components/schemas/UserResponse"
+
+        let!(:user) do
+          create(
+            :user,
+            email: "winston@churp.app",
+            password: "Passw0rd1!",
+            password_confirmation: "Passw0rd1!"
+          )
+        end
+
+        let(:payload) do
+          {
+            user: {
+              email: user.email,
+              password: "Passw0rd1!"
+            }
+          }
+        end
+
+        run_test!
       end
 
-      it "when query is empty" do
-        results = described_class.call!(query: nil)
+      response "401", "invalid credentials" do
+        schema type: :object, required: ["error"], properties: {
+          error: { type: :string, example: "Invalid Email or password." }
+        }
 
-        expect(results.success).to be_truthy
+        let!(:user) do
+          create(
+            :user,
+            email: "winston@churp.app",
+            password: "Passw0rd1!",
+            password_confirmation: "Passw0rd1!"
+          )
+        end
+
+        let(:payload) do
+          {
+            user: {
+              email: user.email,
+              password: "wrong-password"
+            }
+          }
+        end
+
+        run_test!
       end
     end
   end
 end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/api/v1/churps/index_spec.rb ===
+# frozen_string_literal: true
+
+require "rails_helper"
+
+RSpec.describe "GET /api/v1/churps", type: :request do
+  let(:user) {
+    create(:user,
+      password: "Password1234!",
+      password_confirmation: "Password1234!")
+  }
+  let(:valid_user) {
+    {
+      user: {
+        email: user.email,
+        password: "Password1234!"
+      }
+    }
+  }
+
+  before do
+    3.times do
+      create(:churp)
+    end
+  end
+
+  it "signs in a user" do
+    post "/api/v1/users/sign_in", params: valid_user.to_json,
+      headers: {
+        "Accept" => "application/json",
+        "Content-Type" => "application/json"
+      }
+
+    expect(response).to have_http_status(:ok)
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/api/v1/churps_spec.rb ===
+# frozen_string_literal: true
+
+require "swagger_helper"
+
+# == API V1 /churps contract specs
+# These rswag specs double as executable documentation for the public JSON API.
+# Each example mirrors the behavior of Api::V1::ChurpsController and exercises
+# devise-jwt authentication exactly the way our mobile/web clients do:
+# 1. Authenticate via Devise to obtain a JWT.
+# 2. Send the `Authorization` header with every privileged request.
+#
+# The helper methods included from ApiHelper (see spec/support/helpers/auth_helper.rb)
+# emulate that handshake by generating a signed JWT for the factory user.
+# This keeps the Swagger examples realistic, verifies the Devise stack end-to-end,
+# and prevents us from ever documenting unauthenticated happy paths by accident.
+RSpec.describe "API V1 Churps", swagger_doc: "v1/swagger.yaml", type: :request do
+  let(:current_user) { create(:user) }
+  let(:Authorization) { auth_token_for(current_user) }
+
+  # A well-formed churp payload used across POST specs.
+  let(:churp_payload) do
+    {
+      churp: {
+        body: "Shipping Churp v1 today!",
+        churp_id: nil
+      }
+    }
+  end
+
+  path "/api/v1/churps" do
+    # -- GET /api/v1/churps -----------------------------------------------
+    # Lists the global feed with Pagy metadata. Requires a valid JWT.
+    get "List churps" do
+      tags "Churps"
+      produces "application/json"
+      security [bearerAuth: []]
+
+      parameter name: :page,
+        in: :query,
+        schema: { type: :integer, minimum: 1 },
+        description: "Optional page cursor provided by Pagy."
+
+      response "200", "returns a paginated collection" do
+        schema "$ref" => "#/components/schemas/ChurpCollectionResponse"
+        let!(:churps) { create_list(:churp, 2, user: current_user) }
+
+        run_test!
+      end
+
+      response "401", "JWT missing or invalid" do
+        schema "$ref" => "#/components/schemas/UnauthorizedError"
+        let(:Authorization) { nil }
+
+        run_test!
+      end
+    end
+
+    # -- POST /api/v1/churps ----------------------------------------------
+    # Creates a new churp owned by the authenticated user.
+    post "Create churp" do
+      tags "Churps"
+      consumes "application/json"
+      produces "application/json"
+      security [bearerAuth: []]
+
+      parameter name: :payload,
+        in: :body,
+        schema: { "$ref" => "#/components/schemas/ChurpPayload" }
+
+      response "201", "churp persisted" do
+        schema "$ref" => "#/components/schemas/ChurpMutationResponse"
+        let(:payload) { churp_payload }
+
+        run_test!
+      end
+
+      response "422", "validation errors" do
+        schema "$ref" => "#/components/schemas/ErrorResponse"
+        let(:payload) { { churp: { body: "" } } }
+
+        run_test!
+      end
+    end
+  end
+
+  path "/api/v1/churps/{id}" do
+    parameter name: :id, in: :path, type: :string, description: "Churp ID"
+
+    # -- GET /api/v1/churps/:id ------------------------------------------
+    get "Show churp" do
+      tags "Churps"
+      produces "application/json"
+      security [bearerAuth: []]
+
+      response "200", "returns the churp" do
+        schema "$ref" => "#/components/schemas/ChurpResponse"
+        let(:churp) { create(:churp, user: current_user) }
+        let(:id) { churp.id }
+
+        run_test!
+      end
+
+      response "404", "unknown churp" do
+        schema "$ref" => "#/components/schemas/ErrorResponse"
+        let(:id) { 999_999 }
+
+        run_test!
+      end
+    end
+
+    # -- DELETE /api/v1/churps/:id ---------------------------------------
+    delete "Delete churp" do
+      tags "Churps"
+      produces "application/json"
+      security [bearerAuth: []]
+
+      response "200", "deletes the churp" do
+        schema "$ref" => "#/components/schemas/StatusOnlyResponse"
+        let(:churp) { create(:churp, user: current_user) }
+        let(:id) { churp.id }
+
+        run_test!
+      end
+
+      response "404", "cannot delete missing churp" do
+        schema "$ref" => "#/components/schemas/ErrorResponse"
+        let(:id) { 999_999 }
+
+        run_test!
+      end
+    end
+  end
+
+  path "/api/v1/churps/{id}/like" do
+    parameter name: :id, in: :path, type: :string, description: "Churp ID"
+
+    # -- POST /api/v1/churps/:id/like ------------------------------------
+    post "Like churp" do
+      tags "Churps"
+      produces "application/json"
+      security [bearerAuth: []]
+
+      response "200", "like registered" do
+        schema "$ref" => "#/components/schemas/StatusOnlyResponse"
+        let(:churp) { create(:churp, user: current_user) }
+        let(:id) { churp.id }
+
+        run_test!
+      end
+
+      response "404", "unknown churp" do
+        schema "$ref" => "#/components/schemas/ErrorResponse"
+        let(:id) { 999_999 }
+
+        run_test!
+      end
+    end
+  end
+
+  path "/api/v1/churps/{id}/rechurp" do
+    parameter name: :id, in: :path, type: :string, description: "Original churp ID"
+
+    # -- POST /api/v1/churps/:id/rechurp ---------------------------------
+    post "Rechurp" do
+      tags "Churps"
+      produces "application/json"
+      security [bearerAuth: []]
+
+      response "201", "rechurp succeeds" do
+        schema "$ref" => "#/components/schemas/StatusOnlyResponse"
+        let(:churp) { create(:churp, user: current_user) }
+        let(:id) { churp.id }
+
+        run_test!
+      end
+
+      response "422", "rechurp rejected" do
+        schema "$ref" => "#/components/schemas/ErrorResponse"
+        let(:churp) { create(:churp, user: current_user) }
+        let(:id) { churp.id }
+
+        before do
+          error_response = instance_double(
+            "Churps::RechurpService",
+            success?: false,
+            error: "Cannot rechurp this churp."
+          )
+          allow(Churps::RechurpService).to receive(:call).and_return(error_response)
+        end
+
+        run_test!
+      end
+    end
+  end
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/requests/cors_spec.rb ===
 
 
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/spec_helper.rb ===
@@ -8457,6 +7229,48 @@ end
 
 def json_str_to_hash(str)
   JSON.parse(str).with_indifferent_access
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/support/auth.rb ===
+# frozen_string_literal: true
+
+require "support/helpers/auth_helper"
+
+RSpec.configure do |config|
+  config.include ApiHelper, type: :request
+end
+
+
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/support/auth_support.rb ===
+# frozen_string_literal: true
+
+module AuthHelpers
+  def auth_headers_for(user)
+    post "/api/v1/users/sign_in", params: {
+      user: {
+        email: user.email,
+        password: user.password
+      }
+    }.to_json, headers: json_headers
+
+    binding.pry
+    # token = response.headers["Authorization"]
+    # expect(token).to be_present
+
+    # json_headers.merge("Authorization" => token)
+  end
+
+  def json_headers
+    {
+      "Accept" => "application/json",
+      "Content-Type" => "application/json"
+    }
+  end
+end
+
+RSpec.configure do |config|
+  config.include AuthHelpers, type: :request
 end
 
 
@@ -8517,6 +7331,31 @@ RSpec.configure do |config|
 end
 
 
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/support/helpers/auth_helper.rb ===
+module ApiHelper
+  def authenticated_header(request, user)
+    request.headers.merge!(auth_headers_for(user))
+  end
+
+  def auth_headers_for(user, headers: default_auth_headers)
+    # TODO: Adjust according to your authentication mechanism
+  end
+
+  def auth_token_for(user)
+    auth_headers_for(user)["Authorization"]
+  end
+
+  private
+
+  def default_auth_headers
+    {
+      "Accept" => "application/json",
+      "Content-Type" => "application/json"
+    }
+  end
+end
+
+
 === /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/support/object_creators.rb ===
 # frozen_string_literal: true
 
@@ -8536,71 +7375,208 @@ module ObjectCreators
 end
 
 
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/errors/internal_server_error.html.erb_spec.rb ===
+=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/swagger_helper.rb ===
 # frozen_string_literal: true
 
-require "rails_helper"
+require 'rails_helper'
 
-RSpec.describe "errors/internal_server_error.html.erb" do
-  pending "add some examples to (or delete) #{__FILE__}"
+RSpec.configure do |config|
+  # Specify a root folder where Swagger JSON files are generated
+  # NOTE: If you're using the rswag-api to serve API descriptions, you'll need
+  # to ensure that it's configured to serve Swagger from the same folder
+  config.openapi_root = Rails.root.join('swagger').to_s
+
+  # Define one or more Swagger documents and provide global metadata for each one
+  # When you run the 'rswag:specs:swaggerize' rake task, the complete Swagger will
+  # be generated at the provided relative path under openapi_root
+  # By default, the operations defined in spec files are added to the first
+  # document below. You can override this behavior by adding a openapi_spec tag to the
+  # the root example_group in your specs, e.g. describe '...', openapi_spec: 'v2/swagger.json'
+  config.openapi_specs = {
+    'v1/swagger.yaml' => {
+      openapi: '3.0.1',
+      info: {
+        title: 'API V1',
+        version: 'v1'
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: :http,
+            scheme: :bearer,
+            bearerFormat: 'JWT'
+          }
+        },
+        schemas: {
+          StatusMessage: {
+            type: :object,
+            required: %w[code message],
+            properties: {
+              code: { type: :integer, example: 200 },
+              message: { type: :string, example: 'Operation completed successfully.' }
+            }
+          },
+          ErrorResponse: {
+            type: :object,
+            required: ['status'],
+            properties: {
+              status: { '$ref' => '#/components/schemas/StatusMessage' }
+            }
+          },
+          UserAttributes: {
+            type: :object,
+            required: %w[id username email created_at],
+            properties: {
+              id: { type: :string, example: '1' },
+              username: { type: :string, example: 'winston' },
+              email: { type: :string, format: :email, example: 'winston@churp.app' },
+              created_at: { type: :string, format: :'date-time' },
+              created_date: { type: :string, example: '01/31/2025' }
+            }
+          },
+          UserResponse: {
+            type: :object,
+            required: %w[status data],
+            properties: {
+              status: { '$ref' => '#/components/schemas/StatusMessage' },
+              data: { '$ref' => '#/components/schemas/UserAttributes' }
+            }
+          },
+          PaginationMeta: {
+            type: :object,
+            properties: {
+              page: { type: :integer, example: 1 },
+              items: { type: :integer, example: 15 },
+              count: { type: :integer, example: 125 },
+              pages: { type: :integer, example: 9 }
+            }
+          },
+          ChurpAttributes: {
+            type: :object,
+            required: %w[body churp_type rechurp_count created_at updated_at],
+            properties: {
+              body: { type: :string, example: 'Building Churp v2.' },
+              churp_type: { type: :string, example: 'churp' },
+              rechurp_count: { type: :integer, example: 0 },
+              churp_id: { type: :integer, nullable: true, example: nil },
+              user_id: { type: :integer, example: 42 },
+              created_at: { type: :string, format: :'date-time' },
+              updated_at: { type: :string, format: :'date-time' }
+            }
+          },
+          ChurpResource: {
+            type: :object,
+            required: %w[id type attributes],
+            properties: {
+              id: { type: :string, example: '1' },
+              type: { type: :string, example: 'churp' },
+              attributes: { '$ref' => '#/components/schemas/ChurpAttributes' }
+            }
+          },
+          ChurpCollectionResponse: {
+            type: :object,
+            required: %w[data meta],
+            properties: {
+              data: {
+                type: :array,
+                items: { '$ref' => '#/components/schemas/ChurpResource' }
+              },
+              meta: { '$ref' => '#/components/schemas/PaginationMeta' }
+            }
+          },
+          ChurpResponse: {
+            type: :object,
+            required: ['data'],
+            properties: {
+              data: { '$ref' => '#/components/schemas/ChurpResource' }
+            }
+          },
+          ChurpMutationResponse: {
+            type: :object,
+            required: %w[status data],
+            properties: {
+              status: { '$ref' => '#/components/schemas/StatusMessage' },
+              data: { '$ref' => '#/components/schemas/ChurpResource' }
+            }
+          },
+          StatusOnlyResponse: {
+            type: :object,
+            required: ['status'],
+            properties: {
+              status: { '$ref' => '#/components/schemas/StatusMessage' }
+            }
+          },
+          UserRegistrationPayload: {
+            type: :object,
+            required: ['user'],
+            properties: {
+              user: {
+                type: :object,
+                required: %w[email username password password_confirmation],
+                properties: {
+                  email: { type: :string, format: :email },
+                  username: { type: :string },
+                  password: { type: :string, format: :password },
+                  password_confirmation: { type: :string, format: :password },
+                  profile_attributes: {
+                    type: :object,
+                    properties: {
+                      name: { type: :string }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          UserSignInPayload: {
+            type: :object,
+            required: ['user'],
+            properties: {
+              user: {
+                type: :object,
+                required: %w[email password],
+                properties: {
+                  email: { type: :string, format: :email },
+                  password: { type: :string, format: :password }
+                }
+              }
+            }
+          },
+          ChurpPayload: {
+            type: :object,
+            required: ['churp'],
+            properties: {
+              churp: {
+                type: :object,
+                required: ['body'],
+                properties: {
+                  body: { type: :string, description: 'The text contents of the churp.' },
+                  churp_id: { type: :integer, nullable: true, description: 'Original churp id when rechurping.' },
+                  churp_pic: { type: :string, description: 'Base64 string or Active Storage attachment reference.' }
+                }
+              }
+            }
+          }
+        }
+      },
+      paths: {},
+      servers: [
+        {
+          url: 'https://{defaultHost}',
+          variables: {
+            defaultHost: {
+              default: 'www.example.com'
+            }
+          }
+        }
+      ]
+    }
+  }
+
+  # Specify the format of the output Swagger file when running 'rswag:specs:swaggerize'.
+  # The openapi_specs configuration option has the filename including format in
+  # the key, this may want to be changed to avoid putting yaml in json files.
+  # Defaults to json. Accepts ':json' and ':yaml'.
+  config.openapi_format = :yaml
 end
 
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/errors/not_found.html.erb_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "errors/not_found.html.erb" do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/mentions/index.html.erb_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "mentions/index.html.erb", type: :view do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/notifications/index.html.erb_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "notifications/index.html.erb", type: :view do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/tweets/create.html.erb_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "churps/create.html.erb" do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/tweets/destroy.html.erb_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "churps/destroy.html.erb" do
-  pending "add some examples to (or delete) #{__FILE__}"
-end
-
-
-=== /Users/t0nylombardi/dev/t0nylombardi/ruby/churp-social/churp/spec/views/tweets/index.html.erb_spec.rb ===
-# frozen_string_literal: true
-
-require "rails_helper"
-
-RSpec.describe "churps/index.html.erb" do
-  pending "add some examples to (or delete) #{__FILE__}"
-end

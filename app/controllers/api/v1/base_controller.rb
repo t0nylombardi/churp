@@ -3,8 +3,6 @@
 module Api
   module V1
     class BaseController < ActionController::API
-      include Pagy::Backend
-
       rescue_from ActiveRecord::RecordNotFound, with: :not_found
 
       before_action :authenticate_api_user!
@@ -17,10 +15,10 @@ module Api
         token = request.headers["Authorization"]&.split&.last
         return render_unauthorized unless token
 
-        result = AuthService.authenticate(token:)
+        result = Authentication::AuthenticateToken.call(token:)
         return render_unauthorized unless result.success?
 
-        @current_user = result.user
+        @current_user = result.value
       end
 
       def render_error(record)
