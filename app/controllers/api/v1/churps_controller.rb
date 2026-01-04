@@ -4,15 +4,13 @@ module Api
   module V1
     class ChurpsController < Api::V1::BaseController
       before_action :authenticate_api_user!
-      before_action :set_churp, only: %i[show update destroy]
+      before_action :set_churp, only: %i[show update destroy like rechurp]
 
       def index
         churps = Churp.order(created_at: :desc)
-        pagy, records = pagy(churps, items: 15)
 
         render json: {
-          data: serialize(records),
-          meta: pagy_metadata(pagy)
+          data: serialize(churps)
         }
       end
 
@@ -41,6 +39,30 @@ module Api
       def destroy
         @churp.destroy!
         head :no_content
+      end
+
+      def like
+        Churps::LikeService.call(
+          user: current_user,
+          churp: @churp
+        )
+
+        render json: serialize(@churp), status: :ok
+      end
+
+      def rechurp
+        result = Churps::RechurpService.call(
+          user: current_user,
+          original_churp: @churp
+        )
+
+        if result.success?
+          render json: serialize(result.churp), status: :created
+        else
+          render json: {
+            error: result.error || "Could not rechurp"
+          }, status: :unprocessable_content
+        end
       end
 
       private
