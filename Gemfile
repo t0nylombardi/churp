@@ -65,7 +65,7 @@ group :development, :test do
   gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
   gem "faker"
-  gem 'pry', '~> 0.16.0'
+  gem "pry", "~> 0.16.0"
   # gem 'pry-byebug'
   gem "rspec-rails"
   gem "rswag-specs"

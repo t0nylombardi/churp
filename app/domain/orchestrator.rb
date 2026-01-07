@@ -32,6 +32,7 @@ class Orchestrator
 
   def unexpected_error(error)
     Rails.logger.error("\nUnexpected error: #{error.message}\n#{error.backtrace.join("\n")}\n")
-    :unexpected_error
+
+    "Unexpected error: #{error.message}"
   end
 end
