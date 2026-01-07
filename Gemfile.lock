@@ -174,7 +174,7 @@ GEM
       logger
     faraday-net_http (3.4.2)
       net-http (~> 0.5)
-    ffi (1.17.3-x86_64-darwin)
+    ffi (1.17.3-arm64-darwin)
     foreman (0.90.0)
       thor (~> 1.4)
     friendly_id (5.6.0)
@@ -250,7 +250,7 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.5)
-    nokogiri (1.19.0-x86_64-darwin)
+    nokogiri (1.19.0-arm64-darwin)
       racc (~> 1.4)
     noticed (2.9.3)
       rails (>= 6.1.0)
@@ -266,7 +266,7 @@ GEM
     parser (3.3.10.0)
       ast (~> 2.4.1)
       racc
-    pg (1.6.3-x86_64-darwin)
+    pg (1.6.3-arm64-darwin)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -419,7 +419,7 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
-    ruby_audit (3.0.0)
+    ruby_audit (3.1.0)
       bundler-audit (~> 0.9.0)
     rubyzip (3.2.2)
     searchkick (6.0.2)
@@ -519,7 +519,7 @@ GEM
     zeitwerk (2.7.4)
 
 PLATFORMS
-  x86_64-darwin-25
+  arm64-darwin
 
 DEPENDENCIES
   active_storage_validations
@@ -649,7 +649,7 @@ CHECKSUMS
   faker (3.5.3) sha256=b961482dc0bb15ccb9a98ea7878b925669e9ae8f5e59b607da540b768137d765
   faraday (2.14.0) sha256=8699cfe5d97e55268f2596f9a9d5a43736808a943714e3d9a53e6110593941cd
   faraday-net_http (3.4.2) sha256=f147758260d3526939bf57ecf911682f94926a3666502e24c69992765875906c
-  ffi (1.17.3-x86_64-darwin) sha256=1f211811eb5cfaa25998322cdd92ab104bfbd26d1c4c08471599c511f2c00bb5
+  ffi (1.17.3-arm64-darwin) sha256=0c690555d4cee17a7f07c04d59df39b2fba74ec440b19da1f685c6579bb0717f
   foreman (0.90.0) sha256=ff675e2d47b607ac58714a6d4ac3e1ee8f06f41d8db084531c31961e2c3f117c
   friendly_id (5.6.0) sha256=28e221cd53fbd21586321164c1c6fd0c9ba8dde13969cb2363679f44726bb0c3
   globalid (1.3.0) sha256=05c639ad6eb4594522a0b07983022f04aa7254626ab69445a0e493aa3786ff11
@@ -687,7 +687,7 @@ CHECKSUMS
   net-protocol (0.2.2) sha256=aa73e0cba6a125369de9837b8d8ef82a61849360eba0521900e2c3713aa162a8
   net-smtp (0.5.1) sha256=ed96a0af63c524fceb4b29b0d352195c30d82dd916a42f03c62a3a70e5b70736
   nio4r (2.7.5) sha256=6c90168e48fb5f8e768419c93abb94ba2b892a1d0602cb06eef16d8b7df1dca1
-  nokogiri (1.19.0-x86_64-darwin) sha256=1dad56220b603a8edb9750cd95798bffa2b8dd9dd9aa47f664009ee5b43e3067
+  nokogiri (1.19.0-arm64-darwin) sha256=0811dfd936d5f6dd3f6d32ef790568bf29b2b7bead9ba68866847b33c9cf5810
   noticed (2.9.3) sha256=9809d1100edc3ee208fbd88f4fe025a13e3b02e68c865bf705d197239ebcf3db
   opensearch-ruby (3.4.0) sha256=0a8621686bed3c59b4c23e08cbaef873685a3fe4568e9d2703155ca92b8ca05d
   orm_adapter (0.5.0) sha256=aa5d0be5d540cbb46d3a93e88061f4ece6a25f6e97d6a47122beb84fe595e9b9
@@ -695,7 +695,7 @@ CHECKSUMS
   pagy (43.2.2) sha256=8fe4b1838377617b81a6f0ca00c7658907f7c6fa95f943cbe1ce8424f79cf122
   parallel (1.27.0) sha256=4ac151e1806b755fb4e2dc2332cbf0e54f2e24ba821ff2d3dcf86bf6dc4ae130
   parser (3.3.10.0) sha256=ce3587fa5cc55a88c4ba5b2b37621b3329aadf5728f9eafa36bbd121462aabd6
-  pg (1.6.3-x86_64-darwin) sha256=ee2e04a17c0627225054ffeb43e31a95be9d7e93abda2737ea3ce4a62f2729d6
+  pg (1.6.3-arm64-darwin) sha256=7240330b572e6355d7c75a7de535edb5dfcbd6295d9c7777df4d9dddfb8c0e5f
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   prism (1.7.0) sha256=10062f734bf7985c8424c44fac382ac04a58124ea3d220ec3ba9fe4f2da65103
@@ -744,7 +744,7 @@ CHECKSUMS
   ruby-lsp-rspec (0.1.28) sha256=0db3b3ffba08c6d70eb7831e79090a1863f572fe131ed0ecfce8a2f7d01bf491
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   ruby-vips (2.3.0) sha256=e685ec02c13969912debbd98019e50492e12989282da5f37d05f5471442f5374
-  ruby_audit (3.0.0) sha256=e456b31bdad006de56c2479cda74eaa1515578e052b84c85667856a44ec51ad7
+  ruby_audit (3.1.0) sha256=69ecff7ffd1c0066643ac4da3963dfa14297f6e8f166929f07d08f05724fc398
   rubyzip (3.2.2) sha256=c0ed99385f0625415c8f05bcae33fe649ed2952894a95ff8b08f26ca57ea5b3c
   searchkick (6.0.2) sha256=18462e8b0ab38e9f381c108b11134c09758631a2f935c6dc81da412da5c7296a
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
@@ -788,7 +788,7 @@ CHECKSUMS
   zeitwerk (2.7.4) sha256=2bef90f356bdafe9a6c2bd32bcd804f83a4f9b8bc27f3600fff051eb3edcec8b
 
 RUBY VERSION
-  ruby 3.4.8
+  ruby 4.0.0
 
 BUNDLED WITH
   4.0.3
