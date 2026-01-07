@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_01_202547) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_07_230853) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -59,14 +61,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_01_202547) do
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
-  end
-
-  create_table "jwt_denylists", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "exp"
-    t.string "jti"
-    t.datetime "updated_at", null: false
-    t.index ["jti"], name: "index_jwt_denylists_on_jti"
   end
 
   create_table "likes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -154,7 +148,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_01_202547) do
     t.datetime "created_at", null: false
     t.string "display_name", default: "", null: false
     t.string "email", default: "", null: false
-    t.string "jti", null: false
     t.datetime "password_changed_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.string "password_digest", default: "", null: false
     t.integer "role"
@@ -163,7 +156,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_01_202547) do
     t.string "username", default: "", null: false
     t.uuid "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["jti"], name: "index_users_on_jti", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
     t.index ["uuid"], name: "index_users_on_uuid", unique: true
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeRechurpCountToInteger < ActiveRecord::Migration[8.1]
   def up
     remove_column :churps, :rechurp_count

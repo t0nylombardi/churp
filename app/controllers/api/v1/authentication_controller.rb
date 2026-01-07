@@ -10,6 +10,7 @@ module Api
           email: register_params[:email],
           password: register_params[:password]
         )
+        return render json: { error: "Registration failed" }, status: :unprocessable_content unless user
 
         render json: { id: user.id }, status: :created
       end
