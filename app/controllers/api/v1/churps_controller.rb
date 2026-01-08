@@ -60,13 +60,13 @@ module Api
           original_churp: @churp
         )
 
-        if result.success?
-          render json: serialize(result.churp), status: :created
-        else
+        if !result.success?
           render json: {
             error: result.error || "Could not rechurp"
           }, status: :unprocessable_content
         end
+
+        render json: serialize(result.churp), status: :created
       end
 
       private

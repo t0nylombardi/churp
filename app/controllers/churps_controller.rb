@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 class ChurpsController < ApplicationController
-  before_action :authenticate_user!
+  include Pagy::Method
+
+  before_action :authenticate_user!, except: %i[index show]
   before_action :set_churp, only: %i[show update destroy like rechurp]
 
   def index
@@ -27,9 +29,8 @@ class ChurpsController < ApplicationController
     if service.success?
       redirect_to(root_path, notice: t("churps.create.success", default: "Churp was successfully created."))
     else
-      redirect_back(
-        fallback_location: root_path,
-        alert: t("churps.create.failure", default: "Could not churp.")
+      redirect_back_or_to(
+        root_path, alert: t("churps.create.failure", default: "Could not churp.")
       )
     end
   end
@@ -38,7 +39,7 @@ class ChurpsController < ApplicationController
     if @churp.update(churp_params)
       redirect_to @churp, notice: t("churps.update.success", default: "Churp updated successfully.")
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -80,6 +81,6 @@ class ChurpsController < ApplicationController
 
   def churp_params
     params[:churp]&.delete(:submit)
-    params.require(:churp).permit(:body, :churp_id, :churp_pic)
+    params.require(:churp).permit(:content, :churp_id, :churp_pic)
   end
 end
