@@ -587,7 +587,7 @@ DEPENDENCIES
   noticed (~> 2.8)
   opensearch-ruby
   ostruct
-  pagy (~> 43.2)
+  pagy
   pg
   pry (~> 0.16.0)
   puma

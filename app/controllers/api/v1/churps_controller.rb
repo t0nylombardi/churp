@@ -3,15 +3,19 @@
 module Api
   module V1
     class ChurpsController < Api::V1::BaseController
+      include Pagy::Method
+
       before_action :authenticate_api_user!
       before_action :set_churp, only: %i[show update destroy like rechurp]
 
       def index
         churps = Churp.order(created_at: :desc)
+        pagy, records = pagy(churps, items: 15)
 
-        render json: {
-          data: serialize(churps)
-        }
+        payload = serialize(records)
+        payload[:meta] = payload.fetch(:meta, {}).merge(pagy_metadata(pagy))
+
+        render json: payload
       end
 
       def show
@@ -68,7 +72,7 @@ module Api
       private
 
       def set_churp
-        @churp = Churp.find(params[:id])
+        @churp = Churp.find_by(churp_id: params[:id])
       end
 
       def churp_params
