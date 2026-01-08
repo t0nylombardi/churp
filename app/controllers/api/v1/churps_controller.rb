@@ -72,11 +72,11 @@ module Api
       private
 
       def set_churp
-        @churp = Churp.find_by(churp_id: params[:id])
+        @churp = current_user.churps.find(params[:id])
       end
 
       def churp_params
-        params.require(:churp).permit(:body)
+        params.require(:churp).permit(:content)
       end
 
       def serialize(records)

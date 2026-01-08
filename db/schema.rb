@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -12,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_07_230853) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_08_221842) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -27,12 +25,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_230853) do
   end
 
   create_table "churps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.text "body"
-    t.uuid "churp_id", default: -> { "gen_random_uuid()" }, null: false
+    t.jsonb "content", default: {}, null: false
     t.datetime "created_at", null: false
+    t.uuid "original_churp_id"
     t.integer "rechurp_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
+    t.index ["original_churp_id"], name: "index_churps_on_original_churp_id"
     t.index ["user_id"], name: "index_churps_on_user_id"
   end
 
@@ -160,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_230853) do
     t.index ["uuid"], name: "index_users_on_uuid", unique: true
   end
 
+  add_foreign_key "churps", "churps", column: "original_churp_id"
   add_foreign_key "churps", "users"
   add_foreign_key "comments", "churps"
   add_foreign_key "comments", "users"
