@@ -26,11 +26,11 @@ class Churp < ApplicationRecord
   belongs_to :user
   belongs_to :original_churp,
     class_name: "Churp",
-    foreign_key: :churp_id,
     optional: true
 
   has_many :rechurps,
     class_name: "Churp",
+    foreign_key: :original_churp_id,
     dependent: :destroy
 
   has_many :likes, as: :likeable, dependent: :destroy
