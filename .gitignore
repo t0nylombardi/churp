@@ -53,3 +53,8 @@ coverage
 
 code_output.txt
 .ccignore
+dump.rdb
+
+.vscode
+
+AGENTS.md

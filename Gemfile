@@ -7,8 +7,7 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-ruby "3.4.8"
-ruby "3.4.8"
+ruby File.read(".ruby-version").strip
 
 gem "jbuilder"
 gem "jsbundling-rails"
@@ -17,22 +16,16 @@ gem "pg"
 gem "puma"
 gem "rails", "~> 8.1"
 gem "redis"
-gem "sprockets-rails"
-gem "stimulus-rails"
-gem "turbo-rails"
 
 gem "activerecord-import"
-gem "active_storage_validations"
 gem "addressable"
 gem "aws-sdk-s3"
 gem "bcrypt", "~> 3.1.20"
-gem "cssbundling-rails"
 gem "devise"
 gem "foreman"
 gem "friendly_id"
 gem "httparty"
 gem "jwt"
-gem "liquid"
 gem "mini_magick"
 gem "name_of_person"
 gem "noticed", "~> 2.8"
@@ -42,20 +35,10 @@ gem "pundit"
 gem "opensearch-ruby"
 gem "searchkick"
 gem "sidekiq"
-gem "simple_form"
-gem "stripe"
 gem "view_component"
 
 gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[windows jruby]
-
-gem "image_processing"
-
-gem "dotenv-rails", groups: %i[development test production]
-
-gem "dockerfile-rails", group: :development
-gem "sentry-rails"
-gem "sentry-ruby"
 
 gem "rswag-api"
 gem "rswag-ui"
@@ -66,7 +49,7 @@ group :development, :test do
   gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
   gem "faker"
-  gem "pry", "~> 0.15.2"
+  gem "pry", "~> 0.16.0"
   gem "pry-byebug"
   gem "rspec-rails"
   gem "rswag-specs"

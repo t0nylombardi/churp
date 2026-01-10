@@ -4,37 +4,39 @@
 #
 # Table name: churps
 #
-#  id            :uuid             not null, primary key
-#  body          :text
-#  rechurp_count :uuid
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
-#  churp_id      :uuid             not null
-#  user_id       :uuid             not null
+#  id                :uuid             not null, primary key
+#  content           :jsonb            not null
+#  rechurps_count    :integer          default(0), not null
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  original_churp_id :uuid
+#  user_id           :uuid             not null
 #
 # Indexes
 #
-#  index_churps_on_user_id  (user_id)
+#  index_churps_on_original_churp_id  (original_churp_id)
+#  index_churps_on_user_id            (user_id)
 #
 # Foreign Keys
 #
+#  fk_rails_...  (original_churp_id => churps.id)
 #  fk_rails_...  (user_id => users.id)
 #
 
 FactoryBot.define do
   factory :churp do
-    body { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
+    content {
+      {
+        version: 1,
+        blocks: [
+          {
+            type: "text",
+            content: Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false)
+          }
+        ]
+      }
+    }
     user
-  end
-
-  trait :with_attachment do
-    after(:build) do |churp|
-      churp.churp_pic.attach(
-        io: Rails.root.join("spec/fixtures/images/churp.jpeg").open,
-        filename: "churp.jpeg",
-        content_type: "image/jpeg"
-      )
-    end
   end
 
   trait :rechurp do

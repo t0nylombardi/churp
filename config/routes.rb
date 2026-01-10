@@ -20,7 +20,7 @@ Rails.application.routes.draw do
         get :me, to: "profiles#show"
       end
 
-      resources :churps, only: %i[index show create destroy] do
+      resources :churps do
         member do
           post :like
           post :rechurp

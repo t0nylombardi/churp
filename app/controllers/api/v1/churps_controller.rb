@@ -2,76 +2,57 @@
 
 module Api
   module V1
-    class ChurpsController < ApiController
-      before_action :authenticate_user!
-      before_action :set_churp, only: %i[show update destroy like rechurp]
+    class ChurpsController < Api::V1::BaseController
+      include Pagy::Method
+
+      before_action :authenticate_api_user!
+      before_action :set_churp, only: %i[show like rechurp]
+      before_action :set_owned_churp, only: %i[update destroy]
 
       def index
-        pagy, churps = pagy(
-          Churp.order(created_at: :desc),
-          items: 15
-        )
+        churps = Churp.order(created_at: :desc)
+        pagy, records = pagy(churps, items: 15)
 
-        render json: {
-          data: ChurpSerializer.new(churps).serializable_hash[:data],
-          meta: pagy_metadata(pagy)
-        }, status: :ok
+        payload = serialize(records)
+        payload[:meta] = payload.fetch(:meta, {}).merge(pagy_metadata(pagy))
+
+        render json: payload
       end
 
       def show
-        render json: {
-          data: ChurpSerializer.new(@churp).serializable_hash[:data]
-        }, status: :ok
+        render json: serialize(@churp)
       end
 
       def create
-        result = Churps::CreateService.call(
-          user: current_user,
-          params: churp_params
-        )
+        churp = current_user.churps.new(churp_params)
 
-        if result.success?
-          render json: {
-            status: { code: 201, message: "Churp created successfully." },
-            data: ChurpSerializer.new(result.churp).serializable_hash[:data]
-          }, status: :created
+        if churp.save
+          render json: serialize(churp), status: :created
         else
-          render json: {
-            status: { code: 422, message: result.error }
-          }, status: :unprocessable_entity
+          render_error(churp)
         end
       end
 
       def update
         if @churp.update(churp_params)
-          render json: {
-            status: { code: 200, message: "Churp updated successfully." },
-            data: ChurpSerializer.new(@churp).serializable_hash[:data]
-          }, status: :ok
+          render json: serialize(@churp)
         else
-          render json: {
-            status: {
-              code: 422,
-              message: @churp.errors.full_messages.to_sentence
-            }
-          }, status: :unprocessable_entity
+          render_error(@churp)
         end
       end
 
       def destroy
-        @churp.destroy
-
-        render json: {
-          status: { code: 200, message: "Churp deleted successfully." }
-        }, status: :ok
+        @churp.destroy!
+        head :no_content
       end
 
       def like
-        Churps::LikeService.call(user: current_user, churp: @churp)
+        Churps::LikeService.call(
+          user: current_user,
+          churp: @churp
+        )
 
-        render json: {
-          status: { code: 200, message: "Churp liked." }
-        }, status: :ok
+        render json: serialize(@churp), status: :ok
       end
 
       def rechurp
@@ -80,15 +61,14 @@ module Api
           original_churp: @churp
         )
 
-        if result.success?
+        unless result.success?
           render json: {
-            status: { code: 201, message: "Rechurp successful." }
-          }, status: :created
-        else
-          render json: {
-            status: { code: 422, message: result.error }
-          }, status: :unprocessable_entity
+            error: result.errors || "Could not rechurp"
+          }, status: :unprocessable_content
+          return
         end
+
+        render json: serialize(result.original_churp), status: :created
       end
 
       private
@@ -97,8 +77,16 @@ module Api
         @churp = Churp.find(params[:id])
       end
 
+      def set_owned_churp
+        @churp = current_user.churps.find(params[:id])
+      end
+
       def churp_params
-        params.require(:churp).permit(:body, :churp_id, :churp_pic)
+        params.require(:churp).permit(content: {})
+      end
+
+      def serialize(records)
+        ChurpSerializer.new(records).serializable_hash
       end
     end
   end

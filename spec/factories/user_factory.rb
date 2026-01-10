@@ -25,15 +25,8 @@
 FactoryBot.define do
   factory :user do
     email { Faker::Internet.unique.email }
-    password { "Passw0rd1!" }
-    password_confirmation { "Passw0rd1!" }
+    password_digest { Authentication::Passwords::Hasher.hash("Password1234!") }
     username { Faker::Internet.unique.username(specifier: 10) }
-
-    factory :user_with_profile do
-      after(:create) do |user|
-        create(:profile, user:)
-      end
-    end
   end
 
   trait :with_profile do

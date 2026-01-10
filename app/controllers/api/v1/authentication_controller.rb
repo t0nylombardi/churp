@@ -2,27 +2,29 @@
 
 module Api
   module V1
-    class AuthenticationController < ApiController
-      skip_before_action :authenticate_request!, only: %i[register login]
+    class AuthenticationController < BaseController
+      skip_before_action :authenticate_api_user!, only: %i[register login]
 
       def register
         user = Authentication::Commands::RegisterUser.call(
+          username: register_params[:username],
           email: register_params[:email],
           password: register_params[:password]
         )
 
-        render json: { id: user.id }, status: :created
+        return render_registration_failed(user) unless user.success?
+        render json: user.value, status: :created
       end
 
       def login
-        token = Authentication::Commands::LoginUser.call(
+        result = Authentication::Commands::LoginUser.call(
           email: login_params[:email],
           password: login_params[:password]
         )
 
-        return head :unauthorized unless token
+        return head :unauthorized unless result.success?
 
-        render json: { token: token }, status: :ok
+        render json: { token: result.value }, status: :ok
       end
 
       def login_params
@@ -30,7 +32,15 @@ module Api
       end
 
       def register_params
-        params.permit(:email, :password)
+        params.permit(:email, :password, :username)
+      end
+
+      def render_registration_failed(user)
+        Rails.logger.info("Registration failed: #{user.error}")
+        render json: {
+          error: "Registration failed",
+          details: user.error
+        }, status: :unprocessable_content
       end
     end
   end

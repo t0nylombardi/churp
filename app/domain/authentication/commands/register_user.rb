@@ -2,12 +2,22 @@
 
 module Authentication
   module Commands
-    class RegisterUser
-      def self.call(email:, password:)
-        User.create!(
-          email: email,
-          password_digest: Passwords::Hasher.hash(password)
-        )
+    class RegisterUser < Orchestrator
+      def initialize(username:, email:, password:)
+        @username = username
+        @email = email
+        @password = password
+      end
+
+      def execute
+        User.new(
+          username: @username,
+          email: @email,
+          password_digest: Passwords::Hasher.hash(@password)
+        ).save!
+        success(id: User.last.id)
+      rescue ActiveRecord::RecordInvalid => e
+        failure(error: e.record.errors.full_messages)
       end
     end
   end

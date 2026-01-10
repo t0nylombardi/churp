@@ -11,19 +11,15 @@ class ChurpLengthValidator < ActiveModel::EachValidator
 
   private
 
-  def extract_text(record)
-    ChurpExtractor::Extractor.new.sanitize(record.body.body.to_s)
-  end
-
   def empty?(record)
-    extract_text(record).strip.empty?
+    record.content.to_s.strip.empty?
   end
 
   def too_short?(record)
-    extract_text(record).length <= 1
+    record.content.to_s.strip.length < 1
   end
 
   def too_long?(record)
-    extract_text(record).length > MAX_CHARS
+    record.content.to_s.strip.length > MAX_CHARS
   end
 end
