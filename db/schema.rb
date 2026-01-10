@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_08_221842) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_10_004547) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -28,7 +28,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_221842) do
     t.jsonb "content", default: {}, null: false
     t.datetime "created_at", null: false
     t.uuid "original_churp_id"
-    t.integer "rechurp_count", default: 0, null: false
+    t.integer "rechurps_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["original_churp_id"], name: "index_churps_on_original_churp_id"
@@ -110,6 +110,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_221842) do
     t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 
+  create_table "rechurps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "original_churp_id", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["original_churp_id", "created_at"], name: "index_rechurps_on_original_churp_id_and_created_at"
+    t.index ["original_churp_id"], name: "index_rechurps_on_original_churp_id"
+    t.index ["user_id", "created_at"], name: "index_rechurps_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_rechurps_on_user_id"
+  end
+
   create_table "relationships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.uuid "followed_id", null: false
@@ -165,5 +176,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_221842) do
   add_foreign_key "comments", "users"
   add_foreign_key "likes", "users"
   add_foreign_key "profiles", "users"
+  add_foreign_key "rechurps", "churps", column: "original_churp_id"
+  add_foreign_key "rechurps", "users"
   add_foreign_key "searchjoy_searches", "users"
 end

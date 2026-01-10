@@ -6,7 +6,8 @@ module Api
       include Pagy::Method
 
       before_action :authenticate_api_user!
-      before_action :set_churp, only: %i[show update destroy like rechurp]
+      before_action :set_churp, only: %i[show like rechurp]
+      before_action :set_owned_churp, only: %i[update destroy]
 
       def index
         churps = Churp.order(created_at: :desc)
@@ -60,18 +61,23 @@ module Api
           original_churp: @churp
         )
 
-        if !result.success?
+        unless result.success?
           render json: {
-            error: result.error || "Could not rechurp"
+            error: result.errors || "Could not rechurp"
           }, status: :unprocessable_content
+          return
         end
 
-        render json: serialize(result.churp), status: :created
+        render json: serialize(result.original_churp), status: :created
       end
 
       private
 
       def set_churp
+        @churp = Churp.find(params[:id])
+      end
+
+      def set_owned_churp
         @churp = current_user.churps.find(params[:id])
       end
 

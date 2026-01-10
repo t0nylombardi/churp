@@ -4,7 +4,7 @@
 #
 #  id                :uuid             not null, primary key
 #  content           :jsonb            not null
-#  rechurp_count     :integer          default(0), not null
+#  rechurps_count    :integer          default(0), not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  original_churp_id :uuid
@@ -30,7 +30,7 @@ class ChurpSerializer
   end
 
   attribute :rechurp_count do |object|
-    object.rechurp_count
+    object.rechurps_count
   end
 
   attribute :like_count do |object|
