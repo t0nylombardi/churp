@@ -25,18 +25,18 @@
 
 FactoryBot.define do
   factory :churp do
-    body { Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false) }
+    content {
+      {
+        version: 1,
+        blocks: [
+          {
+            type: "text",
+            content: Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false)
+          }
+        ]
+      }
+    }
     user
-  end
-
-  trait :with_attachment do
-    after(:build) do |churp|
-      churp.churp_pic.attach(
-        io: Rails.root.join("spec/fixtures/images/churp.jpeg").open,
-        filename: "churp.jpeg",
-        content_type: "image/jpeg"
-      )
-    end
   end
 
   trait :rechurp do

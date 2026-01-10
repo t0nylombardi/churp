@@ -3,5 +3,5 @@
 require "support/helpers/auth_helper"
 
 RSpec.configure do |config|
-  config.include ApiHelper, type: :request
+  config.include AuthHelper, type: :request
 end

@@ -82,7 +82,7 @@ module Api
       end
 
       def churp_params
-        params.require(:churp).permit(:content)
+        params.require(:churp).permit(content: {})
       end
 
       def serialize(records)

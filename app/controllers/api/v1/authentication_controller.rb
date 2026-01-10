@@ -17,14 +17,14 @@ module Api
       end
 
       def login
-        token = Authentication::Commands::LoginUser.call(
+        result = Authentication::Commands::LoginUser.call(
           email: login_params[:email],
           password: login_params[:password]
         )
 
-        return head :unauthorized unless token
+        return head :unauthorized unless result.success?
 
-        render json: { token: token }, status: :ok
+        render json: { token: result.value }, status: :ok
       end
 
       def login_params

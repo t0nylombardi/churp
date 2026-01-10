@@ -41,6 +41,7 @@ class Churp < ApplicationRecord
   has_many :notifications, through: :noticed_events, dependent: :destroy, class_name: "Noticed::Notification"
 
   validates :content, presence: true, churp_length: true
+  validate :content_must_be_structured
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
@@ -50,5 +51,13 @@ class Churp < ApplicationRecord
 
   def churp_type
     rechurp? ? "rechurp" : "churp"
+  end
+
+  private
+
+  def content_must_be_structured
+    return if content.is_a?(Hash) && content["blocks"].is_a?(Array)
+
+    errors.add(:content, "must be a structured content document")
   end
 end
