@@ -4,9 +4,6 @@ ENV["RAILS_ENV"] ||= "test"
 if ENV["RAILS_ENV"] == "test"
   require "simplecov"
   SimpleCov.start "rails" do
-    add_filter "config/initializers/sentry.rb"
-    add_filter "config/initializers/flipper.rb"
-    add_filter "config/routes.rb"
     add_filter "spec/factories/*"
     add_filter "spec/support/*"
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: rechurps
@@ -20,8 +22,22 @@
 #  fk_rails_...  (original_churp_id => churps.id)
 #  fk_rails_...  (user_id => users.id)
 #
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe Rechurp, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+RSpec.describe Rechurp do
+  describe "associations" do
+    it { is_expected.to belong_to(:user) }
+    it { is_expected.to belong_to(:original_churp).class_name("Churp") }
+  end
+
+  describe "counter cache" do
+    it "increments original churp rechurps_count" do
+      user = create(:user)
+      original = create(:churp)
+
+      expect do
+        create(:rechurp, user:, original_churp: original)
+      end.to change { original.reload.rechurps_count }.by(1)
+    end
+  end
 end
