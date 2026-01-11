@@ -30,25 +30,50 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
-  hello: "Hello world"
   activerecord:
     errors:
-      format: "%{message} for %{attribute}"
-      churp:
-        attributes:
-          content:
-            blank: "too short"
-            too_short: "Content is too short (minimum is 2 characters)"
-            too_long: "Content is too long (maximum is 331 characters)"
-      messages:
-        content_type_invalid: "The image has an invalid content type"
-        file_size_out_of_range: "size %{file_size} is not between required range"
+      models:
+        comment:
+          attributes:
+            content:
+              invalid_structure: "must be a structured content document"
+              too_long: "is too long (maximum is 331 characters)"
+  errors:
+    format: "%{message}"
+    header: 'The form entry has errors; please correct the errors below and re-submit.'
+    messages:
+      must_exist:               "The %{attribute} must exist; please provide a valid %{attribute}."
+      accepted:                 "The %{attribute} was not accepted; please accept the %{attribute}."
+      blank:                    "The provided %{attribute} is blank; please enter a non-blank %{attribute}."
+      blank_assoc:              "The provided %{attribute} is blank; please enter a non-blank %{attribute}."
+      confirmation:             "The provided %{attribute} does not match the corresponding entry; please re-check this entry against the original."
+      empty:                    "The provided %{attribute} is empty; please enter a non-empty %{attribute}."
+      equal_to:                 "The provided %{attribute} is incorrect; please enter exactly %{count}."
+      even:                     "The provided %{attribute} is odd; please enter an even %{attribute}."
+      exclusion:                "The provided %{attribute} is reserved; please enter a different %{attribute}."
+      greater_than:             "The provided %{attribute} is too small; please provide a different %{attribute}  greater than %{count}."
+      greater_than_or_equal_to: "The provided %{attribute} is too small; please provide a different %{attribute}  greater than or equal to %{count}."
+      inclusion:                "The chosen %{attribute} is not available; please choose an available option." # Rails 4
+      inclusion_of:             "The chosen %{attribute} is not available; please choose an available option." # Rails 5
+      invalid:                  "The provided %{attribute} is invalid; please enter a valid %{attribute}."
+      in_between:               "The provided %{attribute} is outside of the accepted range; please enter a different %{attribute}  within the range of %{min} to %{max}."
+      less_than:                "The provided %{attribute} is too large; please provide a different %{attribute}  less than %{count}."
+      less_than_or_equal_to:    "The provided %{attribute} is too large; please provide a different %{attribute}  less than or equal to %{count}."
+      not_a_number:             "The provided %{attribute} is not numeric; please enter a numeric %{attribute}."
+      odd:                      "The provided %{attribute} is even; please enter an odd %{attribute}."
+      record_invalid:           "The %{attribute} is invalid. %{errors}"
+      required:                 "The %{attribute} is required; please enter a %{attribute}."
+      spoofed_media_type:       "The provided %{attribute} is invalid (often due to an incorrect file extension); please provide a valid %{attribute} , including an appropriate file extension."
+      too_long:                 "The provided %{attribute} contains more than the %{count} available characters; please shorten the entry."
+      too_short:                "The provided %{attribute} contains fewer than the %{count} required characters; please lengthen the entry."
+      taken:                    "The provided %{attribute} is already taken; please enter a different %{attribute}."
+      wrong_length:             "The provided %{attribute} contains the wrong amount of characters; please adjust the entry to exactly %{count} characters."
+      uuid:
+          blank: "The provided %{attribute} is blank. please enter a non-blank %{attribute}."
+          invalid: "The provided %{attribute} is invalid. Please enter a valid UUID."
+          taken: "The provided %{attribute} must be unique. This UUID is already taken."
   pundit:
     default: "You cannot perform this action."
     post_policy:
       update?: "You cannot edit this post!"
       create?: "You cannot create posts!"
-  churps:
-    under_character_limit: content is too short (minimum is %{min} characters)
-    over_character_limit: content is too long (maximum is %{max} characters)
-    cannot_be_empty: content cannot be empty (minimum is %{min} characters)

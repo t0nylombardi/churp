@@ -27,7 +27,7 @@ module Authentication
     end
 
     def expired?(payload)
-      Time.zone.at(payload[:exp]) < Time.current
+      Time.zone.at(payload[:exp]) < Time.current unless Rails.env.development?
     end
   end
 end
