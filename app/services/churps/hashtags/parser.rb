@@ -4,17 +4,20 @@ module Churps
   module Hashtags
     # Extracts hashtags from free-form text.
     class Parser
-      HASHTAG_REGEX = /
+      # Matches hashtags without leading word characters.
+      REGEX = /
         (?<!\w)
-        \#([a-zA-Z0-9_]{1,50})
+        #([a-zA-Z0-9_]{1,50})
       /x
 
-      # @param text [String, nil]
-      # @return [Array<Churps::Hashtags::Hashtag>]
+      # Parses text into unique hashtag value objects.
+      #
+      # @param text [String, nil] churp body text
+      # @return [Array<Churps::Hashtags::Hashtag>] normalized, unique hashtags
       def self.call(text)
         return [] if text.blank?
 
-        hashtags = text.to_enum(:scan, HASHTAG_REGEX).map do
+        text.to_enum(:scan, REGEX).map do
           match = Regexp.last_match
 
           Hashtag.new(
@@ -22,9 +25,7 @@ module Churps
             start_index: match.begin(0),
             end_index: match.end(0)
           )
-        end
-
-        return hashtags.uniq(&:name)
+        end.uniq(&:name)
       end
     end
   end

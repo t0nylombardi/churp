@@ -4,17 +4,17 @@ module Churps
   module Hashtags
     # Computes the added/removed hashtag sets.
     class Diff
+      # Uses Shared::CollectionDiff with the hashtag name as the key.
+      #
       # @param old_hashtags [Array<Churps::Hashtags::Hashtag>]
       # @param new_hashtags [Array<Churps::Hashtags::Hashtag>]
-      # @return [Hash{Symbol=>Array<Churps::Hashtags::Hashtag>}]
+      # @return [Hash{Symbol=>Array<Churps::Hashtags::Hashtag>}] diff hash
       def self.call(old_hashtags, new_hashtags)
-        old_names = old_hashtags.map(&:name)
-        new_names = new_hashtags.map(&:name)
-
-        added = new_hashtags.reject { |hashtag| old_names.include?(hashtag.name) }
-        removed = old_hashtags.reject { |hashtag| new_names.include?(hashtag.name) }
-
-        return { added:, removed: }
+        Shared::CollectionDiff.call(
+          old_hashtags,
+          new_hashtags,
+          key: :name
+        )
       end
     end
   end

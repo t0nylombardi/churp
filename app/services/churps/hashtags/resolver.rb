@@ -2,16 +2,22 @@
 
 module Churps
   module Hashtags
-    # Resolves tag names to persisted ids.
+    # Resolves tag names to persisted records.
     class Resolver
-      # @param hashtags [Array<Churps::Hashtags::Hashtag>]
-      # @return [Hash{String=>String}]
+      # Resolves names to persisted records, creating any missing tags.
+      #
+      # @param hashtags [Array<Churps::Hashtags::Hashtag>] parsed hashtag objects
+      # @return [Hash{String=>Hashtag}] map of normalized name to persisted tag
       def self.call(hashtags)
-        names = hashtags.map(&:name).map(&:downcase).uniq
-        return {} if names.empty?
+        names = hashtags.map(&:name)
 
-        resolved = HashTag.where(name: names).pluck(:name, :id).to_h
-        return resolved
+        existing = Hashtag.where(name: names).index_by(&:name)
+
+        names.each do |name|
+          existing[name] ||= Hashtag.create!(name:)
+        end
+
+        existing
       end
     end
   end

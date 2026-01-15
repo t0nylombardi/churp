@@ -4,11 +4,13 @@ module Churps
   module Hashtags
     # Policy for whether a hashtag should be persisted/visible.
     class Policy
-      # @param churp [Churp]
-      # @param name [String]
-      # @return [Boolean]
+      # Determines whether a tag is allowed for a specific churp.
+      #
+      # @param churp [Churp] churp that owns the tag
+      # @param name [String] normalized tag name
+      # @return [Boolean] whether the tag is allowed for persistence/visibility
       def self.allowed?(churp:, name:)
-        return true
+        true
       end
     end
   end
