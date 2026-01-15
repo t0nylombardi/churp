@@ -2,7 +2,7 @@
 
 module Churps
   module Mentions
-    class NotifierService < ApplicationService
+    class Notifier < ApplicationService
       attr_reader :churp, :username
 
       def initialize(churp:, username:)
