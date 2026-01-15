@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_11_001447) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_15_205111) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -22,6 +22,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_11_001447) do
     t.datetime "updated_at", null: false
     t.index ["churp_id"], name: "index_churp_hash_tags_on_churp_id"
     t.index ["hash_tag_id"], name: "index_churp_hash_tags_on_hash_tag_id"
+  end
+
+  create_table "churp_mentions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "churp_id", null: false
+    t.datetime "created_at", null: false
+    t.uuid "mentioned_user_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["churp_id", "mentioned_user_id"], name: "index_churp_mentions_on_churp_id_and_mentioned_user_id", unique: true
+    t.index ["mentioned_user_id"], name: "index_churp_mentions_on_mentioned_user_id"
   end
 
   create_table "churps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -170,6 +179,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_11_001447) do
     t.index ["uuid"], name: "index_users_on_uuid", unique: true
   end
 
+  add_foreign_key "churp_mentions", "churps"
+  add_foreign_key "churp_mentions", "users", column: "mentioned_user_id"
   add_foreign_key "churps", "churps", column: "original_churp_id"
   add_foreign_key "churps", "users"
   add_foreign_key "comments", "churps"
