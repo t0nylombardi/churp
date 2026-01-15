@@ -27,7 +27,6 @@ require "rspec/rails"
 require_relative "support/auth"
 require_relative "support/factory_bot"
 require_relative "support/chrome"
-require_relative "support/devise"
 require_relative "support/controller_macros"
 
 require "view_component/test_helpers"
@@ -66,17 +65,12 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.include Devise::Test::ControllerHelpers, type: :controller
-
-  config.include Warden::Test::Helpers
-
   ActiveStorage::Current.url_options = { host: "https://example.com" }
 
   # add until here
   # ---------------------------------------------
 
   config.before(:suite) do
-    config.include Devise::Test::ControllerHelpers, type: :controller
     config.include FactoryBot::Syntax::Methods
     config.extend ControllerMacros, type: :controller
 
