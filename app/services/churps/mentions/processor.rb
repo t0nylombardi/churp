@@ -3,21 +3,19 @@
 module Churps
   module Mentions
     class Processor
-      def self.call(churp:)
-        usernames = MentionParser.call(churp.body)
-        return if usernames.empty?
+      def self.call(churp:, old_body: nil)
+        new_mentions = Parser.call(churp.body["text"])
+        old_mentions = old_body ? Parser.call(old_body["text"]) : []
 
-        user_ids = MentionResolver.call(usernames)
-        return if user_ids.empty?
+        diff = Diff.call(old_mentions, new_mentions)
+        return if diff[:added].empty?
 
-        MentionPersister.call(
-          churp: churp,
-          mentioned_user_ids: user_ids
-        )
+        resolved = Resolver.call(diff[:added])
 
-        MentionNotifier.call(
-          churp: churp,
-          mentioned_user_ids: user_ids
+        ResolvedMentionBuilder.call(
+          churp:,
+          mentions: diff[:added],
+          resolved_map: resolved
         )
       end
     end

@@ -5,24 +5,21 @@ module Churps
     class Parser
       MENTION_REGEX = /
         (?<!\w)
-        @
-        ([a-zA-Z0-9_]{1,15})
+        @([a-zA-Z0-9_]{1,15})
       /x
 
-      def self.call(body)
-        text = extract_text(body)
+      def self.call(text)
         return [] if text.blank?
 
-        text.scan(MENTION_REGEX).flatten.uniq
-      end
+        text.to_enum(:scan, MENTION_REGEX).map do
+          match = Regexp.last_match
 
-      def self.extract_text(body)
-        case body
-        when Hash
-          body["text"] || body[:text]
-        else
-          body.to_s
-        end
+          Mention.new(
+            username: match[1],
+            start_index: match.begin(0),
+            end_index: match.end(0)
+          )
+        end.uniq(&:username)
       end
     end
   end
