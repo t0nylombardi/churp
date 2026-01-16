@@ -1,7 +1,6 @@
-<div style="border:1px solid #343434; padding:12px; border-radius:12px; background:#101010;">
-  <b style="color:#ffc799;">Heads up:</b>
-  <span style="color:#a0a0a0;">This project is under active development. See Branch <a href="https://github.com/t0nylombardi/churp/tree/rehaul-churp-v1"> rehaul-churp-v1 </a> for more up-tp-date ruby code. </span>
-</div>
+>  [!CAUTION]
+> ## **Heads up**: This project is under active development. See branch [rehaul-churp-v1](https://github.com/t0nylombardi/churp/tree/rehaul-churp-v1).
+
 
 # ChrupSocial
 
