@@ -12,6 +12,6 @@ RSpec.describe Churps::Hashtags::HashtagUsage do
 
   it "rejects negative usage counts" do
     expect { described_class.new(name: "ruby", usage_count: -1) }
-      .to raise_error(Dry::Types::ConstraintError)
+      .to raise_error(Dry::Struct::Error)
   end
 end
