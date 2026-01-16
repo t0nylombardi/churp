@@ -1,43 +1,55 @@
-# frozen_string_literal: true
-
 module Seed
-  class UserSeeder
+  class UserSeeder < BaseSeeder
     BATCH_SIZE = 500
 
-    def initialize(num)
-      @num = num
+    def initialize(count:)
+      @count = count
+      @buffer = []
       @created = 0
       @failed = 0
-      @valid_users = []
-      @invalid_users = []
     end
 
     def call
-      generate_users
-      bulk_import
-      summary
-    rescue => e
-      Rails.logger.error "[Seed::UserSeeder] Error: #{e.message}"
-      { created: @created, failed: @failed, error: e.message }
+      @count.times { yield build_and_buffer_user }
+      yield flush
+
+      success(summary)
     end
 
     private
 
-    def generate_users
-      @num.times do |i|
-        user = build_user(i)
-        user.valid? ? @valid_users << user : handle_invalid(user)
-        flush_batch if @valid_users.size >= BATCH_SIZE
+    def build_and_buffer_user
+      user = build_user
+
+      if user.valid?
+        @buffer << user
+        flush if @buffer.size >= BATCH_SIZE
+        success
+      else
+        @failed += 1
+        Rails.logger.warn "[Seed::UserSeeder] Invalid user: #{user.errors.full_messages.join(", ")}"
       end
-      flush_batch unless @valid_users.empty?
     end
 
-    def build_user(i)
+    def flush
+      return success if @buffer.empty?
+
+      User.import(@buffer, recursive: true, validate: false)
+      @created += @buffer.size
+      @buffer.clear
+
+      success
+    rescue => e
+      failure(e)
+    end
+
+    def build_user
       User.new(
-        email: "test#{i}@churp.com",
+        email: Faker::Internet.unique.email,
         password: "Passw0rd1!",
         password_confirmation: "Passw0rd1!",
-        username: "@#{Faker::Internet.username(specifier: 10).camelize}#{i}",
+        username: "@#{Faker::Internet.username(specifier: 10)}",
+        password_changed_at: Time.current,
         role: :basic,
         profile: build_profile
       )
@@ -53,37 +65,8 @@ module Seed
       )
     end
 
-    def handle_invalid(user)
-      Rails.logger.warn "[Seed::UserSeeder] Invalid user (#{user.email}): #{user.errors.full_messages.join(", ")}"
-      @invalid_users << user
-      @failed += 1
-    end
-
-    def flush_batch
-      User.import @valid_users, recursive: true, validate: false
-      @created += @valid_users.size
-      puts "💾 Imported #{@valid_users.size} users... (total: #{@created})"
-      @valid_users.clear
-    rescue => e
-      Rails.logger.error "[Seed::UserSeeder] Failed to import batch: #{e.message}"
-    end
-
-    def bulk_import
-      # Remaining users (if not divisible by batch size)
-      return if @valid_users.empty?
-
-      User.import @valid_users, recursive: true, validate: false
-      @created += @valid_users.size
-      @valid_users.clear
-    rescue => e
-      Rails.logger.error "[Seed::UserSeeder] Final import failed: #{e.message}"
-    end
-
     def summary
-      {
-        created: @created,
-        failed: @failed
-      }
+      {created: @created, failed: @failed}
     end
   end
 end

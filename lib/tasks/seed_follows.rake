@@ -5,13 +5,15 @@ namespace :seed do
   task create_follows: :environment do
     puts "🌱 Seeding user follows..."
 
-    seeder = Seed::FollowSeeder.new
-    result = seeder.call
+    result = Seed::FollowSeeder.new.call
 
-    puts "✅ Created #{result[:created_count]} follows."
-    puts "⚠️ Skipped #{result[:skipped_count]} duplicates."
-  rescue => e
-    Rails.logger.error "[Seed::FollowSeeder] Fatal error: #{e.message}"
-    puts "💥 Seeding failed: #{e.message}"
+    case result
+    in Dry::Monads::Success(summary)
+      puts "✅ Created #{summary[:created]} follows."
+      puts "⚠️ Skipped #{summary[:skipped]} duplicates."
+    in Dry::Monads::Failure(error)
+      puts "❌ Follow seeding failed: #{error.message}"
+      exit(1)
+    end
   end
 end

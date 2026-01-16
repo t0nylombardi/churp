@@ -12,7 +12,6 @@
 #  role                :integer
 #  slug                :string           default(""), not null
 #  username            :string           default(""), not null
-#  uuid                :uuid             not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -20,7 +19,6 @@
 #
 #  index_users_on_email     (email) UNIQUE
 #  index_users_on_username  (username) UNIQUE
-#  index_users_on_uuid      (uuid) UNIQUE
 #
 FactoryBot.define do
   factory :user do

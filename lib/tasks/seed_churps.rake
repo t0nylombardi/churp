@@ -4,17 +4,19 @@ namespace :seed do
   desc "Seed a specified number of churps with hashtags and comments"
   task :create_churps, [:num_of_churps] => :environment do |_t, args|
     num = args[:num_of_churps].to_i
-    raise ArgumentError, "Please provide a number of churps to create." if num <= 0
+    abort("❌ Please provide a number of churps to create.") if num <= 0
 
     puts "🌱 Seeding #{num} churps..."
 
-    churp_seeder = Seed::ChurpSeeder.new(num)
-    result = churp_seeder.call
+    result = Seed::ChurpSeeder.new(count: num).call
 
-    puts "✅ Successfully created #{result[:success_count]} churps."
-    puts "❌ Failed to create #{result[:error_count]} churps."
-  rescue => e
-    Rails.logger.error "Error during churp seeding: #{e.message}"
-    puts "❌ Seeding failed: #{e.message}"
+    case result
+    in Dry::Monads::Success(summary)
+      puts "✅ Successfully created #{summary[:created]} churps."
+      puts "❌ Failed to create #{summary[:failed]} churps."
+    in Dry::Monads::Failure(error)
+      puts "❌ Churp seeding failed: #{error.message}"
+      exit(1)
+    end
   end
 end

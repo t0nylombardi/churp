@@ -1,60 +1,95 @@
 # frozen_string_literal: true
 
 module Seed
-  class ChurpSeeder
-    include ActiveModel::Model
+  class ChurpSeeder < BaseSeeder
+    include Dry::Monads[:result, :do]
 
-    attr_reader :num_of_churps, :hash_tags, :users, :success_count, :error_count
+    DEFAULT_HASHTAGS = %w[
+      #train #transport #railway #bridge #metro #trainspotting #railfan
+      #nature #birds #wildlife #travel #explore #photography #art #funny
+      #viral #music #fitness #cute #love #reels
+    ].freeze
 
-    def initialize(num_of_churps)
-      @num_of_churps = num_of_churps
-      @hash_tags = default_hash_tags
+    def initialize(count:)
+      @count = count
       @users = User.all.to_a
-      @success_count = 0
-      @error_count = 0
     end
 
     def call
-      num_of_churps.times { create_random_churp }
-      { success_count:, error_count: }
+      results = Array.new(@count) { create_churp }
+
+      success(
+        created: results.count(&:success?),
+        failed: results.count(&:failure?)
+      )
     end
 
     private
 
-    def create_random_churp
-      churp_body = Faker::Lorem.paragraph_by_chars(number: 200)
-      hashtags_text = Array.new(5) { hash_tags.sample }.join(" ")
-      user = users.sample
+    def create_churp
+      churp = yield build_churp
+      yield persist_churp(churp)
+      yield seed_comments(churp)
 
-      churp = Churp.new(
-        body: "#{churp_body} #{user.username} #{hashtags_text}",
-        user:
+      success(churp)
+    rescue ActiveRecord::ActiveRecordError => e
+      Rails.logger.error("[Seed::ChurpSeeder] #{e.message}")
+      failure(e)
+    end
+
+    def build_churp
+      success(
+        Churp.new(
+          user: random_user,
+          content: content_block(
+            Faker::Lorem.paragraph(sentence_count: 3),
+            random_user.username,
+            hashtags(3)
+          )
+        )
       )
+    end
 
+    def persist_churp(churp)
       ActiveRecord::Base.transaction do
         churp.save!
-        3.times { create_comment_for(churp) }
-        @success_count += 1
-        puts "✨ Created churp ##{@success_count}: #{churp.id}"
       end
-    rescue => e
-      Rails.logger.error "Failed to create churp: #{e.message}"
-      @error_count += 1
+
+      success(churp)
     end
 
-    def create_comment_for(churp)
-      comment_body = Faker::Lorem.sentence(word_count: 20)
-      churp.comments.create!(
-        content: "#{comment_body} #{Array.new(3) { hash_tags.sample }.join(" ")}",
-        user: users.sample
-      )
+    def seed_comments(churp)
+      3.times do
+        churp.comments.create!(
+          user: random_user,
+          content: content_block(
+            Faker::Lorem.sentence(word_count: 20),
+            hashtags(2)
+          )
+        )
+      end
+
+      success
     end
 
-    def default_hash_tags
-      %w[
-        #train #transport #railway #bridge #metro #trainspotting #railfan #nature #birds #wildlife
-        #travel #explore #photography #art #funny #viral #music #fitness #cute #love #reels
-      ]
+    def content_block(*parts)
+      {
+        "version" => 1,
+        "blocks" => [
+          {
+            "type" => "paragraph",
+            "text" => parts.join(" ")
+          }
+        ]
+      }
+    end
+
+    def random_user
+      @users.sample
+    end
+
+    def hashtags(count)
+      DEFAULT_HASHTAGS.sample(count).join(" ")
     end
   end
 end

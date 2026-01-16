@@ -12,7 +12,6 @@
 #  role                :integer
 #  slug                :string           default(""), not null
 #  username            :string           default(""), not null
-#  uuid                :uuid             not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null
 #
@@ -20,14 +19,13 @@
 #
 #  index_users_on_email     (email) UNIQUE
 #  index_users_on_username  (username) UNIQUE
-#  index_users_on_uuid      (uuid) UNIQUE
 #
 class User < ApplicationRecord
-  include ActionText::Attachable
   extend FriendlyId
 
   friendly_id :username, use: :slugged
   has_person_name
+  has_secure_password
 
   # @return [String] the login identifier (username or email)
   attr_writer :login

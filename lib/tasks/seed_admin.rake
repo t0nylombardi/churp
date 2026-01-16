@@ -5,17 +5,15 @@ namespace :seed do
   task create_admin: :environment do
     puts "🌱 Seeding admin account..."
 
-    seeder = Seed::AdminSeeder.new
-    result = seeder.call
+    result = Seed::AdminSeeder.new.call
 
-    if result.success?
-      puts "✅ Admin created: #{result.user.email}"
-      puts "🧑 Profile: #{result.user.profile.full_name}"
-    else
-      puts "❌ Failed to create admin: #{result.error_message}"
+    case result
+    in Dry::Monads::Success(user)
+      puts "✅ Admin created: #{user.email}"
+      puts "🧑 Profile: #{user.profile.full_name}"
+    in Dry::Monads::Failure(error)
+      puts "❌ Failed to create admin: #{error.message}"
+      exit(1)
     end
-  rescue => e
-    Rails.logger.error "[Seed::Admin] Fatal error: #{e.message}"
-    puts "💥 Seeding failed: #{e.message}"
   end
 end
