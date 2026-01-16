@@ -53,11 +53,25 @@ class Churp < ApplicationRecord
     rechurp? ? "rechurp" : "churp"
   end
 
+  def text
+    content["text"]
+  end
+
   private
 
+  # Validates that the churp content is a structured document.
+  #
+  # This validation intentionally enforces only high-level structure.
+  # Detailed semantic validation (mentions, hashtags, ranges, etc.)
+  # is handled in the domain layer via dry-types and services.
+  #
+  # @return [void]
+  # @raise [ActiveModel::ValidationError] if the content is not structured
   def content_must_be_structured
-    return if content.is_a?(Hash) && content["blocks"].is_a?(Array)
+    return if content.is_a?(Hash) &&
+      content["version"].present? &&
+      content["blocks"].is_a?(Array)
 
-    errors.add(:content, "must be a structured content document")
+    errors.add(:content, "must be a versioned structured content document")
   end
 end

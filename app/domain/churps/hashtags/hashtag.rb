@@ -2,7 +2,7 @@
 
 module Churps
   module Hashtags
-    # Parsed hashtag extracted from a churp body.
+    # Parsed hashtag extracted from a churp content body.
     #
     # This value object preserves both the normalized name and its position in
     # the original string so downstream services can annotate or highlight.

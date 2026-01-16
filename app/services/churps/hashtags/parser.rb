@@ -7,12 +7,12 @@ module Churps
       # Matches hashtags without leading word characters.
       REGEX = /
         (?<!\w)
-        #([a-zA-Z0-9_]{1,50})
+        \#([a-zA-Z0-9_]{1,50})
       /x
 
       # Parses text into unique hashtag value objects.
       #
-      # @param text [String, nil] churp body text
+      # @param text [String, nil] churp content text
       # @return [Array<Churps::Hashtags::Hashtag>] normalized, unique hashtags
       def self.call(text)
         return [] if text.blank?

@@ -14,7 +14,7 @@ module Churps
       # @param tags [Array<HashTag>] persisted tags
       # @return [Integer] number of rows updated
       def self.call(tags)
-        Hashtag.where(id: tags.map(&:id))
+        HashTag.where(id: tags.map(&:id))
           .update_all("usage_count = usage_count + 1")
       end
     end

@@ -4,36 +4,57 @@ module Churps
   module Hashtags
     # Processes hashtags found in churp bodies.
     # Handles parsing, diffing, resolving, persisting, and indexing.
-    # @see Churps::Hashtags::Parser
-    # @see Churps::Hashtags::Resolver
-    # @see Churps::Hashtags::Persister
-    # @see Churps::Hashtags::Indexer
     class Processor
-      include Dry::Monads[:result]
+      include Dry::Monads[:result, :do]
 
-      # Processes hashtags for a churp body.
-      #
-      # The flow is: parse -> diff -> resolve -> persist -> index. If no new
-      # tags are added, this returns Success(:no_tags).
-      #
-      # @param [Churp] churp churp being created or updated
-      # @param [Hash, nil] old_body previous churp body hash, if updating
-      #
-      # @return [Dry::Monads::Result] Success with Hashtag array or :no_tags, or Failure
+      # @param churp [Churp]
+      # @param old_body [Hash, nil]
+      # @return [Dry::Monads::Result]
       def call(churp:, old_body: nil)
-        new_tags = Parser.call(churp.body["text"])
-        old_tags = old_body ? Parser.call(old_body["text"]) : []
+        new_tags = yield parse(churp.content["text"])
+        old_tags = yield parse_old(old_body)
 
         diff = Diff.call(old_tags, new_tags)
         return Success(:no_tags) if diff[:added].empty?
 
-        resolved = Resolver.call(diff[:added])
-
-        Persister.call(churp:, tags: resolved.values)
-        Indexer.call(resolved.values)
+        resolved = yield resolve(diff[:added])
+        yield persist(churp, resolved)
+        yield index(resolved)
 
         Success(resolved.values)
+      end
+
+      private
+
+      def parse(text)
+        Success(Parser.call(text))
       rescue Dry::Types::ConstraintError => e
+        Failure(e)
+      end
+
+      def parse_old(old_body)
+        return Success([]) if old_body.nil?
+
+        parse(old_body["text"])
+      end
+
+      def resolve(tags)
+        Success(Resolver.call(tags))
+      rescue ActiveRecord::RecordInvalid => e
+        Failure(e)
+      end
+
+      def persist(churp, resolved)
+        Persister.call(churp:, resolved_map: resolved)
+        Success()
+      rescue ActiveRecord::ActiveRecordError => e
+        Failure(e)
+      end
+
+      def index(resolved)
+        Indexer.call(resolved.values)
+        Success()
+      rescue => e
         Failure(e)
       end
     end
