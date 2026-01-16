@@ -1,0 +1,4 @@
+:queues:
+  - [content_processors, 3]
+  - [notifications, 2]
+  - [default, 1]

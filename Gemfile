@@ -36,7 +36,7 @@ gem "pagy"
 gem "pundit"
 gem "opensearch-ruby"
 gem "searchkick"
-gem "sidekiq"
+gem "sidekiq", "~> 8.1"
 gem "view_component"
 
 gem "bootsnap", require: false
