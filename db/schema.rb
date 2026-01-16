@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_15_205111) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_16_001901) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -20,6 +20,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_15_205111) do
     t.datetime "created_at", null: false
     t.uuid "hash_tag_id"
     t.datetime "updated_at", null: false
+    t.index ["churp_id", "hash_tag_id"], name: "index_churp_hash_tags_on_churp_id_and_hash_tag_id", unique: true
     t.index ["churp_id"], name: "index_churp_hash_tags_on_churp_id"
     t.index ["hash_tag_id"], name: "index_churp_hash_tags_on_hash_tag_id"
   end
@@ -27,7 +28,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_15_205111) do
   create_table "churp_mentions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "churp_id", null: false
     t.datetime "created_at", null: false
+    t.integer "end_index", null: false
     t.uuid "mentioned_user_id", null: false
+    t.integer "start_index", null: false
     t.datetime "updated_at", null: false
     t.index ["churp_id", "mentioned_user_id"], name: "index_churp_mentions_on_churp_id_and_mentioned_user_id", unique: true
     t.index ["mentioned_user_id"], name: "index_churp_mentions_on_mentioned_user_id"
@@ -69,6 +72,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_15_205111) do
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
+    t.integer "usage_count", default: 0, null: false
+    t.index ["name"], name: "index_hash_tags_on_name", unique: true
   end
 
   create_table "likes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -179,8 +184,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_15_205111) do
     t.index ["uuid"], name: "index_users_on_uuid", unique: true
   end
 
-  add_foreign_key "churp_mentions", "churps"
-  add_foreign_key "churp_mentions", "users", column: "mentioned_user_id"
+  add_foreign_key "churp_mentions", "churps", on_delete: :cascade
+  add_foreign_key "churp_mentions", "users", column: "mentioned_user_id", on_delete: :cascade
   add_foreign_key "churps", "churps", column: "original_churp_id"
   add_foreign_key "churps", "users"
   add_foreign_key "comments", "churps"
