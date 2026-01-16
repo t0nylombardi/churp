@@ -51,7 +51,7 @@ Dockerfile.production
 
 coverage
 
-code_output.txt
+*_output.txt
 .ccignore
 dump.rdb
 

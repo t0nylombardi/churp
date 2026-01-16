@@ -5,7 +5,9 @@
 # Table name: profiles
 #
 #  id          :uuid             not null, primary key
+#  avatar      :jsonb            not null
 #  birth_date  :datetime
+#  cover       :jsonb            not null
 #  description :text
 #  first_name  :string
 #  last_name   :string

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_16_001901) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_16_195911) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -111,7 +111,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_16_001901) do
   end
 
   create_table "profiles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.jsonb "avatar", default: {}, null: false
     t.datetime "birth_date"
+    t.jsonb "cover", default: {}, null: false
     t.datetime "created_at", null: false
     t.text "description"
     t.string "first_name"
@@ -178,10 +180,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_16_001901) do
     t.string "slug", default: "", null: false
     t.datetime "updated_at", null: false
     t.string "username", default: "", null: false
-    t.uuid "uuid", default: -> { "gen_random_uuid()" }, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
-    t.index ["uuid"], name: "index_users_on_uuid", unique: true
   end
 
   add_foreign_key "churp_mentions", "churps", on_delete: :cascade
