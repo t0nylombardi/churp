@@ -11,7 +11,7 @@ module Churps
       # @param old_body [Hash, nil]
       # @return [Dry::Monads::Result]
       def call(churp:, old_body: nil)
-        new_tags = yield parse(churp.content["text"])
+        new_tags = yield parse(Churps::ContentText.extract(churp.content))
         old_tags = yield parse_old(old_body)
 
         diff = Diff.call(old_tags, new_tags)
@@ -35,7 +35,7 @@ module Churps
       def parse_old(old_body)
         return Success([]) if old_body.nil?
 
-        parse(old_body["text"])
+        parse(Churps::ContentText.extract(old_body))
       end
 
       def resolve(tags)

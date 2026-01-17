@@ -25,7 +25,9 @@
 
 require "rails_helper"
 
-RSpec.describe Churp do
+RSpec.describe Churp, type: :model do
+  include ActiveJob::TestHelper
+
   describe "associations" do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to belong_to(:original_churp).class_name("Churp").optional }
@@ -61,7 +63,7 @@ RSpec.describe Churp do
       churp = build(:churp, content: { "version" => 1 })
       churp.valid?
 
-      expect(churp.errors[:content]).to include("must be a structured content document")
+      expect(churp.errors[:content]).to include("must be a versioned structured content document")
     end
   end
 
@@ -112,6 +114,15 @@ RSpec.describe Churp do
       churp = build(:churp, original_churp: nil)
 
       expect(churp.churp_type).to eq("churp")
+    end
+  end
+
+  describe "ActiveJob" do
+    it "enqueues hashtag and mention jobs on create" do
+      expect {
+        create(:churp)
+      }.to have_enqueued_job(Churps::Hashtags::ProcessJob)
+        .and have_enqueued_job(Churps::Mentions::ProcessJob)
     end
   end
 end

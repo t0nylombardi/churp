@@ -17,8 +17,8 @@ RSpec.describe Churps::Mentions::Resolver do
       result = described_class.call(mentions)
 
       expect(result).to eq(
-        "alice" => alice.id,
-        "bob" => bob.id
+        "@alice" => alice.id,
+        "@bob" => bob.id
       )
     end
   end

@@ -45,6 +45,8 @@ class Churp < ApplicationRecord
 
   scope :search_hashtags, ->(query) { joins(:hash_tags).where(hash_tags: { name: query }) }
 
+  after_commit :enqueue_content_processors, on: %i[create update]
+
   def rechurp?
     original_churp.present?
   end
@@ -54,7 +56,7 @@ class Churp < ApplicationRecord
   end
 
   def text
-    content["text"]
+    Churps::ContentText.extract(content)
   end
 
   private
@@ -73,5 +75,10 @@ class Churp < ApplicationRecord
       content["blocks"].is_a?(Array)
 
     errors.add(:content, "must be a versioned structured content document")
+  end
+
+  def enqueue_content_processors
+    Churps::Hashtags::ProcessJob.perform_later(id)
+    Churps::Mentions::ProcessJob.perform_later(id)
   end
 end

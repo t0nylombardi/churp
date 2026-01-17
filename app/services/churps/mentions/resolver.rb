@@ -2,7 +2,10 @@ module Churps
   module Mentions
     class Resolver
       def self.call(mentions)
-        usernames = mentions.map(&:username)
+        usernames =
+          mentions
+            .map(&:username)
+            .map { |u| "@#{u}" }
 
         User
           .where(username: usernames)

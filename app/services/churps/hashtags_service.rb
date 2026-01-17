@@ -24,7 +24,7 @@ module Churps
     private
 
     def extract_hashtags
-      churp.content.to_s.scan(/#\w+/).map { |n| n.delete("#") }.uniq
+      Churps::ContentText.extract(churp.content).scan(/#\w+/).map { |n| n.delete("#") }.uniq
     end
   end
 end
