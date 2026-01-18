@@ -4,8 +4,8 @@ module Churps
   module Mentions
     class Processor
       def self.call(churp:, old_body: nil)
-        new_mentions = Parser.call(churp.body["text"])
-        old_mentions = old_body ? Parser.call(old_body["text"]) : []
+        new_mentions = Parser.call(Churps::ContentText.extract(churp.content))
+        old_mentions = old_body ? Parser.call(Churps::ContentText.extract(old_body)) : []
 
         diff = Diff.call(old_mentions, new_mentions)
         return if diff[:added].empty?

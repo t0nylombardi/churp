@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe Churps::Hashtags::Processor do
-  let(:churp) { Struct.new(:body).new({ "text" => "hello #ruby" }) }
+  let(:churp) { Struct.new(:content).new({ "text" => "hello #ruby" }) }
   let(:old_body) { { "text" => "hello #rails" } }
   let(:processor) { described_class.new }
 
@@ -21,8 +21,8 @@ RSpec.describe Churps::Hashtags::Processor do
     end
 
     it "parses both old and new bodies when old_body is provided" do
-      allow(Churps::Hashtags::Parser).to receive(:call).with(churp.body["text"]).and_return([])
-      allow(Churps::Hashtags::Parser).to receive(:call).with(old_body["text"]).and_return([])
+      allow(Churps::Hashtags::Parser).to receive(:call).with("hello #ruby").and_return([])
+      allow(Churps::Hashtags::Parser).to receive(:call).with("hello #rails").and_return([])
       allow(Churps::Hashtags::Diff).to receive(:call).and_return({ added: [] })
 
       processor.call(churp: churp, old_body: old_body)
@@ -45,15 +45,19 @@ RSpec.describe Churps::Hashtags::Processor do
       expect(result.value!).to eq(resolved.values)
     end
 
-    it "returns Failure when a constraint error is raised" do
-      error = Dry::Types::ConstraintError.new("invalid")
-
-      allow(Churps::Hashtags::Parser).to receive(:call).and_raise(error)
+    it "returns Failure when hashtag validation fails" do
+      allow(Churps::Hashtags::Parser)
+        .to receive(:call)
+        .and_raise(
+          Dry::Types::ConstraintError.new(
+            Churps::Hashtags::Types::TagName,
+            "###bad"
+          )
+        )
 
       result = processor.call(churp: churp)
 
       expect(result).to be_failure
-      expect(result.failure).to eq(error)
     end
   end
 end

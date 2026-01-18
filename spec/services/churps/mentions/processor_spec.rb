@@ -3,12 +3,13 @@
 require "rails_helper"
 
 RSpec.describe Churps::Mentions::Processor do
-  let(:churp) { Struct.new(:body).new({ "text" => "hello @alice" }) }
+  let(:churp) { Struct.new(:content).new({ "text" => "hello @alice" }) }
   let(:old_body) { { "text" => "hello @bob" } }
 
   before do
-    stub_const("Churps::Mentions::Diff", Class.new)
-    stub_const("Churps::Mentions::ResolvedMentionBuilder", Class.new)
+    stub_const("Churps::Mentions::ResolvedMentionBuilder", Class.new do
+      def self.call(*); end
+    end)
   end
 
   describe ".call" do
@@ -23,8 +24,8 @@ RSpec.describe Churps::Mentions::Processor do
     end
 
     it "parses both old and new bodies when old_body is provided" do
-      allow(Churps::Mentions::Parser).to receive(:call).with(churp.body["text"]).and_return([])
-      allow(Churps::Mentions::Parser).to receive(:call).with(old_body["text"]).and_return([])
+      allow(Churps::Mentions::Parser).to receive(:call).with("hello @alice").and_return([])
+      allow(Churps::Mentions::Parser).to receive(:call).with("hello @bob").and_return([])
       allow(Churps::Mentions::Diff).to receive(:call).and_return({ added: [] })
 
       described_class.call(churp: churp, old_body: old_body)

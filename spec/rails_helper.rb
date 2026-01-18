@@ -67,6 +67,8 @@ RSpec.configure do |config|
 
   ActiveStorage::Current.url_options = { host: "https://example.com" }
 
+  ActiveJob::Base.queue_adapter = :test
+
   # add until here
   # ---------------------------------------------
 

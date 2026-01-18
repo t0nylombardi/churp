@@ -55,6 +55,9 @@ module Seed
         churp.save!
       end
 
+      Churps::Hashtags::ProcessJob.perform_now(churp.id)
+      Churps::Mentions::ProcessJob.perform_now(churp.id)
+
       success(churp)
     end
 

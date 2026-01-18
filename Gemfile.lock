@@ -569,7 +569,7 @@ DEPENDENCIES
   selenium-webdriver
   shoulda-callback-matchers
   shoulda-matchers
-  sidekiq
+  sidekiq (~> 8.1)
   simplecov
   standard
   standard-rails
