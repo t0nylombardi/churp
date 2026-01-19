@@ -35,14 +35,15 @@ FactoryBot.define do
     description { Faker::Lorem.sentence(word_count: 20) }
     website { "https://#{Faker::Internet.domain_name}" }
     birth_date { Faker::Date.birthday(min_age: 18, max_age: 65) }
-    user factory: %i[user]
+    association :user
 
-    after(:build) do |profile|
-      profile.profile_bg.attach(
-        io: Rails.root.join("spec/fixtures/images/twitter_bg.jpeg").open,
-        filename: "twitter_bg.jpeg",
-        content_type: "image/jpeg"
-      )
+    trait :with_avatar do
+      after(:build) do |profile|
+        profile.avatar = {
+          url: "https://example.com/avatar.png",
+          storage: "cdn"
+        }
+      end
     end
   end
 end
