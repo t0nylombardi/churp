@@ -20,6 +20,8 @@
 #
 # Indexes
 #
+#  index_profiles_on_avatar   (avatar) USING gin
+#  index_profiles_on_cover    (cover) USING gin
 #  index_profiles_on_user_id  (user_id)
 #
 # Foreign Keys

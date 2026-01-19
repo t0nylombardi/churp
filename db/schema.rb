@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_16_195911) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_19_210345) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -123,6 +123,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_16_195911) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.string "website"
+    t.index ["avatar"], name: "index_profiles_on_avatar", using: :gin
+    t.index ["cover"], name: "index_profiles_on_cover", using: :gin
     t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 

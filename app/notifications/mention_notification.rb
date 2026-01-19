@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-class MentionNotification < Noticed::Base
+class MentionNotification < ApplicationNotifier
   deliver_by :database
-  deliver_by :action_cable, channel: "NotificationsChannel"
+  # deliver_by :action_cable, channel: "NotificationsChannel"
 
   param :churp_id
   param :start_index

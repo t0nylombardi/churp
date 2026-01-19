@@ -3,6 +3,12 @@
 module Churps
   module Hashtags
     # Computes the added/removed hashtag sets.
+    #
+    # Delegates to {Shared::CollectionDiff} using the hashtag name as the key.
+    #
+    # @example
+    #   diff = Churps::Hashtags::Diff.call(old_tags, new_tags)
+    #   diff[:added] #=> [...]
     class Diff
       # Uses Shared::CollectionDiff with the hashtag name as the key.
       #

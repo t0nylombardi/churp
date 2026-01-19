@@ -3,6 +3,9 @@
 module Churps
   module Hashtags
     # Resolves tag names to persisted records.
+    #
+    # Ensures each parsed hashtag has a corresponding HashTag record.
+    # Missing tags are created inside this resolver.
     class Resolver
       # Resolves names to persisted records, creating any missing tags.
       #

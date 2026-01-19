@@ -2,32 +2,42 @@
 
 module Churps
   module Mentions
+    # Persists mention associations for a churp.
+    #
+    # Expects a resolved map of usernames to user ids so the caller controls
+    # resolution and authorization.
     class Persister
-      # <Description>
+      # Persists each mention as a ChurpMention record.
       #
-      # @param [<Type>] churp <description>
-      # @param [<Type>] mentions <description>
-      # @param [<Type>] resolved_map <description>
-      #
-      # @return [<Type>] <description>
+      # @param churp [Churp] churp containing the mentions
+      # @param mentions [Array<Churps::Mentions::Mention>] parsed mention objects
+      # @param resolved_map [Hash{String=>Integer}] map of username to user id
+      # @return [void]
       def self.call(churp:, mentions:, resolved_map:)
         mentions.each do |mention|
-          binding.pry
           user_id = resolved_map.fetch(mention.username)
 
-          ChurpMention.create!(mention_body(churp, mention, user_id))
+          ::ChurpMention.create!(mention_body(churp, mention, user_id))
         end
       end
 
-      private
+      class << self
+        private
 
-      def mention_body(churp, mention, user_id)
-        {
-          churp: churp,
-          mentioned_user_id: user_id,
-          start_index: mention.start_index,
-          end_index: mention.end_index
-        }
+        # Builds attributes for the ChurpMention record.
+        #
+        # @param churp [Churp]
+        # @param mention [Churps::Mentions::Mention]
+        # @param user_id [Integer]
+        # @return [Hash]
+        def mention_body(churp, mention, user_id)
+          {
+            churp: churp,
+            mentioned_user_id: user_id,
+            start_index: mention.start_index,
+            end_index: mention.end_index
+          }
+        end
       end
     end
   end

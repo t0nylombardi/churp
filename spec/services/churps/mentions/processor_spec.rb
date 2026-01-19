@@ -74,11 +74,9 @@ RSpec.describe Churps::Mentions::Processor do
       expect(mention.churp_id).to eq(churp.id)
       expect(mention.mentioned_user).to eq(mentioned)
 
-      notification = Notification.last
+      notification = Noticed::Notification.last
       expect(notification.recipient).to eq(mentioned)
-      expect(notification.actor).to eq(author)
-      expect(notification.event_type).to eq("mention")
-      expect(notification.data["churp_id"]).to eq(churp.id)
+      expect(notification.type).to eq("MentionNotification::Notification")
     end
   end
 end

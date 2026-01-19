@@ -33,6 +33,8 @@ class Churp < ApplicationRecord
     foreign_key: :original_churp_id,
     dependent: :destroy
 
+  has_many :churp_mentions, dependent: :destroy
+  has_many :mentioned_users, through: :churp_mentions, source: :mentioned_user
   has_many :likes, as: :likeable, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :churp_hash_tags, dependent: :destroy

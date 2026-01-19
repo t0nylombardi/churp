@@ -7,9 +7,11 @@ module Churps
     class Processor
       include Dry::Monads[:result, :do]
 
-      # @param churp [Churp]
-      # @param old_body [Hash, nil]
-      # @return [Dry::Monads::Result]
+      # Orchestrates the hashtag pipeline for a churp body.
+      #
+      # @param churp [Churp] churp being processed
+      # @param old_body [Hash, nil] previous churp body (for edits)
+      # @return [Dry::Monads::Result] Success with tags or Failure with error
       def call(churp:, old_body: nil)
         new_tags = yield parse(Churps::ContentText.extract(churp.content))
         old_tags = yield parse_old(old_body)
@@ -26,24 +28,41 @@ module Churps
 
       private
 
+      # Parses raw text into hashtag value objects.
+      #
+      # @param text [String]
+      # @return [Dry::Monads::Result]
       def parse(text)
         Success(Parser.call(text))
       rescue Dry::Types::ConstraintError => e
         Failure(e)
       end
 
+      # Parses previous body into hashtag value objects, if provided.
+      #
+      # @param old_body [Hash, nil]
+      # @return [Dry::Monads::Result]
       def parse_old(old_body)
         return Success([]) if old_body.nil?
 
         parse(Churps::ContentText.extract(old_body))
       end
 
+      # Resolves tag names to persisted HashTag records.
+      #
+      # @param tags [Array<Churps::Hashtags::Hashtag>]
+      # @return [Dry::Monads::Result]
       def resolve(tags)
         Success(Resolver.call(tags))
       rescue ActiveRecord::RecordInvalid => e
         Failure(e)
       end
 
+      # Persists churp/tag associations.
+      #
+      # @param churp [Churp]
+      # @param resolved [Hash{String=>HashTag}]
+      # @return [Dry::Monads::Result]
       def persist(churp, resolved)
         Persister.call(churp:, resolved_map: resolved)
         Success()
@@ -51,6 +70,10 @@ module Churps
         Failure(e)
       end
 
+      # Updates hashtag indexes/counters.
+      #
+      # @param resolved [Hash{String=>HashTag}]
+      # @return [Dry::Monads::Result]
       def index(resolved)
         Indexer.call(resolved.values)
         Success()
