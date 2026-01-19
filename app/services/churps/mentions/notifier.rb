@@ -2,26 +2,24 @@
 
 module Churps
   module Mentions
-    class Notifier < ApplicationService
-      attr_reader :churp, :username
+    class Notifier
+      def self.call(churp:, mentions:, resolved_map:)
+        mentions.each do |mention|
+          user_id = resolved_map[mention.username]
+          next unless user_id
+          next if user_id == churp.user_id
 
-      def initialize(churp:, username:)
-        @churp = churp
-        @username = username
-      end
-
-      ##
-      # Sends a mention notification to the specified user.
-      #
-      # @return [void]
-      def execute!
-        user = User.friendly.find(username)
-        MentionNotifier.with(message: churp).deliver(user)
-      rescue ActiveRecord::RecordNotFound
-        log_error("[NotifierService] Mentioned user not found: #{username}")
-      rescue => e
-        log_error("\n\n[NotifierService] #{e.class}: #{e.message}\n\n")
-        fail!
+          MentionNotification
+            .with(
+              churp_id: churp.id,
+              start_index: mention.start_index,
+              end_index: mention.end_index
+            )
+            .deliver_later(
+              User.find(user_id),
+              actor: churp.user
+            )
+        end
       end
     end
   end
