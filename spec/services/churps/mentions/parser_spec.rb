@@ -14,7 +14,7 @@ RSpec.describe Churps::Mentions::Parser do
 
       mentions = described_class.call(text)
 
-      expect(mentions.map(&:username)).to eq(%w[alice bob])
+      expect(mentions.map(&:username)).to eq(%w[@alice @bob])
       expect(mentions.map(&:start_index)).to eq([0, 10])
       expect(mentions.map(&:end_index)).to eq([6, 14])
     end
@@ -22,7 +22,7 @@ RSpec.describe Churps::Mentions::Parser do
     it "deduplicates mentions by username" do
       mentions = described_class.call("@alice @alice")
 
-      expect(mentions.map(&:username)).to eq(["alice"])
+      expect(mentions.map(&:username)).to eq(["@alice"])
       expect(mentions.first.start_index).to eq(0)
     end
 
@@ -31,7 +31,7 @@ RSpec.describe Churps::Mentions::Parser do
 
       mentions = described_class.call(text)
 
-      expect(mentions.map(&:username)).to eq(["bob"])
+      expect(mentions.map(&:username)).to eq(["@bob"])
     end
   end
 end

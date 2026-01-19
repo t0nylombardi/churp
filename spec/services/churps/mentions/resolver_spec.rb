@@ -9,9 +9,9 @@ RSpec.describe Churps::Mentions::Resolver do
       bob = create(:user, username: "bob")
 
       mentions = [
-        Churps::Mentions::Mention.new(username: "alice", start_index: 0, end_index: 6),
-        Churps::Mentions::Mention.new(username: "bob", start_index: 7, end_index: 11),
-        Churps::Mentions::Mention.new(username: "missing", start_index: 12, end_index: 20)
+        Churps::Mentions::Mention.new(username: "@alice", start_index: 0, end_index: 6),
+        Churps::Mentions::Mention.new(username: "@bob", start_index: 7, end_index: 11),
+        Churps::Mentions::Mention.new(username: "@missing", start_index: 12, end_index: 20)
       ]
 
       result = described_class.call(mentions)

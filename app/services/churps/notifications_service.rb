@@ -24,8 +24,10 @@
 # * Failures are logged and encapsulated in service error flow
 module Churps
   class NotificationsService < ApplicationService
+    # @return [Churp] churp with mentions to notify
     attr_reader :churp
 
+    # @param churp [Churp] churp being processed for notifications
     def initialize(churp:)
       @churp = churp
     end
@@ -57,6 +59,10 @@ module Churps
 
     private
 
+    # Formats an error message with a short backtrace snippet.
+    #
+    # @param error [StandardError]
+    # @return [String]
     def format_error(error)
       "[NotificationsService] #{error.class}: #{error.message}\n#{error.backtrace&.first(3)&.join("\n")}"
     end

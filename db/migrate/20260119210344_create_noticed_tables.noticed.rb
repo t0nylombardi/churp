@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This migration comes from noticed (originally 20231215190233)
 class CreateNoticedTables < ActiveRecord::Migration[6.1]
   def change

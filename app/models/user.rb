@@ -61,6 +61,9 @@ class User < ApplicationRecord
   has_many :churps, dependent: :destroy
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
+  has_many :churp_mentions, foreign_key: :mentioned_user_id, dependent: :destroy
+  has_many :mentions, through: :churp_mentions, source: :churp
+
   has_many :notifications,
     as: :recipient,
     class_name: "Noticed::Notification",
