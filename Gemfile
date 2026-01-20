@@ -34,6 +34,7 @@ gem "noticed", "~> 3.0"
 gem "pagy"
 gem "pundit"
 gem "opensearch-ruby"
+gem "ostruct"
 gem "searchkick"
 gem "sidekiq", "~> 8.1"
 gem "view_component"
@@ -42,7 +43,6 @@ gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[windows jruby]
 
 gem "rswag-api"
-gem "rswag-ui"
 
 group :development, :test do
   gem "brakeman", require: false

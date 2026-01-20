@@ -11,6 +11,6 @@ RSpec.describe Hashtags::Tag do
 
   it "rejects invalid tag names" do
     expect { described_class.new(name: "bad-tag!") }
-      .to raise_error(Dry::Types::ConstraintError)
+      .to raise_error(Dry::Struct::Error)
   end
 end

@@ -23,7 +23,7 @@
 FactoryBot.define do
   factory :user do
     email { Faker::Internet.unique.email }
-    password { Authentication::Passwords::Hasher.hash("Password1234!") }
+    password { "Password1234!" }
     username { Faker::Internet.unique.username(specifier: 10) }
   end
 
