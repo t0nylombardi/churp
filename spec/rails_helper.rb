@@ -26,6 +26,8 @@ require "rspec/rails"
 
 require_relative "support/auth"
 require_relative "support/factory_bot"
+require_relative "support/searchkick"
+require_relative "support/test_prof"
 require_relative "support/chrome"
 require_relative "support/controller_macros"
 

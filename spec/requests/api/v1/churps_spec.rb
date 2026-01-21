@@ -3,11 +3,10 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::ChurpsController", type: :request do
-  let(:password) { "Password1234!" }
-  let(:user) { create(:user, password_digest: Authentication::Passwords::Hasher.hash(password)) }
-  let(:other_user) { create(:user, password_digest: Authentication::Passwords::Hasher.hash(password)) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:other_user) { create(:user) }
 
-  let(:headers) { auth_headers_for(user, password:) }
+  let(:headers) { auth_headers_for(user) }
 
   let!(:churp) do
     create(
@@ -22,7 +21,7 @@ RSpec.describe "Api::V1::ChurpsController", type: :request do
 
   describe "GET /api/v1/churps" do
     before do
-      create_list(:churp, 3)
+      create_list(:churp, 3, user: other_user)
       get "/api/v1/churps", headers:
     end
 

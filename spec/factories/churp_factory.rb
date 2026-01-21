@@ -27,11 +27,11 @@ FactoryBot.define do
   factory :churp do
     content {
       {
-        version: 1,
-        blocks: [
+        "version" => 1,
+        "blocks" => [
           {
-            type: "text",
-            content: Faker::Lorem.paragraph_by_chars(number: 256, supplemental: false)
+            "type" => "text",
+            "content" => "hello churp"
           }
         ]
       }

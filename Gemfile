@@ -77,4 +77,5 @@ group :test do
   gem "database_cleaner"
   gem "selenium-webdriver"
   gem "simplecov", require: false
+  gem "test-prof", require: false
 end

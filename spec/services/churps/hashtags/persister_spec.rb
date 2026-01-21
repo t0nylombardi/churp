@@ -4,11 +4,10 @@ require "rails_helper"
 
 RSpec.describe Churps::Hashtags::Persister do
   describe ".call" do
+    let_it_be(:churp) { create(:churp) }
+    let_it_be(:ruby) { create(:hash_tag, name: "ruby") }
+    let_it_be(:rails) { create(:hash_tag, name: "rails") }
     it "creates churp hashtag associations" do
-      churp = create(:churp)
-      ruby = create(:hash_tag, name: "ruby")
-      rails = create(:hash_tag, name: "rails")
-
       resolved_map = {
         "ruby" => ruby.id,
         "rails" => rails.id
@@ -21,8 +20,6 @@ RSpec.describe Churps::Hashtags::Persister do
     end
 
     it "does nothing when resolved_map is blank" do
-      churp = create(:churp)
-
       expect { described_class.call(churp: churp, resolved_map: {}) }
         .not_to change(ChurpHashTag, :count)
     end
