@@ -2,7 +2,14 @@
 
 FactoryBot.define do
   factory :comment do
-    content { Faker::Lorem.sentence }
+    content {
+      {
+        "version" => 1,
+        "blocks" => [
+          { "type" => "text", "content" => "hello comment" }
+        ]
+      }
+    }
     churp
     user
   end

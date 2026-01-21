@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require:
+plugins:
   - rubocop-rails
   - rubocop-rake
   - rubocop-rspec

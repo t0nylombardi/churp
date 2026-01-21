@@ -7,7 +7,7 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-ruby "3.4.8"
+ruby File.read(".ruby-version").strip
 
 gem "jbuilder"
 gem "jsbundling-rails"
@@ -16,64 +16,46 @@ gem "pg"
 gem "puma"
 gem "rails", "~> 8.1"
 gem "redis"
-gem "sprockets-rails"
-gem "stimulus-rails"
-gem "turbo-rails"
 
 gem "activerecord-import"
-gem "active_storage_validations"
 gem "addressable"
 gem "aws-sdk-s3"
-gem "cssbundling-rails"
-gem "cors"
-gem "devise"
-gem "devise-jwt", "~> 0.12.1"
+gem "bcrypt", "~> 3.1.20"
+gem "dry-monads", "~> 1.9"
+gem "dry-struct", "~> 1.8"
+gem "dry-types", "~> 1.9"
 gem "foreman"
 gem "friendly_id"
 gem "httparty"
-gem "liquid"
+gem "jwt"
 gem "mini_magick"
 gem "name_of_person"
 gem "noticed", "~> 3.0"
 gem "pagy"
 gem "pundit"
 gem "opensearch-ruby"
+gem "ostruct"
 gem "searchkick"
-gem "sidekiq"
-gem "simple_form"
-gem "stripe"
+gem "sidekiq", "~> 8.1"
 gem "view_component"
 
-# feature flags
-gem "flipper"
-gem "flipper-active_record"
-gem "flipper-ui"
-
 gem "bootsnap", require: false
-gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
-
-gem "image_processing"
-
-gem "dotenv-rails", groups: %i[development test production]
-
-gem "dockerfile-rails", group: :development
-gem "sentry-rails"
-gem "sentry-ruby"
+gem "tzinfo-data", platforms: %i[windows jruby]
 
 gem "rswag-api"
-gem "rswag-ui"
 
 group :development, :test do
+  gem "brakeman", require: false
+  gem "bundler-audit", require: false
   gem "debug", platforms: %i[windows jruby]
   gem "factory_bot_rails"
   gem "faker"
-  gem "pry", "~> 0.15.2"
+  gem "pry", "~> 0.16.0"
   gem "pry-byebug"
   gem "rspec-rails"
   gem "rswag-specs"
   gem "shoulda-callback-matchers"
   gem "shoulda-matchers"
-  gem "ostruct", "~> 0.6.3"
 end
 
 group :development do
@@ -95,4 +77,5 @@ group :test do
   gem "database_cleaner"
   gem "selenium-webdriver"
   gem "simplecov", require: false
+  gem "test-prof", require: false
 end

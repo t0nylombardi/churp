@@ -4,186 +4,155 @@
 #
 # Table name: users
 #
-#  id                     :bigint           not null, primary key
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  display_name           :string
-#  email                  :string           default(""), not null
-#  encrypted_password     :string           default(""), not null
-#  failed_attempts        :integer          default(0), not null
-#  jti                    :string           not null
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  username               :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
+#  id                  :uuid             not null, primary key
+#  display_name        :string           default(""), not null
+#  email               :string           default(""), not null
+#  password_changed_at :datetime         not null
+#  password_digest     :string           default(""), not null
+#  role                :integer
+#  slug                :string           default(""), not null
+#  username            :string           default(""), not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_confirmation_token    (confirmation_token) UNIQUE
-#  index_users_on_display_name          (display_name)
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_jti                   (jti) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_slug                  (slug) UNIQUE
-#  index_users_on_unlock_token          (unlock_token) UNIQUE
-#  index_users_on_username              (username) UNIQUE
+#  index_users_on_email     (email) UNIQUE
+#  index_users_on_username  (username) UNIQUE
 #
+
 require "rails_helper"
 
-RSpec.describe User do
-  subject(:user_instance) { described_class.new }
-
-  let(:message) do
-    <<-TEXT.gsub(/\s+/, " ").strip
-      Complexity requirement not met. Length is_expected.to be 8-128 characters and
-      include: 1 uppercase, 1 lowercase, 1 digit and 1 special character
-    TEXT
-  end
+RSpec.describe User, type: :model do
+  subject(:user) { build(:user) }
 
   describe "associations" do
     it { is_expected.to have_many(:churps).dependent(:destroy) }
     it { is_expected.to have_many(:likes).dependent(:destroy) }
     it { is_expected.to have_many(:comments).dependent(:destroy) }
-    it { is_expected.to have_many(:notifications).dependent(:destroy) }
 
-    it "has many active_relationships" do
-      expect(user_instance).to have_many(:active_relationships).dependent(:destroy)
-        .class_name("Relationship").with_foreign_key("follower_id")
-    end
+    it {
+      is_expected.to have_many(:churp_mentions)
+        .with_foreign_key(:mentioned_user_id)
+        .dependent(:destroy)
+    }
 
-    it "has many passive_relationships" do
-      expect(user_instance).to have_many(:passive_relationships).dependent(:destroy)
-        .class_name("Relationship").with_foreign_key("followed_id")
-    end
+    it {
+      is_expected.to have_many(:mentions)
+        .through(:churp_mentions)
+        .source(:churp)
+    }
+
+    it {
+      is_expected.to have_many(:notifications)
+        .class_name("Noticed::Notification")
+        .dependent(:destroy)
+    }
+
+    it {
+      is_expected.to have_many(:active_relationships)
+        .class_name("Relationship")
+        .with_foreign_key("follower_id")
+        .dependent(:destroy)
+    }
+
+    it {
+      is_expected.to have_many(:passive_relationships)
+        .class_name("Relationship")
+        .with_foreign_key("followed_id")
+        .dependent(:destroy)
+    }
 
     it { is_expected.to have_many(:following).through(:active_relationships).source(:followed) }
     it { is_expected.to have_many(:followers).through(:passive_relationships).source(:follower) }
+
     it { is_expected.to have_one(:profile).dependent(:destroy) }
   end
 
   describe "validations" do
-    before { create(:user, email: Faker::Internet.email) }
-
-    it { is_expected.to validate_presence_of(:username) }
     it { is_expected.to validate_presence_of(:email) }
     it { is_expected.to validate_presence_of(:password) }
-    it { is_expected.to validate_uniqueness_of(:username).case_insensitive }
 
-    context "when email is taken" do
-      # it "validates uniqueness for email" do
-      #   create(:user, email: "foo.bar@test.co")
-      #   user2 = build(:user, email: "foo.bar@test.co")
-      #   expect(user2).not_to be_valid
-      # end
+    context "when another user exists" do
+      before { create(:user) }
+
+      it { is_expected.to validate_uniqueness_of(:email) }
     end
 
-    context "when password is weak" do
-      it "is invalid when password is weak" do
-        user = build(:user, password: "weakpassword", password_confirmation: "weakpassword")
-        expect(user).not_to be_valid
+    context "password complexity" do
+      it "is invalid with a weak password" do
+        user = build(:user, password: "weakpass", password_confirmation: "weakpass")
+        user.valid?
+
+        expect(user.errors[:password]).to be_present
       end
 
-      it "is valid when password is strong" do
-        user = build(:user, password: "Strong@Password123", password_confirmation: "Strong@Password123")
+      it "is valid with a strong password" do
+        user = build(
+          :user,
+          password: "Strong@Password123",
+          password_confirmation: "Strong@Password123"
+        )
+
         expect(user).to be_valid
       end
     end
+  end
 
-    it "requires password on build" do
-      user = build(:user, password: nil, password_confirmation: nil)
-      user.valid?
-      expect(user.errors[:password]).to eq(["can't be blank"])
+  describe ".normalize_login" do
+    it "returns emails unchanged" do
+      expect(described_class.normalize_login("user@example.com")).to eq("user@example.com")
     end
 
-    it "is invalid without password_confirmation" do
-      user = build(:user, password: "test_Blah1234", password_confirmation: nil)
-      expect(user).not_to be_valid
-    end
-
-    it "rejects non-email format for email" do
-      user = build(:user, email: "foo")
-      user.valid?
-      expect(user.errors[:email]).to be_present
-    end
-
-    it "is invalid when confirmation doesn’t match" do
-      user = build(:user, password: "test1234", password_confirmation: "nope")
-      expect(user).not_to be_valid
-    end
-
-    it "requires digit/special/upper/lower chars" do
-      user = build(:user, password: "1234567890", password_confirmation: "1234567890")
-      expect(user).not_to be_valid
-    end
-
-    it "is invalid without special/digit/upper/lower" do
-      user = build(:user, password: "abcdefghijkl", password_confirmation: "abcdefghijkl")
-      expect(user).not_to be_valid
+    it "prefixes @ for non-email logins" do
+      expect(described_class.normalize_login("rick")).to eq("@rick")
     end
   end
 
-  describe "follower logic" do
+  describe "#login" do
+    it "returns the assigned login when present" do
+      user.login = "rick@example.com"
+
+      expect(user.login).to eq("rick@example.com")
+    end
+
+    it "falls back to username and email" do
+      user.username = "@rick"
+      user.email = "rick@example.com"
+
+      expect(user.login).to eq("@rick")
+    end
+  end
+
+  describe "username normalization" do
+    it "prefixes @ and downcases username on create" do
+      user = create(:user, username: "ExampleUser")
+
+      expect(user.username).to eq("@exampleuser")
+    end
+
+    it "derives username from email when missing" do
+      user = create(:user, username: nil, email: "Morty@example.com")
+
+      expect(user.username).to eq("@morty")
+    end
+  end
+
+  describe "#follow" do
     let(:rick) { create(:user) }
     let(:morty) { create(:user) }
 
-    it "is not following by default" do
-      expect(rick.following?(morty)).to be(false)
-    end
-
-    it "follows a user" do
+    it "follows another user" do
       rick.follow(morty)
+
       expect(rick.following?(morty)).to be(true)
     end
 
-    it "adds rick to morty's followers" do
-      rick.follow(morty)
-      expect(morty.followers).to include(rick)
-    end
-
-    it "unfollows a user" do
+    it "does not report following after unfollowing" do
       rick.follow(morty)
       rick.unfollow(morty)
+
       expect(rick.following?(morty)).to be(false)
-    end
-  end
-
-  describe "callbacks" do
-    it "sets @username after create" do
-      user = create(:user, username: "example")
-      expect(user.username).to eq("@example")
-    end
-  end
-
-  describe "methods" do
-    let(:user) { create(:user) }
-    let(:other_user) { create(:user) }
-
-    it "starts not following other_user" do
-      expect(user.following).not_to include(other_user)
-    end
-
-    it "follows other_user" do
-      user.active_relationships.create(followed_id: other_user.id)
-      expect(user.following).to include(other_user)
-    end
-
-    it "unfollows other_user" do
-      rel = user.active_relationships.create(followed_id: other_user.id)
-      rel.destroy
-      expect(user.following).not_to include(other_user)
     end
   end
 end

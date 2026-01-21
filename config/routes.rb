@@ -3,41 +3,18 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
-  mount Flipper::UI.app(Flipper) => "/flipper"
-
-  # authenticate :user, ->(u) { u.admin? } do
-  #   mount Sidekiq::Web => "/sidekiq"
-  # end
-
-  devise_for :users
-
-  devise_scope :user do
-    authenticated :user do
-      root to: "churps#index", as: :authenticated_root
-    end
-
-    unauthenticated do
-      root to: "devise/registrations#new", as: :unauthenticated_root
-    end
-  end
+  mount Sidekiq::Web => "/sidekiq"
 
   namespace :api do
     namespace :v1 do
-      devise_for :users,
-        path: "users",
-        defaults: { format: :json },
-        controllers: {
-          sessions: "api/v1/users/sessions",
-          registrations: "api/v1/users/registrations"
-        }
-
-      namespace :users do
-        get :me, to: "profiles#show"
+      resource :authentication, controller: :authentication do
+        post :register
+        post :login
+        # TODO: post :logout
+        # TODO: post :refresh
       end
 
-      resources :churps, only: %i[index show create destroy] do
+      resources :churps do
         member do
           post :like
           post :rechurp
@@ -45,44 +22,29 @@ Rails.application.routes.draw do
 
         resources :comments, only: %i[create destroy]
       end
-    end
-  end
 
-  resources :users, only: %i[index show] do
-    member do
-      get :following
-      get :followers
-      get :verified_followers
-      get :followers_you_know
-    end
-  end
+      resources :users, only: %i[index show] do
+        member do
+          get :me, to: "profiles#show"
+          get :following
+          get :followers
+          get :verified_followers
+          get :followers_you_know
+        end
+      end
 
-  resources :churps do
-    member do
-      post :like
-      post :rechurp
-    end
+      resources :profiles, only: %i[index show] do
+        member do
+          post :follow
+          post :unfollow
+        end
+      end
 
-    resources :comments, only: %i[create destroy]
-  end
+      resources :relationships, only: %i[create destroy]
+      resources :mentions, only: :index
+      resources :notifications, only: :index
 
-  get ":slug/status/:churp_id", to: "churps#show", as: :show_churp
-
-  resources :profiles, only: %i[index show] do
-    member do
-      post :follow
-      post :unfollow
-    end
-  end
-
-  resources :relationships, only: %i[create destroy]
-  resources :mentions, only: :index
-  resources :notifications, only: :index
-
-  resource :search, only: :show, controller: :search do
-    collection do
-      get :hashtags
-      post :suggestions
+      resources :suggestions, only: :index
     end
   end
 

@@ -50,3 +50,11 @@
 Dockerfile.production
 
 coverage
+
+*_output.txt
+.ccignore
+dump.rdb
+
+.vscode
+
+AGENTS.md

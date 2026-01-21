@@ -1,19 +1,20 @@
-module ApiHelper
-  def authenticated_header(request, user)
-    request.headers.merge!(auth_headers_for(user))
+# frozen_string_literal: true
+
+module AuthHelper
+  def auth_token_for(user, password: "Password1234!")
+    Authentication::Tokens::JwtEncoder.encode({ user_id: user.id })
   end
 
-  def auth_headers_for(user, headers: default_auth_headers)
-    Devise::JWT::TestHelpers.auth_headers(headers, user)
+  def auth_headers_for(user, password: "Password1234!")
+    token = auth_token_for(user, password:)
+    expect(token).to be_present
+
+    json_headers.merge(
+      "Authorization" => "Bearer #{token}"
+    )
   end
 
-  def auth_token_for(user)
-    auth_headers_for(user)["Authorization"]
-  end
-
-  private
-
-  def default_auth_headers
+  def json_headers
     {
       "Accept" => "application/json",
       "Content-Type" => "application/json"

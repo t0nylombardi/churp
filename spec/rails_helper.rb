@@ -4,9 +4,6 @@ ENV["RAILS_ENV"] ||= "test"
 if ENV["RAILS_ENV"] == "test"
   require "simplecov"
   SimpleCov.start "rails" do
-    add_filter "config/initializers/sentry.rb"
-    add_filter "config/initializers/flipper.rb"
-    add_filter "config/routes.rb"
     add_filter "spec/factories/*"
     add_filter "spec/support/*"
 
@@ -26,10 +23,12 @@ require_relative "../config/environment"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
-require "devise"
-require_relative "support/chrome"
+
+require_relative "support/auth"
 require_relative "support/factory_bot"
-require_relative "support/auth_support"
+require_relative "support/searchkick"
+require_relative "support/test_prof"
+require_relative "support/chrome"
 require_relative "support/controller_macros"
 
 require "view_component/test_helpers"
@@ -68,17 +67,14 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.include Devise::Test::ControllerHelpers, type: :controller
-
-  config.include Warden::Test::Helpers
-
   ActiveStorage::Current.url_options = { host: "https://example.com" }
+
+  ActiveJob::Base.queue_adapter = :test
 
   # add until here
   # ---------------------------------------------
 
   config.before(:suite) do
-    config.include Devise::Test::ControllerHelpers, type: :controller
     config.include FactoryBot::Syntax::Methods
     config.extend ControllerMacros, type: :controller
 

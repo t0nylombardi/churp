@@ -1,113 +1,90 @@
 # frozen_string_literal: true
 
-require "swagger_helper"
+require "rails_helper"
 
-RSpec.describe "API V1 Authentication", swagger_doc: "v1/swagger.yaml" do
-  path "/api/v1/users" do
-    post "Sign up" do
-      tags "Authentication"
-      consumes "application/json"
-      produces "application/json"
+RSpec.describe "Api::V1::AuthenticationController", type: :request do
+  let(:headers) { json_headers }
+  let(:password) { "Password1234!" }
 
-      parameter name: :payload,
-        in: :body,
-        schema: { "$ref" => "#/components/schemas/UserRegistrationPayload" }
+  describe "POST /api/v1/authentication/register" do
+    let(:params) do
+      {
+        username: "tester",
+        email: "tester@example.com",
+        password:
+      }
+    end
 
-      response "200", "user registered" do
-        schema "$ref" => "#/components/schemas/UserResponse"
+    context "with valid params" do
+      it "creates a user" do
+        expect do
+          post "/api/v1/authentication/register",
+            params: params.to_json,
+            headers:
+        end.to change(User, :count).by(1)
 
-        let(:payload) do
-          {
-            user: {
-              email: "winston+new@churp.app",
-              username: "winston_new",
-              password: "Passw0rd1!",
-              password_confirmation: "Passw0rd1!",
-              profile_attributes: { name: "Winston" }
-            }
-          }
-        end
-
-        run_test!
+        expect(response).to have_http_status(:created)
       end
 
-      response "422", "validation failure" do
-        schema "$ref" => "#/components/schemas/ErrorResponse"
+      it "returns the user id" do
+        post "/api/v1/authentication/register",
+          params: params.to_json,
+          headers: headers
 
-        let(:payload) do
-          {
-            user: {
-              email: "invalid-email",
-              username: "",
-              password: "short",
-              password_confirmation: "mismatch"
-            }
-          }
-        end
+        body = JSON.parse(response.body)
+        expect(body).to have_key("id")
+      end
+    end
 
-        run_test!
+    context "with invalid params" do
+      it "returns unprocessable content" do
+        invalid_params = params.merge(email: nil)
+
+        expect do
+          post "/api/v1/authentication/register",
+            params: invalid_params.to_json,
+            headers:
+        end.not_to change(User, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        body = JSON.parse(response.body)
+        expect(body).to include("error", "details")
       end
     end
   end
 
-  path "/api/v1/users/sign_in" do
-    post "Sign in" do
-      tags "Authentication"
-      consumes "application/json"
-      produces "application/json"
+  describe "POST /api/v1/authentication/login" do
+    let!(:user) do
+      create(:user, password_digest: Authentication::Passwords::Hasher.hash(password))
+    end
 
-      parameter name: :payload,
-        in: :body,
-        schema: { "$ref" => "#/components/schemas/UserSignInPayload" }
-
-      response "200", "credentials accepted" do
-        schema "$ref" => "#/components/schemas/UserResponse"
-
-        let!(:user) do
-          create(
-            :user,
-            email: "winston@churp.app",
-            password: "Passw0rd1!",
-            password_confirmation: "Passw0rd1!"
-          )
-        end
-
-        let(:payload) do
-          {
-            user: {
-              email: user.email,
-              password: "Passw0rd1!"
-            }
-          }
-        end
-
-        run_test!
+    context "with valid credentials" do
+      let(:params) do
+        {
+          email: user.email,
+          password:
+        }
       end
 
-      response "401", "invalid credentials" do
-        schema type: :object, required: ["error"], properties: {
-          error: { type: :string, example: "Invalid Email or password." }
-        }
+      it "returns a token" do
+        post "/api/v1/authentication/login",
+          params: params.to_json, headers: headers
 
-        let!(:user) do
-          create(
-            :user,
-            email: "winston@churp.app",
-            password: "Passw0rd1!",
-            password_confirmation: "Passw0rd1!"
-          )
-        end
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body.dig("token")).to be_present
+      end
+    end
 
-        let(:payload) do
-          {
-            user: {
-              email: user.email,
-              password: "wrong-password"
-            }
-          }
-        end
-
-        run_test!
+    context "with invalid credentials" do
+      it "returns unauthorized" do
+        post "/api/v1/authentication/login",
+          params: {
+            email: user.email,
+            password: "WrongPassword123!"
+          }.to_json,
+          headers: headers
+        expect(response).to have_http_status(:unauthorized)
       end
     end
   end

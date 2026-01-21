@@ -1,0 +1,5 @@
+:queues:
+  - [notifications, 3]
+  - [fanout, 2]
+  - [content_processors, 2]
+  - [default, 1]

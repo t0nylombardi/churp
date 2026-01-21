@@ -4,12 +4,12 @@
 #
 # Table name: comments
 #
-#  id         :bigint           not null, primary key
-#  content    :text             not null
+#  id         :uuid             not null, primary key
+#  content    :jsonb            not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  churp_id   :bigint           not null
-#  user_id    :bigint           not null
+#  churp_id   :uuid             not null
+#  user_id    :uuid             not null
 #
 # Indexes
 #
@@ -25,7 +25,25 @@ class Comment < ApplicationRecord
   belongs_to :churp
   belongs_to :user
 
-  validates :content, length: { minimum: 1, maximum: 500 }, allow_blank: false
+  validates :content, presence: true
+  validate :content_must_be_structured
+  validate :comment_length_within_limit
 
-  scope :recent_comments, -> { order("created_at DESC") }
+  private
+
+  def content_must_be_structured
+    return if content.is_a?(Hash) && content["blocks"].is_a?(Array)
+
+    errors.add(:content, :invalid_structure)
+  end
+
+  def comment_length_within_limit
+    text =
+      content.fetch("blocks", [])
+        .select { |b| b["type"] == "text" }
+        .map { |b| b["content"].to_s }
+        .join
+
+    errors.add(:content, :too_long) if text.length > 331
+  end
 end
