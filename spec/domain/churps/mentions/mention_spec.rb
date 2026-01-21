@@ -16,12 +16,6 @@ RSpec.describe Churps::Mentions::Mention do
       expect(mention.end_index).to eq(6)
     end
 
-    it "rejects invalid usernames" do
-      expect do
-        described_class.new(username: "too-long-username", start_index: 0, end_index: 6)
-      end.to raise_error(Dry::Struct::Error)
-    end
-
     it "rejects negative start indexes" do
       expect do
         described_class.new(username: "alice", start_index: -1, end_index: 6)

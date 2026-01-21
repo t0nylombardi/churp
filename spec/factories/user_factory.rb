@@ -22,9 +22,9 @@
 #
 FactoryBot.define do
   factory :user do
-    email { Faker::Internet.unique.email }
-    password_digest { Authentication::Passwords::Hasher.hash("Password1234!") }
-    username { Faker::Internet.unique.username(specifier: 10) }
+    sequence(:email) { |n| "user#{n}@example.test" }
+    password { "Password1234!" }
+    sequence(:username) { |n| "user_#{n}" }
   end
 
   trait :with_profile do

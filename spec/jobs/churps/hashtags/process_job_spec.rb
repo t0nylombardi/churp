@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Churps::Hashtags::ProcessJob do
-  let(:churp) { create(:churp) }
+  let_it_be(:churp) { create(:churp) }
 
   it "calls the processor with the churp" do
     processor = instance_double(Churps::Hashtags::Processor)

@@ -34,24 +34,6 @@ class User < ApplicationRecord
     @login || username || email
   end
 
-  # Find a user by username or email
-  #
-  # @param [Hash] warden_conditions conditions provided by Warden
-  # @return [User, nil] the found user or nil
-  def self.find_for_database_authentication(warden_conditions)
-    conditions = warden_conditions.dup
-    login = conditions.delete(:login)&.downcase
-
-    return super(conditions) unless login
-
-    where(conditions)
-      .where(
-        "LOWER(email) = :value OR LOWER(username) = :value",
-        value: normalize_login(login)
-      )
-      .first
-  end
-
   def self.normalize_login(value)
     return value if value.include?("@") && value.include?(".")
 
@@ -81,35 +63,19 @@ class User < ApplicationRecord
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
-
   has_one :profile, dependent: :destroy
 
   searchkick highlight: [:username], word_middle: [:username]
 
-  before_validation :normalize_username, on: :create
+  before_validation :assign_username, on: :create
   after_commit :reindex_users
-
-  def reindex_users
-    reindex
-  end
 
   accepts_nested_attributes_for :profile
 
   validates :email, presence: true
   validates :email, uniqueness: true
-  validates :password_digest, presence: true
-  validate :password_complexity
-
-  def normalize_username
-    return if username.blank?
-
-    self.username = username.downcase
-    self.username = "@#{username}" unless username.start_with?("@")
-  end
-
-  def normalize_friendly_id(value)
-    value.to_s.downcase
-  end
+  validates :password, presence: true
+  validate :password_complexity, if: -> { password.present? }
 
   def follow(other_user)
     active_relationships.create(followed_id: other_user.id)
@@ -127,11 +93,27 @@ class User < ApplicationRecord
     notifications.unread
   end
 
-  def password_complexity
-    return if password_digest.blank?
+  def normalize_friendly_id(value)
+    value.to_s.downcase
+  end
 
+  private
+
+  def reindex_users
+    reindex
+  end
+
+  def assign_username
+    result = Users::UsernameNormalizer.call(username:, email:)
+
+    result.bind do |username|
+      self.username = username.to_s
+    end
+  end
+
+  def password_complexity
     regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,70}$/
-    return if password_digest.match?(regex)
+    return if password.match?(regex)
 
     errors.add :password, <<~MSG.squish
       Complexity requirement not met.

@@ -5,10 +5,10 @@ require "rails_helper"
 RSpec.describe Churps::Mentions::Processor do
   subject(:processor) { described_class.new }
 
-  let(:author) { create(:user, username: "@author") }
-  let!(:mentioned) { create(:user, username: "@alice") }
+  let_it_be(:author) { create(:user, username: "@author") }
+  let_it_be(:mentioned) { create(:user, username: "@alice") }
 
-  let(:churp) do
+  let_it_be(:churp) do
     create(
       :churp,
       user: author,

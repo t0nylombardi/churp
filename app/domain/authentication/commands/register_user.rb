@@ -13,7 +13,7 @@ module Authentication
         User.new(
           username: @username,
           email: @email,
-          password_digest: Passwords::Hasher.hash(@password)
+          password: @password
         ).save!
         success(id: User.last.id)
       rescue ActiveRecord::RecordInvalid => e

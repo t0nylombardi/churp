@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe Churps::Hashtags::Processor do
-  let(:churp) { Struct.new(:content).new({ "text" => "hello #ruby" }) }
+  let_it_be(:churp) { Struct.new(:content).new({ "text" => "hello #ruby" }) }
   let(:old_body) { { "text" => "hello #rails" } }
   let(:processor) { described_class.new }
 

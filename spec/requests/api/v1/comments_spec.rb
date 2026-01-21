@@ -3,10 +3,9 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::CommentsController", type: :request do
-  let(:password) { "Password1234!" }
-  let(:user) { create(:user, password_digest: Authentication::Passwords::Hasher.hash(password)) }
-  let(:other_user) { create(:user, password_digest: Authentication::Passwords::Hasher.hash(password)) }
-  let(:headers) { auth_headers_for(user, password:) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:other_user) { create(:user) }
+  let(:headers) { auth_headers_for(user) }
 
   let(:valid_content) do
     {
@@ -17,7 +16,7 @@ RSpec.describe "Api::V1::CommentsController", type: :request do
     }
   end
 
-  let!(:churp) { create(:churp, user: other_user) }
+  let_it_be(:churp) { create(:churp, user: other_user) }
 
   describe "POST /api/v1/churps/:churp_id/comments" do
     let(:params) do
@@ -87,7 +86,7 @@ RSpec.describe "Api::V1::CommentsController", type: :request do
     end
 
     it "returns not found when comment is not on the churp" do
-      other_churp = create(:churp)
+      other_churp = create(:churp, user: other_user)
       comment = create(:comment, churp: other_churp, user: other_user, content: valid_content)
 
       delete "/api/v1/churps/#{churp.id}/comments/#{comment.id}", headers: headers
